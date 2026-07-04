@@ -1,0 +1,8 @@
+Options -Indexes
+
+RewriteEngine On
+RewriteCond %{REQUEST_FILENAME} !-f
+RewriteCond %{REQUEST_FILENAME} !-d
+
+# Đẩy toàn bộ đường dẫn sau public/ vào biến url trong file index.php
+RewriteRule ^(.*)$ index.php?url=$1 [PT,L]
