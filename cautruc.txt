@@ -22,9 +22,10 @@ C:.
 |   |   |       
 |   |   \---khachHang
 |   |           CaNhanController.php
+|   |           DonHangController.php
 |   |           GioHangController.php
-|   |           KhachDatHangController.php
 |   |           TaiDonThuocController.php
+|   |           ThuocController.php
 |   |           TrangChuController.php
 |   |           XacThucController.php
 |   |           
@@ -72,13 +73,21 @@ C:.
 |           |   khachHangLayout.php
 |           |   
 |           \---partials
-|                   footer.php
-|                   header.php
-|                   navbar.php
+|           |       footer.php
+|           |       header.php
+|           |       navbar.php
+|           \---adminPartials
+|           |       adminFooter.php
+|           |       adminHeader.php
+|           |       adminNavbar.php
+|           \---duocSiPartials
+|                   duocSiFooter.php
+|                   duocSiHeader.php
+|                   duocSiNavbar.php
 |                   
 +---LinhTinh
-|       CD bán thu?c v4.mdj
-|       UC bán thu?c v3.mdj
+|       CD bï¿½n thu?c v4.mdj
+|       UC bï¿½n thu?c v3.mdj
 |       web_ban_thuoc.sql
 |       web_ban_thuoc_cau_truc.sql
 |       
