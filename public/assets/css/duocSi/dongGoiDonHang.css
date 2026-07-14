@@ -1,0 +1,7 @@
+.meta-shipping { background: var(--gray-50); border: 1px solid var(--gray-200); border-radius: 12px; padding: 16px; margin-bottom: 20px; font-size: 14px; display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
+.meta-shipping .span-2 { grid-column: 1 / -1; }
+.pack-table { width: 100%; border-collapse: collapse; font-size: 13.5px; margin-top: 10px; }
+.pack-table th { background: var(--gray-100); padding: 10px; text-align: left; font-weight: 700; color: var(--gray-500); font-size: 11px; text-transform: uppercase; border-bottom: 1px solid var(--gray-200); }
+.pack-table td { padding: 12px 10px; border-bottom: 1px solid var(--gray-100); vertical-align: middle; }
+.batch-suggestion { display: inline-flex; align-items: center; gap: 4px; padding: 3px 8px; background: var(--green-50); color: var(--green-700); font-weight: 700; border-radius: 6px; font-size: 12px; font-family: ui-monospace, monospace; }
+.check-box-large { width: 20px; height: 20px; accent-color: var(--green-700); cursor: pointer; }

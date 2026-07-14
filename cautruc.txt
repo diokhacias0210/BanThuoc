@@ -56,7 +56,7 @@ C:.
 |       |       dongGoi.php
 |       |       duyetDon.php
 |       |       quanLyLo.php
-|       |       
+|       |       thongTinDuocSi.php
 |       +---khachHang
 |       |   +---trangChu
 |       |   |       chiTiet.php
@@ -111,7 +111,7 @@ C:.
         |   |       duocSi.css
         |   |       duyetDon.css
         |   |       quanLyLoThuoc.css
-        |   |       
+        |   |       thongTinDuocSi.css
         |   +---khachHang
         |   |       chiTietThuoc.css
         |   |       gioHang.css
