@@ -1,0 +1,108 @@
+:root {
+  --green-900: #0f3d24;
+  --green-700: #137a4a;
+  --green-600: #189956;
+  --green-500: #1fae63;
+  --green-50: #e9f7ef;
+  --green-100: #d7f0e1;
+  --orange-600: #c2650f;
+  --orange-50: #fdf1e4;
+  --red-600: #d5362f;
+  --red-700: #b5271f;
+  --red-50: #fdeceb;
+  --red-100: #fbdad8;
+  --blue-600: #2b5fd9;
+  --blue-50: #eef4ff;
+  --purple-600: #6366f1;
+  --purple-50: #eef2ff;
+  --gray-900: #1c2430;
+  --gray-700: #465066;
+  --gray-500: #7c869a;
+  --gray-300: #dbe0e8;
+  --gray-200: #e9edf2;
+  --gray-100: #f2f4f7;
+  --gray-50: #f8f9fb;
+  --white: #fff;
+  --side-bg: #1b212c;
+  --side-bg-2: #141922;
+  --side-text: #aab3c5;
+  --side-active: #232b38;
+  --radius-lg: 18px;
+  --radius-md: 12px;
+  --radius-sm: 8px;
+  --shadow-card: 0 1px 2px rgba(20, 30, 50, .04), 0 8px 24px -12px rgba(20, 30, 50, .10);
+  --shadow-modal: 0 20px 60px -12px rgba(15, 30, 25, .35);
+}
+
+* { box-sizing: border-box; }
+html, body { margin: 0; padding: 0; }
+body {
+  font-family: 'Inter', system-ui, -apple-system, sans-serif;
+  background: var(--gray-50);
+  color: var(--gray-900);
+  -webkit-font-smoothing: antialiased;
+}
+a { text-decoration: none; color: inherit; }
+button { font-family: inherit; cursor: pointer; }
+input, select, textarea { font-family: inherit; }
+
+.app { display: flex; min-height: 100vh; }
+.main { flex: 1; min-width: 0; display: flex; flex-direction: column; }
+.topbar {
+  display: flex; align-items: center; justify-content: space-between; gap: 16px;
+  padding: 20px 32px; background: var(--white); border-bottom: 1px solid var(--gray-200);
+  position: sticky; top: 0; z-index: 20;
+}
+.page-heading { display: flex; align-items: center; gap: 12px; }
+.page-heading .icon-wrap {
+  width: 38px; height: 38px; border-radius: 11px;
+  background: var(--green-50); color: var(--green-700);
+  display: flex; align-items: center; justify-content: center; flex-shrink: 0;
+}
+.page-heading .icon-wrap .icon { width: 19px; height: 19px; }
+.page-title { font-size: 19.5px; font-weight: 800; letter-spacing: -.3px; }
+.content { padding: 26px 32px 60px; max-width: 1440px; width: 100%; margin: 0 auto; }
+
+/* TABLES & CARDS */
+.table-card { background: var(--white); border: 1px solid var(--gray-200); border-radius: var(--radius-lg); box-shadow: var(--shadow-card); overflow: hidden; }
+.table-scroll { overflow-x: auto; }
+table { width: 100%; border-collapse: collapse; min-width: 900px; }
+thead th { text-align: left; font-size: 11px; font-weight: 700; letter-spacing: .4px; text-transform: uppercase; color: var(--gray-500); background: var(--gray-50); padding: 13px 16px; border-bottom: 1px solid var(--gray-200); white-space: nowrap; }
+tbody td { padding: 14px 16px; border-bottom: 1px solid var(--gray-100); font-size: 13.5px; color: var(--gray-900); vertical-align: middle; }
+tbody tr:last-child td { border-bottom: none; }
+tbody tr:hover { background: var(--gray-50); }
+
+/* BUTTONS */
+.btn { display: inline-flex; align-items: center; gap: 7px; font-size: 13.5px; font-weight: 600; border-radius: 10px; padding: 9.5px 16px; border: 1px solid transparent; white-space: nowrap; transition: .15s; }
+.btn-primary { background: var(--green-700); color: #fff; box-shadow: 0 4px 10px -4px rgba(19, 122, 74, .6); }
+.btn-primary:hover { background: var(--green-900); }
+.btn-ghost { background: var(--white); border-color: var(--gray-200); color: var(--gray-700); }
+.btn-ghost:hover { background: var(--gray-100); }
+.btn-danger { background: var(--white); border-color: var(--red-100); color: var(--red-600); }
+.btn-danger:hover { background: var(--red-50); }
+
+/* SYSTEM ICONS (CSS TRADITIONAL) */
+.icon { display: inline-block; position: relative; flex-shrink: 0; vertical-align: middle; box-sizing: border-box; }
+.icon-brand { width: 18px; height: 18px; border: 2px solid #fff; border-radius: 9px; transform: rotate(-45deg); }
+.icon-brand::after { content: ''; position: absolute; top: 50%; left: 0; right: 0; height: 2px; background-color: #fff; transform: translateY(-50%); }
+.icon-chart { width: 17px; height: 17px; }
+.icon-chart::before { content: ''; position: absolute; left: 0; bottom: 0; width: 100%; height: 2px; background: currentColor; }
+.icon-chart::after { content: ''; position: absolute; left: 0; top: 0; width: 2px; height: 100%; background: currentColor; }
+.icon-chart .bar-1 { position: absolute; bottom: 2px; left: 4px; width: 3px; height: 5px; background: currentColor; }
+.icon-chart .bar-2 { position: absolute; bottom: 2px; left: 8px; width: 3px; height: 9px; background: currentColor; }
+.icon-chart .bar-3 { position: absolute; bottom: 2px; left: 12px; width: 3px; height: 13px; background: currentColor; }
+.icon-grid-item { width: 17px; height: 17px; }
+.icon-grid-item .sq { position: absolute; width: 7px; height: 7px; border: 2px solid currentColor; border-radius: 1.5px; box-sizing: border-box; }
+.icon-grid-item .sq-1 { top: 0; left: 0; }
+.icon-grid-item .sq-2 { top: 0; right: 0; }
+.icon-grid-item .sq-3 { bottom: 0; left: 0; }
+.icon-grid-item .sq-4 { bottom: 0; right: 0; }
+.icon-folder { width: 17px; height: 15px; border: 2px solid currentColor; border-radius: 2px; }
+.icon-folder::before { content: ''; position: absolute; top: -4px; left: -2px; width: 7px; height: 3px; background: currentColor; border-radius: 2px 2px 0 0; }
+.icon-user { width: 17px; height: 17px; }
+.icon-user::before { content: ''; position: absolute; top: 1px; left: 4px; width: 8px; height: 8px; border: 2px solid currentColor; border-radius: 50%; box-sizing: border-box; }
+.icon-user::after { content: ''; position: absolute; bottom: 1px; left: 0; width: 16px; height: 6px; border: 2px solid currentColor; border-bottom: none; border-radius: 7px 7px 0 0; box-sizing: border-box; }
+.icon-logout { width: 15px; height: 15px; }
+.icon-logout::before { content: ''; position: absolute; top: 0; left: 0; bottom: 0; width: 9px; border: 2px solid currentColor; border-right: none; border-radius: 3px 0 0 3px; box-sizing: border-box; }
+.icon-logout::after { content: ''; position: absolute; top: 4px; right: 0; width: 6px; height: 6px; border-top: 2px solid currentColor; border-right: 2px solid currentColor; transform: rotate(45deg); box-sizing: border-box; }
+.icon-logout .line { position: absolute; top: 6px; left: 4px; width: 9px; height: 2px; background: currentColor; }

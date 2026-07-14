@@ -1,0 +1,9 @@
+.toolbar-card { background: var(--white); border: 1px solid var(--gray-200); border-radius: var(--radius-lg); box-shadow: var(--shadow-card); padding: 16px 18px; margin-bottom: 18px; }
+.toolbar { display: flex; flex-wrap: wrap; align-items: center; gap: 10px; }
+.toolbar-search { display: flex; align-items: center; gap: 8px; background: var(--gray-50); border: 1px solid var(--gray-200); border-radius: 10px; padding: 9px 13px; min-width: 280px; flex: 1 1 300px; }
+.toolbar-search input { border: 0; outline: none; font-size: 13.5px; width: 100%; background: transparent; }
+.toolbar-row2 { display: flex; align-items: center; justify-content: space-between; margin-top: 12px; padding-top: 12px; border-top: 1px solid var(--gray-100); }
+.result-count { font-size: 12.5px; color: var(--gray-500); }
+.result-count b { color: var(--gray-900); }
+.badge-system { background: var(--gray-200); color: var(--gray-700); }
+.badge-product { background: var(--blue-50); color: var(--blue-600); }

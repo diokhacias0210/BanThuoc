@@ -51,6 +51,7 @@ C:.
 |       |       quanLyDanhMuc.php
 |       |       quanLyTaiKhoan.php
 |       |       quanLyThuoc.php
+|       |       chiTietThuoc.php
 |       |       
 |       +---duocSi
 |       |       dongGoi.php
