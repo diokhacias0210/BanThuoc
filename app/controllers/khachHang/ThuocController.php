@@ -13,8 +13,7 @@ class ThuocController extends Controller
     {
         $thuoc = $this->thuocModel->getById($idThuoc);
 
-        if (!$thuoc)
-        {
+        if (!$thuoc) {
             die("Không tìm thấy thuốc.");
         }
 
