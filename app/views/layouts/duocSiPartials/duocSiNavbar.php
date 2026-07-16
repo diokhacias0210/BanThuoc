@@ -11,20 +11,20 @@
 
     <nav class="nav-group">
         <div class="nav-label">Dược sĩ</div>
-        <a class="nav-item <?php echo ($active_tab == 'thongtin') ? 'active' : ''; ?>" href="/duocsi/thongtin">
+        <a class="nav-item <?php echo (isset($active_tab) && $active_tab == 'thongtin') ? 'active' : ''; ?>" href="/duocsi/thongtin">
             <div class="icon icon-user"></div>
             Thông tin dược sĩ
         </a>
-        <a class="nav-item <?php echo ($active_tab == 'lothuoc') ? 'active' : ''; ?>" href="/duocsi/quanlylo">
+        <a class="nav-item <?php echo (isset($active_tab) && $active_tab == 'lothuoc') ? 'active' : ''; ?>" href="/duocsi/quanlylo">
             <div class="icon icon-box"></div>
             Quản lý lô thuốc
         </a>
-        <a class="nav-item <?php echo ($active_tab == 'donthuoc') ? 'active' : ''; ?>" href="/duocsi/duyetdon">
+        <a class="nav-item <?php echo (isset($active_tab) && $active_tab == 'donthuoc') ? 'active' : ''; ?>" href="/duocsi/duyetdon">
             <div class="icon icon-check-list"></div>
             Duyệt thuốc kê đơn
             <span class="dot-badge" id="sidebarBadge" style="display: none;">0</span>
         </a>
-        <a class="nav-item <?php echo ($active_tab == 'dongoi') ? 'active' : ''; ?>" href="/duocsi/donggoi">
+        <a class="nav-item <?php echo (isset($active_tab) && $active_tab == 'dongoi') ? 'active' : ''; ?>" href="/duocsi/donggoi">
             <div class="icon icon-cube"></div>
             Xử lý &amp; đóng gói
         </a>

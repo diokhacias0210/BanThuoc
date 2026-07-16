@@ -10,7 +10,7 @@
     </div>
     <nav class="nav-group">
         <div class="nav-label">Điều hướng</div>
-        <a class="nav-item <?php echo ($active_tab == 'tongquan') ? 'active' : ''; ?>" href="/admin/tongquan">
+        <a class="nav-item <?php echo (isset($active_tab) && $active_tab == 'tongquan') ? 'active' : ''; ?>" href="/admin/tongquan">
             <div class="icon icon-chart">
                 <div class="bar-1"></div>
                 <div class="bar-2"></div>
@@ -18,7 +18,7 @@
             </div>
             Tổng quan
         </a>
-        <a class="nav-item <?php echo ($active_tab == 'thuoc') ? 'active' : ''; ?>" href="/admin/quanlythuoc">
+        <a class="nav-item <?php echo (isset($active_tab) && $active_tab == 'thuoc') ? 'active' : ''; ?>" href="/admin/quanlythuoc">
             <div class="icon icon-grid-item">
                 <div class="sq sq-1"></div>
                 <div class="sq sq-2"></div>
@@ -27,11 +27,11 @@
             </div>
             Quản lý thuốc
         </a>
-        <a class="nav-item <?php echo ($active_tab == 'danhmuc') ? 'active' : ''; ?>" href="/admin/quanlydanhmuc">
+        <a class="nav-item <?php echo (isset($active_tab) && $active_tab == 'danhmuc') ? 'active' : ''; ?>" href="/admin/quanlydanhmuc">
             <div class="icon icon-folder"></div>
             Quản lý danh mục thuốc
         </a>
-        <a class="nav-item <?php echo ($active_tab == 'taikhoan') ? 'active' : ''; ?>" href="/admin/quanlytaikhoan">
+        <a class="nav-item <?php echo (isset($active_tab) && $active_tab == 'taikhoan') ? 'active' : ''; ?>" href="/admin/quanlytaikhoan">
             <div class="icon icon-user"></div>
             Quản lý tài khoản
         </a>

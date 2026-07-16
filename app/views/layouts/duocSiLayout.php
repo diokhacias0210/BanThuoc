@@ -1,13 +1,13 @@
 <?php
 // Khởi tạo các partials
-require_once 'duocSiPartials/duocSiHeader.php';
-require_once 'duocSiPartials/duocSiNavbar.php';
+require_once APPROOT . '/app/views/layouts/duocSiPartials/duocSiHeader.php';
+require_once APPROOT . '/app/views/layouts/duocSiPartials/duocSiNavbar.php';
 ?>
 
 <main class="main">
     <header class="topbar">
         <div>
-            <div class="page-title"><?php echo $page_title ?? 'Hệ thống quản trị'; ?></div>
+            <div class="page-title"><?php echo isset($page_title) ? $page_title : 'Hệ thống quản trị'; ?></div>
         </div>
     </header>
 
