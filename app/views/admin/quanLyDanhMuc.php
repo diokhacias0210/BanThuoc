@@ -23,7 +23,7 @@
                     <th style="width: 130px;">Mã danh mục</th>
                     <th style="width: 240px;">Tên danh mục</th>
                     <th>Mô tả chi tiết phân loại</th>
-                    <th style="width: 140px; text-align: center;">Loại hệ thống</th>
+                    <th style="text-align: center; width: 140px;">Loại hệ thống</th>
                     <th style="width: 120px; text-align: right;">Thao tác</th>
                 </tr>
             </thead>
@@ -36,6 +36,7 @@
     </div>
 </div>
 
+<!-- Modal Form -->
 <div class="modal-overlay hidden" id="modalForm">
     <div class="modal-box">
         <div class="modal-head">
@@ -67,8 +68,15 @@
     </div>
 </div>
 
+<!-- Đảm bảo cấu trúc khung HTML của hộp thoại Toast nằm tại đây để nhận đúng CSS -->
+<div class="toast" id="localToast">
+    <div class="icon-check"></div>
+    <span id="localToastMsg">Thao tác thành công</span>
+</div>
+
 <script>
     let searchTimeout;
+    let toastTimer;
 
     // Điều khiển Modal
     const modalForm = document.getElementById('modalForm');
@@ -83,7 +91,6 @@
         document.body.style.overflow = '';
     }
 
-    // Gán sự kiện click để đóng modal khi click nút Close / Hủy
     document.querySelectorAll('[data-close]').forEach(btn => {
         btn.addEventListener('click', () => closeModal(document.getElementById(btn.dataset.close)));
     });
@@ -102,9 +109,19 @@
         openModal(modalForm);
     });
 
+    // Hàm hiển thị Toast nổi bảo mật độc lập
+    function showLocalToast(msg) {
+        const toast = document.getElementById('localToast');
+        const toastMsg = document.getElementById('localToastMsg');
+        if (toastMsg) toastMsg.textContent = msg;
+        toast.classList.add('show');
+        clearTimeout(toastTimer);
+        toastTimer = setTimeout(() => toast.classList.remove('show'), 3000);
+    }
+
     // ===== KẾT NỐI API DỮ LIỆU ĐỘNG =====
 
-    // 1. Tải và hiển thị danh sách (Sửa ASSETROOT thành URLROOT và quanlydanhmuc thành quanLyDanhMuc)
+    // 1. Tải và hiển thị danh sách
     function fetchAndRenderTable(searchKeyword = '') {
         fetch(`<?php echo URLROOT; ?>/admin/quanLyDanhMuc/getList?search=${encodeURIComponent(searchKeyword)}`)
             .then(res => res.json())
@@ -129,7 +146,8 @@
 
         emptyState.style.display = 'none';
         tbody.innerHTML = danhMucList.map(item => {
-            const isSystem = item.idDanhMuc <= 3;
+            // SỬA LỖI 2: Chỉ duy nhất chữ "Chưa phân loại" mới được gắn nhãn Mặc định
+            const isSystem = item.tenDanhMuc === 'Chưa phân loại';
             const badgeHTML = isSystem ?
                 `<span class="badge badge-system">Mặc định</span>` :
                 `<span class="badge badge-product">Tùy biến</span>`;
@@ -144,7 +162,7 @@
                         <button class="action-btn edit" onclick="openEditForm(${item.idDanhMuc})" title="Chỉnh sửa">
                             <div class="icon icon-pencil"></div>
                         </button>
-                        <button class="action-btn delete" onclick="deleteCategory(${item.idDanhMuc})" title="Xóa danh mục">
+                        <button class="action-btn delete" onclick="deleteCategory(${item.idDanhMuc}, '${item.tenDanhMuc}')" title="Xóa danh mục">
                             <div class="icon icon-trash"><div class="icon-trash-body"></div></div>
                         </button>
                     </td>
@@ -153,7 +171,7 @@
         }).join('');
     }
 
-    // 2. Điền thông tin vào biểu mẫu sửa danh mục (Sửa ASSETROOT thành URLROOT)
+    // 2. Điền thông tin vào biểu mẫu sửa danh mục
     function openEditForm(id) {
         fetch(`<?php echo URLROOT; ?>/admin/quanLyDanhMuc/detail/${id}`)
             .then(res => res.json())
@@ -172,7 +190,7 @@
             .catch(err => console.error("Lỗi lấy chi tiết:", err));
     }
 
-    // 3. Xử lý sự kiện nút Lưu (Sửa ASSETROOT thành URLROOT)
+    // 3. Xử lý sự kiện nút Lưu
     document.getElementById('btnSaveCategory').addEventListener('click', () => {
         const tenInput = document.getElementById('f_tenDanhMuc');
         if (!tenInput.value.trim()) {
@@ -190,7 +208,7 @@
             .then(res => {
                 if (res.status) {
                     closeModal(modalForm);
-                    showToast(res.message);
+                    showLocalToast(res.message); // Sử dụng hàm hiển thị Toast sửa lỗi mới
                     fetchAndRenderTable(document.getElementById('searchInput').value);
                 } else {
                     alert(res.message);
@@ -199,21 +217,21 @@
             .catch(err => console.error("Lỗi lưu danh mục:", err));
     });
 
-    // 4. Xử lý hành động xóa danh mục thuốc (Sửa ASSETROOT thành URLROOT)
-    function deleteCategory(id) {
-        if (id <= 3) {
-            alert("Đây là danh mục cốt lõi mặc định của hệ thống, không được phép xóa.");
+    // 4. Xử lý hành động xóa danh mục thuốc
+    function deleteCategory(id, name) {
+        if (name === 'Chưa phân loại') {
+            alert("Đây là danh mục mặc định bảo vệ của hệ thống, không được phép xóa.");
             return;
         }
 
-        if (confirm(`Bạn có chắc chắn muốn xóa danh mục này?\n\nLưu ý: Toàn bộ sản phẩm thuốc hiện có trong danh mục này sẽ tự động được đưa về nhóm "Chưa phân loại".`)) {
+        if (confirm(`Bạn có chắc chắn muốn xóa danh mục "${name}"?\n\nLưu ý quan trọng: Toàn bộ sản phẩm thuốc hiện thuộc danh mục này sẽ tự động được hệ thống chuyển sang nhóm "Chưa phân loại".`)) {
             fetch(`<?php echo URLROOT; ?>/admin/quanLyDanhMuc/delete/${id}`, {
                     method: 'POST'
                 })
                 .then(res => res.json())
                 .then(res => {
                     if (res.status) {
-                        showToast(res.message);
+                        showLocalToast(res.message); // Sử dụng hàm hiển thị Toast sửa lỗi mới
                         fetchAndRenderTable(document.getElementById('searchInput').value);
                     } else {
                         alert(res.message);

@@ -30,7 +30,6 @@ class QuanLyDanhMucController extends Controller
     public function getList()
     {
         header('Content-Type: application/json');
-        // Thay đổi ?? thành isset() để tương thích PHP bản cũ
         $search = isset($_GET['search']) ? $_GET['search'] : '';
         $list = $this->danhMucModel->getAll($search);
         echo json_encode(array('status' => true, 'data' => $list));
@@ -83,14 +82,20 @@ class QuanLyDanhMucController extends Controller
         exit;
     }
 
-    // API: Xử lý xóa danh mục
+    // API: XỬ LÝ XÓA DANH MỤC VÀ TRẢ VỀ THÔNG BÁO ĐỒNG BỘ CHO CLIENT
     public function delete($id)
     {
         header('Content-Type: application/json');
         if ($this->danhMucModel->delete($id)) {
-            echo json_encode(array('status' => true, 'message' => 'Đã xóa danh mục và điều chuyển dữ liệu thuốc liên quan!'));
+            echo json_encode(array(
+                'status' => true,
+                'message' => 'Đã xóa danh mục thành công! Toàn bộ thuốc thuộc danh mục này đã được tự động điều hướng chuyển sang nhóm "Chưa phân loại".'
+            ));
         } else {
-            echo json_encode(array('status' => false, 'message' => 'Không thể xóa danh mục này'));
+            echo json_encode(array(
+                'status' => false,
+                'message' => 'Không thể xóa danh mục này! (Đây có thể là danh mục "Chưa phân loại" mặc định dùng làm fallback của hệ thống).'
+            ));
         }
         exit;
     }
