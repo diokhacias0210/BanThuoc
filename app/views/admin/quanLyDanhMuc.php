@@ -1,12 +1,12 @@
 <div class="toolbar-card">
     <div class="toolbar">
         <div class="toolbar-search">
-            <div class="icon icon-search"></div>
+            <i class="fa-solid fa-magnifying-glass"></i>
             <input type="text" id="searchInput" placeholder="Tìm nhanh theo tên danh mục...">
         </div>
         <button class="btn btn-ghost" id="btnResetFilter">Đặt lại</button>
         <button class="btn btn-primary" id="btnAddCategory" style="margin-left:auto;">
-            <div class="icon icon-plus"></div>
+            <i class="fa-solid fa-plus"></i>
             Thêm danh mục mới
         </button>
     </div>
@@ -31,7 +31,7 @@
         </table>
     </div>
     <div id="emptyState" class="empty-state" style="display:none;">
-        <div class="icon icon-search" style="transform: scale(2.5); margin-bottom: 12px;"></div>
+        <i class="fa-solid fa-folder-open" style="font-size:40px; color:var(--gray-300); margin-bottom:14px; display:block;"></i>
         <div class="t1">Không tìm thấy danh mục thuốc</div>
     </div>
 </div>
@@ -68,9 +68,8 @@
     </div>
 </div>
 
-<!-- Đảm bảo cấu trúc khung HTML của hộp thoại Toast nằm tại đây để nhận đúng CSS -->
 <div class="toast" id="localToast">
-    <div class="icon-check"></div>
+    <i class="fa-solid fa-circle-check" style="color:#1fae63;"></i>
     <span id="localToastMsg">Thao tác thành công</span>
 </div>
 
@@ -78,7 +77,6 @@
     let searchTimeout;
     let toastTimer;
 
-    // Điều khiển Modal
     const modalForm = document.getElementById('modalForm');
 
     function openModal(el) {
@@ -100,7 +98,6 @@
         if (field) field.classList.toggle('has-error', hasError);
     }
 
-    // Reset Form chuẩn bị thêm mới
     document.getElementById('btnAddCategory').addEventListener('click', () => {
         setFieldError('f_tenDanhMuc', false);
         document.getElementById('formModalTitle').textContent = 'Thêm danh mục thuốc mới';
@@ -109,26 +106,19 @@
         openModal(modalForm);
     });
 
-    // Hàm hiển thị Toast nổi bảo mật độc lập
     function showLocalToast(msg) {
         const toast = document.getElementById('localToast');
-        const toastMsg = document.getElementById('localToastMsg');
-        if (toastMsg) toastMsg.textContent = msg;
+        document.getElementById('localToastMsg').textContent = msg;
         toast.classList.add('show');
         clearTimeout(toastTimer);
         toastTimer = setTimeout(() => toast.classList.remove('show'), 3000);
     }
 
-    // ===== KẾT NỐI API DỮ LIỆU ĐỘNG =====
-
-    // 1. Tải và hiển thị danh sách
     function fetchAndRenderTable(searchKeyword = '') {
         fetch(`<?php echo URLROOT; ?>/admin/quanLyDanhMuc/getList?search=${encodeURIComponent(searchKeyword)}`)
             .then(res => res.json())
             .then(res => {
-                if (res.status) {
-                    renderTable(res.data);
-                }
+                if (res.status) renderTable(res.data);
             })
             .catch(err => console.error("Lỗi lấy danh sách:", err));
     }
@@ -146,11 +136,8 @@
 
         emptyState.style.display = 'none';
         tbody.innerHTML = danhMucList.map(item => {
-            // SỬA LỖI 2: Chỉ duy nhất chữ "Chưa phân loại" mới được gắn nhãn Mặc định
             const isSystem = item.tenDanhMuc === 'Chưa phân loại';
-            const badgeHTML = isSystem ?
-                `<span class="badge badge-system">Mặc định</span>` :
-                `<span class="badge badge-product">Tùy biến</span>`;
+            const badgeHTML = isSystem ? `<span class="badge badge-system">Mặc định</span>` : `<span class="badge badge-product">Tùy biến</span>`;
 
             return `
                 <tr>
@@ -160,10 +147,10 @@
                     <td style="text-align: center;">${badgeHTML}</td>
                     <td class="actions-cell">
                         <button class="action-btn edit" onclick="openEditForm(${item.idDanhMuc})" title="Chỉnh sửa">
-                            <div class="icon icon-pencil"></div>
+                            <i class="fa-solid fa-pen-to-square"></i>
                         </button>
                         <button class="action-btn delete" onclick="deleteCategory(${item.idDanhMuc}, '${item.tenDanhMuc}')" title="Xóa danh mục">
-                            <div class="icon icon-trash"><div class="icon-trash-body"></div></div>
+                            <i class="fa-solid fa-trash-can"></i>
                         </button>
                     </td>
                 </tr>
@@ -171,7 +158,6 @@
         }).join('');
     }
 
-    // 2. Điền thông tin vào biểu mẫu sửa danh mục
     function openEditForm(id) {
         fetch(`<?php echo URLROOT; ?>/admin/quanLyDanhMuc/detail/${id}`)
             .then(res => res.json())
@@ -190,7 +176,6 @@
             .catch(err => console.error("Lỗi lấy chi tiết:", err));
     }
 
-    // 3. Xử lý sự kiện nút Lưu
     document.getElementById('btnSaveCategory').addEventListener('click', () => {
         const tenInput = document.getElementById('f_tenDanhMuc');
         if (!tenInput.value.trim()) {
@@ -199,7 +184,6 @@
         }
 
         const formData = new FormData(document.getElementById('categoryForm'));
-
         fetch('<?php echo URLROOT; ?>/admin/quanLyDanhMuc/save', {
                 method: 'POST',
                 body: formData
@@ -208,7 +192,7 @@
             .then(res => {
                 if (res.status) {
                     closeModal(modalForm);
-                    showLocalToast(res.message); // Sử dụng hàm hiển thị Toast sửa lỗi mới
+                    showLocalToast(res.message);
                     fetchAndRenderTable(document.getElementById('searchInput').value);
                 } else {
                     alert(res.message);
@@ -217,21 +201,19 @@
             .catch(err => console.error("Lỗi lưu danh mục:", err));
     });
 
-    // 4. Xử lý hành động xóa danh mục thuốc
     function deleteCategory(id, name) {
         if (name === 'Chưa phân loại') {
             alert("Đây là danh mục mặc định bảo vệ của hệ thống, không được phép xóa.");
             return;
         }
-
-        if (confirm(`Bạn có chắc chắn muốn xóa danh mục "${name}"?\n\nLưu ý quan trọng: Toàn bộ sản phẩm thuốc hiện thuộc danh mục này sẽ tự động được hệ thống chuyển sang nhóm "Chưa phân loại".`)) {
+        if (confirm(`Bạn có chắc chắn muốn xóa danh mục "${name}"?\n\nToàn bộ sản phẩm thuốc thuộc danh mục này sẽ tự động chuyển sang nhóm "Chưa phân loại".`)) {
             fetch(`<?php echo URLROOT; ?>/admin/quanLyDanhMuc/delete/${id}`, {
                     method: 'POST'
                 })
                 .then(res => res.json())
                 .then(res => {
                     if (res.status) {
-                        showLocalToast(res.message); // Sử dụng hàm hiển thị Toast sửa lỗi mới
+                        showLocalToast(res.message);
                         fetchAndRenderTable(document.getElementById('searchInput').value);
                     } else {
                         alert(res.message);
@@ -241,7 +223,6 @@
         }
     }
 
-    // ===== KHỞI CHẠY VÀ LẮNG NGHE SỰ KIỆN TÌM KIẾM =====
     document.getElementById('searchInput').addEventListener('input', (e) => {
         clearTimeout(searchTimeout);
         searchTimeout = setTimeout(() => {
@@ -254,6 +235,5 @@
         fetchAndRenderTable();
     });
 
-    // Khởi chạy nạp danh sách ngay khi tải trang xong
     fetchAndRenderTable();
 </script>

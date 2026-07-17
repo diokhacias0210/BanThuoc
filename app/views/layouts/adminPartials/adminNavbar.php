@@ -1,7 +1,8 @@
 <aside class="sidebar">
     <div class="brand">
         <div class="brand-logo">
-            <div class="icon icon-brand"></div>
+            <!-- Icon Logo thuốc Font Awesome -->
+            <i class="fa-solid fa-capsules"></i>
         </div>
         <div>
             <div class="brand-name">Admin Panel</div>
@@ -11,35 +12,24 @@
     <nav class="nav-group">
         <div class="nav-label">Điều hướng</div>
         <a class="nav-item <?php echo (isset($active_tab) && $active_tab == 'tongquan') ? 'active' : ''; ?>" href="/admin/tongquan">
-            <div class="icon icon-chart">
-                <div class="bar-1"></div>
-                <div class="bar-2"></div>
-                <div class="bar-3"></div>
-            </div>
+            <i class="fa-solid fa-chart-line"></i>
             Tổng quan
         </a>
         <a class="nav-item <?php echo (isset($active_tab) && $active_tab == 'thuoc') ? 'active' : ''; ?>" href="/admin/quanlythuoc">
-            <div class="icon icon-grid-item">
-                <div class="sq sq-1"></div>
-                <div class="sq sq-2"></div>
-                <div class="sq sq-3"></div>
-                <div class="sq sq-4"></div>
-            </div>
+            <i class="fa-solid fa-pills"></i>
             Quản lý thuốc
         </a>
         <a class="nav-item <?php echo (isset($active_tab) && $active_tab == 'danhmuc') ? 'active' : ''; ?>" href="/admin/quanlydanhmuc">
-            <div class="icon icon-folder"></div>
+            <i class="fa-solid fa-folder-open"></i>
             Quản lý danh mục thuốc
         </a>
         <a class="nav-item <?php echo (isset($active_tab) && $active_tab == 'taikhoan') ? 'active' : ''; ?>" href="/admin/quanlytaikhoan">
-            <div class="icon icon-user"></div>
+            <i class="fa-solid fa-users-gear"></i>
             Quản lý tài khoản
         </a>
     </nav>
     <a class="logout-link" href="/xacthuc/dangxuat" onclick="return confirm('Bạn muốn đăng xuất khỏi Admin Panel?');">
-        <div class="icon icon-logout">
-            <div class="line"></div>
-        </div>
+        <i class="fa-solid fa-right-from-bracket"></i>
         Đăng xuất
     </a>
 </aside>

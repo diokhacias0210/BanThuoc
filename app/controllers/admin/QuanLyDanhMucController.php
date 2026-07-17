@@ -13,7 +13,7 @@ class QuanLyDanhMucController extends Controller
     {
         $data['title'] = "Quản Lý Danh Mục Thuốc";
         $data['page_title'] = "Quản lý danh mục thuốc";
-        $data['page_icon'] = "icon-folder";
+        $data['page_icon'] = "fa-solid fa-folder-open";
         $data['active_tab'] = "danhmuc";
         $data['page_css'] = "quanLyDanhMuc";
 
