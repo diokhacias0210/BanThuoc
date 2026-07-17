@@ -1,146 +1,101 @@
 <?php
-
 class TaiKhoanModel extends Model
 {
-    /**
-     * Kiểm tra Email đã tồn tại
-     */
-    public function checkEmail($email)
+    private $table = "NguoiDung";
+
+    // 1. Lấy danh sách tài khoản (Tuyệt đối không lấy trường matKhau để bảo mật)
+    public function getAll($search = '', $vaiTro = 'all', $trangThai = 'all')
     {
-        $this->db->query("
-            SELECT idNguoiDung
-            FROM NguoiDung
-            WHERE email = :email
-            LIMIT 1
-        ");
+        $sql = "SELECT idNguoiDung, hoTen, email, soDienThoai, trangThai, vaiTro FROM {$this->table} WHERE 1=1";
 
-        $this->db->bind(":email", $email);
+        if (!empty($search)) {
+            $sql .= " AND (hoTen LIKE :search OR email LIKE :search OR soDienThoai LIKE :search)";
+        }
+        if ($vaiTro !== 'all') {
+            $sql .= " AND vaiTro = :vaiTro";
+        }
+        if ($trangThai !== 'all') {
+            $sql .= " AND trangThai = :trangThai";
+        }
 
-        return $this->db->single();
+        $sql .= " ORDER BY idNguoiDung DESC";
+        $this->db->query($sql);
+
+        if (!empty($search)) $this->db->bind(':search', "%$search%");
+        if ($vaiTro !== 'all') $this->db->bind(':vaiTro', $vaiTro);
+        if ($trangThai !== 'all') $this->db->bind(':trangThai', $trangThai === 'active' ? 1 : 0);
+
+        return $this->db->resultSet();
     }
 
-    /**
-     * Kiểm tra SĐT đã tồn tại
-     */
-    public function checkSoDienThoai($soDienThoai)
+    // 2. Lấy chi tiết tài khoản kèm thông tin mở rộng của vai trò tương ứng (Không lấy mật khẩu)
+    public function getDetailById($id)
     {
-        $this->db->query("
-            SELECT idNguoiDung
-            FROM NguoiDung
-            WHERE soDienThoai = :soDienThoai
-            LIMIT 1
-        ");
+        // Lấy thông tin cơ bản trước
+        $sqlBase = "SELECT idNguoiDung, hoTen, email, soDienThoai, trangThai, vaiTro FROM {$this->table} WHERE idNguoiDung = :id";
+        $this->db->query($sqlBase);
+        $this->db->bind(':id', $id);
+        $user = $this->db->single();
 
-        $this->db->bind(":soDienThoai", $soDienThoai);
+        if (!$user) return null;
 
-        return $this->db->single();
+        // Tùy theo vai trò hiện tại, lấy thêm thông tin ở các bảng liên kết đặc thù
+        if ($user['vaiTro'] === 'KHACH_HANG') {
+            $sqlExt = "SELECT diemTichLuy, diaChiGiaoHang, ngaySinh FROM KhachHang WHERE idNguoiDung = :id";
+            $this->db->query($sqlExt);
+            $this->db->bind(':id', $id);
+            $ext = $this->db->single();
+            if ($ext) $user = array_merge($user, $ext);
+        } elseif ($user['vaiTro'] === 'DUOC_SI') {
+            $sqlExt = "SELECT chungChiHanhNghe, noiCap, trinhDo FROM DuocSi WHERE idNguoiDung = :id";
+            $this->db->query($sqlExt);
+            $this->db->bind(':id', $id);
+            $ext = $this->db->single();
+            if ($ext) $user = array_merge($user, $ext);
+        }
+
+        return $user;
     }
 
-    /**
-     * Thêm tài khoản mới
-     */
-    public function insert($data)
+    // 3. Thay đổi vai trò (Phân quyền độc nhất)
+    public function updateRole($id, $newRole)
     {
-        //=========================
-        // Thêm vào bảng NguoiDung
-        //=========================
+        try {
+            $this->db->beginTransaction();
 
-        $this->db->query("
-            INSERT INTO NguoiDung
-            (
-                hoTen,
-                email,
-                soDienThoai,
-                matKhau,
-                vaiTro,
-                trangThai
-            )
+            // Cập nhật vai trò chính trong bảng NguoiDung
+            $sql = "UPDATE {$this->table} SET vaiTro = :vaiTro WHERE idNguoiDung = :id";
+            $this->db->query($sql);
+            $this->db->bind(':vaiTro', $newRole);
+            $this->db->bind(':id', $id);
+            $this->db->execute();
 
-            VALUES
-            (
-                :hoTen,
-                :email,
-                :soDienThoai,
-                :matKhau,
-                :vaiTro,
-                :trangThai
-            )
-        ");
+            // Đảm bảo cấu trúc dữ liệu bảng con tương ứng tồn tại để tránh lỗi hệ thống
+            if ($newRole === 'KHACH_HANG') {
+                $this->db->query("INSERT IGNORE INTO KhachHang (idNguoiDung) VALUES (:id)");
+                $this->db->bind(':id', $id);
+                $this->db->execute();
+            } elseif ($newRole === 'DUOC_SI') {
+                $this->db->query("INSERT IGNORE INTO DuocSi (idNguoiDung, chungChiHanhNghe, noiCap, trinhDo) VALUES (:id, 'Chờ bổ sung', 'Chưa cập nhật', 'Chưa cập nhật')");
+                $this->db->bind(':id', $id);
+                $this->db->execute();
+            }
 
-        $this->db->bind(":hoTen", $data["hoTen"]);
-        $this->db->bind(":email", $data["email"]);
-        $this->db->bind(":soDienThoai", $data["soDienThoai"]);
-        $this->db->bind(":matKhau", $data["matKhau"]);
-        $this->db->bind(":vaiTro", $data["vaiTro"]);
-        $this->db->bind(":trangThai", $data["trangThai"]);
-
-        if (!$this->db->execute())
-        {
+            $this->db->commit();
+            return true;
+        } catch (Exception $e) {
+            $this->db->rollback();
             return false;
         }
-
-        //=========================
-        // Lấy ID vừa tạo
-        //=========================
-
-        $idNguoiDung = $this->db->lastInsertId();
-
-        //=========================
-        // Nếu là khách hàng
-        //=========================
-
-        if ($data["vaiTro"] == "KHACH_HANG")
-        {
-            $this->db->query("
-                INSERT INTO KhachHang
-                (
-                    idNguoiDung
-                )
-
-                VALUES
-                (
-                    :idNguoiDung
-                )
-            ");
-
-            $this->db->bind(":idNguoiDung", $idNguoiDung);
-
-            return $this->db->execute();
-        }
-
-        return true;
     }
 
-    /**
-     * Lấy thông tin theo Email
-     */
-    public function getByEmail($email)
+    // 4. Khóa hoặc Mở khóa tài khoản (Thay thế hoàn toàn chức năng Xóa)
+    public function updateStatus($id, $status)
     {
-        $this->db->query("
-            SELECT *
-            FROM NguoiDung
-            WHERE email = :email
-            LIMIT 1
-        ");
-
-        $this->db->bind(":email", $email);
-
-        return $this->db->single();
-    }
-
-    /**
-     * Lấy thông tin theo ID
-     */
-    public function getById($idNguoiDung)
-    {
-        $this->db->query("
-            SELECT *
-            FROM NguoiDung
-            WHERE idNguoiDung = :idNguoiDung
-        ");
-
-        $this->db->bind(":idNguoiDung", $idNguoiDung);
-
-        return $this->db->single();
+        $sql = "UPDATE {$this->table} SET trangThai = :trangThai WHERE idNguoiDung = :id";
+        $this->db->query($sql);
+        $this->db->bind(':trangThai', $status);
+        $this->db->bind(':id', $id);
+        return $this->db->execute();
     }
 }
