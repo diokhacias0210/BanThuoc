@@ -157,7 +157,9 @@
             const statusClass = user.trangThai ? 'badge-status-active' : 'badge-status-locked';
             const statusLabel = user.trangThai ? 'Hoạt động' : 'Đã khóa';
 
+
             const lockIcon = user.trangThai ? `<i class="fa-solid fa-lock"></i>` : `<i class="fa-solid fa-lock-open"></i>`;
+            const isSelf = user.idNguoiDung == LOGGED_IN_ADMIN_ID;
             const isAdminRow = user.vaiTro === 'QUAN_TRI_VIEN';
 
             const disabledAttr = (isSelf || isAdminRow) ? 'disabled title="Bạn không được phép tự xử lý chính mình hoặc thao tác lên tài khoản quản trị viên khác!"' : '';
