@@ -159,7 +159,48 @@ VALUES (
 );
 INSERT INTO QuanTriVien (idNguoiDung)
 VALUES (1);
+USE HeThongBanThuoc;
 
+-- ==========================================================
+-- 1. CHÈN 5 KHÁCH HÀNG (idNguoiDung từ 2 đến 6)
+-- ==========================================================
+
+-- Chèn vào bảng cha NguoiDung
+INSERT INTO NguoiDung (idNguoiDung, hoTen, email, soDienThoai, matKhau, trangThai, vaiTro) VALUES
+(2, 'Nguyễn Văn A', 'nguyenvana@gmail.com', '0901234567', 'p@ssword123', TRUE, 'KHACH_HANG'),
+(3, 'Trần Thị B', 'tranthib@gmail.com', '0902345678', 'p@ssword123', TRUE, 'KHACH_HANG'),
+(4, 'Lê Văn C', 'levanc@gmail.com', '0903456789', 'p@ssword123', TRUE, 'KHACH_HANG'),
+(5, 'Phạm Thị D', 'phamthid@gmail.com', '0904567890', 'p@ssword123', TRUE, 'KHACH_HANG'),
+(6, 'Hoàng Văn E', 'hoangvane@gmail.com', '0905678901', 'p@ssword123', TRUE, 'KHACH_HANG');
+
+-- Chèn vào bảng con KhachHang tương ứng với ID vừa tạo
+INSERT INTO KhachHang (idNguoiDung, diemTichLuy, diaChiGiaoHang, ngaySinh) VALUES
+(2, 120, '123 Đường Nguyễn Trãi, Phường 3, Quận 5, TP. Hồ Chí Minh', '1995-04-12'),
+(3, 50, '456 Đường Mậu Thân, Phường Xuân Khánh, Quận Ninh Kiều, Cần Thơ', '1998-08-23'),
+(4, 0, '789 Đại lộ Hòa Bình, Phường Tân An, Quận Ninh Kiều, Cần Thơ', '1990-11-02'),
+(5, 340, '101 Đường Trần Hưng Đạo, Phường Mỹ Xuyên, TP. Long Xuyên, An Giang', '2001-01-15'),
+(6, 15, '202 Đường Lý Tự Trọng, Phường An Cư, Quận Ninh Kiều, Cần Thơ', '1993-06-30');
+
+
+-- ==========================================================
+-- 2. CHÈN 5 DƯỢC SĨ (idNguoiDung từ 7 đến 11)
+-- ==========================================================
+
+-- Chèn vào bảng cha NguoiDung
+INSERT INTO NguoiDung (idNguoiDung, hoTen, email, soDienThoai, matKhau, trangThai, vaiTro) VALUES
+(7, 'Dược sĩ Nguyễn Tiến Minh', 'tienminh.ds@gmail.com', '0911234567', 'ds_secret2026', TRUE, 'DUOC_SI'),
+(8, 'Dược sĩ Lê Thanh Hoa', 'thanhhoa.ds@gmail.com', '0912345678', 'ds_secret2026', TRUE, 'DUOC_SI'),
+(9, 'Dược sĩ Phạm Minh Tuấn', 'minhtuan.ds@gmail.com', '0913456789', 'ds_secret2026', TRUE, 'DUOC_SI'),
+(10, 'Dược sĩ Trần Thu Linh', 'thulinh.ds@gmail.com', '0914567890', 'ds_secret2026', TRUE, 'DUOC_SI'),
+(11, 'Dược sĩ Hoàng Văn Nam', 'hoangnam.ds@gmail.com', '0915678901', 'ds_secret2026', TRUE, 'DUOC_SI');
+
+-- Chèn vào bảng con DuocSi tương ứng với ID vừa tạo
+INSERT INTO DuocSi (idNguoiDung, chungChiHanhNghe, noiCap, trinhDo) VALUES
+(7, 'CCHN-CT-0891', 'Sở Y tế Cần Thơ', 'Đại học'),
+(8, 'CCHN-HCM-2345', 'Sở Y tế TP. Hồ Chí Minh', 'Thạc sĩ'),
+(9, 'CCHN-HN-7654', 'Sở Y tế Hà Nội', 'Đại học'),
+(10, 'CCHN-CT-0432', 'Sở Y tế Cần Thơ', 'Cao đẳng'),
+(11, 'CCHN-DN-9981', 'Sở Y tế Đà Nẵng', 'Đại học');
 
 
 
