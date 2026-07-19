@@ -1,4 +1,3 @@
-
 CREATE DATABASE IF NOT EXISTS HeThongBanThuoc CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;
 USE HeThongBanThuoc;
 
@@ -6,7 +5,7 @@ CREATE TABLE NguoiDung (
     idNguoiDung INT AUTO_INCREMENT PRIMARY KEY,
     hoTen VARCHAR(255) NOT NULL,
     email VARCHAR(150) UNIQUE NOT NULL,
-    soDienThoai VARCHAR(15) UNIQUE,
+    soDienThoai VARCHAR(15) UNIQUE NOT NULL,
     matKhau VARCHAR(255) NOT NULL,
     trangThai BOOLEAN DEFAULT TRUE,
     vaiTro ENUM('KHACH_HANG', 'DUOC_SI', 'QUAN_TRI_VIEN') NOT NULL
@@ -15,9 +14,19 @@ CREATE TABLE NguoiDung (
 CREATE TABLE KhachHang (
     idNguoiDung INT PRIMARY KEY,
     diemTichLuy INT DEFAULT 0,
-    diaChiGiaoHang VARCHAR(500),
     ngaySinh DATE,
     FOREIGN KEY (idNguoiDung) REFERENCES NguoiDung(idNguoiDung) ON DELETE CASCADE
+);
+
+-- bảng mới để lưu nhiều địa chỉ
+CREATE TABLE DiaChiGiaoHang (
+    idDiaChi INT AUTO_INCREMENT PRIMARY KEY,
+    idNguoiDung INT NOT NULL,                  -- Liên kết với bảng KhachHang/NguoiDung
+    tenNguoiNhan VARCHAR(255) NOT NULL,        -- Họ tên người nhận tại địa chỉ đó
+    soDienThoaiNhan VARCHAR(15) NOT NULL,     -- Số điện thoại người nhận hàng
+    diaChiChiTiet VARCHAR(500) NOT NULL,       -- Số nhà, tên đường, phường/xã, quận/huyện, tỉnh thành
+    laMacDinh BOOLEAN DEFAULT FALSE,           -- Đánh dấu địa chỉ ưu tiên khi đặt hàng
+    FOREIGN KEY (idNguoiDung) REFERENCES KhachHang(idNguoiDung) ON DELETE CASCADE
 );
 
 CREATE TABLE DuocSi (
@@ -78,12 +87,14 @@ CREATE TABLE ChiTietGioHang (
     id INT AUTO_INCREMENT PRIMARY KEY,
     idGioHang INT NOT NULL,
     idThuoc INT NOT NULL,
+    idDonThuoc INT NULL, -- Liên kết ngược để biết thuốc này thuộc đơn thuốc nào
     soLuong INT NOT NULL CHECK (soLuong > 0),
     donGia DECIMAL(12, 2) NOT NULL,
+    trangThaiThaoTac ENUM('CHO_PHEP', 'KHOA') DEFAULT 'CHO_PHEP', -- Khóa thao tác sửa/xóa
     FOREIGN KEY (idGioHang) REFERENCES GioHang(idGioHang) ON DELETE CASCADE,
-    FOREIGN KEY (idThuoc) REFERENCES Thuoc(idThuoc) ON DELETE CASCADE
+    FOREIGN KEY (idThuoc) REFERENCES Thuoc(idThuoc) ON DELETE CASCADE,
+    FOREIGN KEY (idDonThuoc) REFERENCES DonThuoc(idDonThuoc) ON DELETE SET NULL
 );
-
 CREATE TABLE DonHang (
     idDonHang INT AUTO_INCREMENT PRIMARY KEY,
     idKhachHang INT NOT NULL,
@@ -110,10 +121,10 @@ CREATE TABLE DonThuoc (
     idDonThuoc INT AUTO_INCREMENT PRIMARY KEY,
     idKhachHang INT NOT NULL,
     idDuocSi INT NULL,              
-    idDonHang INT UNIQUE,      
+    idDonHang INT NULL, -- chỉnh      
     ngayGui DATETIME DEFAULT CURRENT_TIMESTAMP,
     ghiChu NVARCHAR(500),
-    trangThai ENUM('CHO_DUYET','DA_DUYET','TU_CHOI') DEFAULT 'CHO_DUYET',
+    trangThai ENUM('CHO_DUYET','DA_DUYET','TU_CHOI','KH_HUY') DEFAULT 'CHO_DUYET',
     hinhAnhDonThuoc VARCHAR(255) NOT NULL,
     FOREIGN KEY (idKhachHang) REFERENCES KhachHang(idNguoiDung) ON DELETE RESTRICT,
     FOREIGN KEY (idDuocSi) REFERENCES DuocSi(idNguoiDung) ON DELETE SET NULL,
@@ -157,9 +168,17 @@ VALUES (
     TRUE, 
     'QUAN_TRI_VIEN'
 );
+USE HeThongBanThuoc;
+
+-- ==========================================================
+-- 0. CHÈN TÀI KHOẢN QUẢN TRỊ VIÊN (idNguoiDung = 1)
+-- ==========================================================
+INSERT INTO NguoiDung (idNguoiDung, hoTen, email, soDienThoai, matKhau, trangThai, vaiTro)
+VALUES (1, 'admin', 'admin@pharmacare.com', '0999888777', 'admin123', TRUE, 'QUAN_TRI_VIEN');
+
 INSERT INTO QuanTriVien (idNguoiDung)
 VALUES (1);
-USE HeThongBanThuoc;
+
 
 -- ==========================================================
 -- 1. CHÈN 5 KHÁCH HÀNG (idNguoiDung từ 2 đến 6)
@@ -173,17 +192,39 @@ INSERT INTO NguoiDung (idNguoiDung, hoTen, email, soDienThoai, matKhau, trangTha
 (5, 'Phạm Thị D', 'phamthid@gmail.com', '0904567890', 'p@ssword123', TRUE, 'KHACH_HANG'),
 (6, 'Hoàng Văn E', 'hoangvane@gmail.com', '0905678901', 'p@ssword123', TRUE, 'KHACH_HANG');
 
--- Chèn vào bảng con KhachHang tương ứng với ID vừa tạo
-INSERT INTO KhachHang (idNguoiDung, diemTichLuy, diaChiGiaoHang, ngaySinh) VALUES
-(2, 120, '123 Đường Nguyễn Trãi, Phường 3, Quận 5, TP. Hồ Chí Minh', '1995-04-12'),
-(3, 50, '456 Đường Mậu Thân, Phường Xuân Khánh, Quận Ninh Kiều, Cần Thơ', '1998-08-23'),
-(4, 0, '789 Đại lộ Hòa Bình, Phường Tân An, Quận Ninh Kiều, Cần Thơ', '1990-11-02'),
-(5, 340, '101 Đường Trần Hưng Đạo, Phường Mỹ Xuyên, TP. Long Xuyên, An Giang', '2001-01-15'),
-(6, 15, '202 Đường Lý Tự Trọng, Phường An Cư, Quận Ninh Kiều, Cần Thơ', '1993-06-30');
+-- Chèn vào bảng con KhachHang (Đã bỏ cột diaChiGiaoHang thừa)
+INSERT INTO KhachHang (idNguoiDung, diemTichLuy, ngaySinh) VALUES
+(2, 120, '1995-04-12'),
+(3, 50, '1998-08-23'),
+(4, 0, '1990-11-02'),
+(5, 340, '2001-01-15'),
+(6, 15, '1993-06-30');
 
 
 -- ==========================================================
--- 2. CHÈN 5 DƯỢC SĨ (idNguoiDung từ 7 đến 11)
+-- 2. CHÈN DỮ LIỆU ĐỊA CHỈ GIAO HÀNG (Mỗi khách hàng có 1-2 địa chỉ)
+-- ==========================================================
+INSERT INTO DiaChiGiaoHang (idNguoiDung, tenNguoiNhan, soDienThoaiNhan, diaChiChiTiet, laMacDinh) VALUES
+-- Địa chỉ của Nguyễn Văn A (id=2)
+(2, 'Nguyễn Văn A', '0901234567', '123 Đường Nguyễn Trãi, Phường 3, Quận 5, TP. Hồ Chí Minh', TRUE),
+(2, 'Anh A (Cơ quan)', '0988777666', 'Tòa nhà văn phòng Lotte, 54 Liễu Giai, Ba Đình, Hà Nội', FALSE),
+
+-- Địa chỉ của Trần Thị B (id=3)
+(3, 'Trần Thị B', '0902345678', '456 Đường Mậu Thân, Phường Xuân Khánh, Quận Ninh Kiều, Cần Thơ', TRUE),
+
+-- Địa chỉ của Lê Văn C (id=4)
+(4, 'Lê Văn C', '0903456789', '789 Đại lộ Hòa Bình, Phường Tân An, Quận Ninh Kiều, Cần Thơ', TRUE),
+(4, 'Trần Hải Yến (Vợ anh C)', '0912233445', 'Số 12, Hẻm 5, Đường Mạc Thiên Tích, Xuân Khánh, Ninh Kiều, Cần Thơ', FALSE),
+
+-- Địa chỉ của Phạm Thị D (id=5)
+(5, 'Phạm Thị D', '0904567890', '101 Đường Trần Hưng Đạo, Phường Mỹ Xuyên, TP. Long Xuyên, An Giang', TRUE),
+
+-- Địa chỉ của Hoàng Văn E (id=6)
+(6, 'Hoàng Văn E', '0905678901', '202 Đường Lý Tự Trọng, Phường An Cư, Quận Ninh Kiều, Cần Thơ', TRUE);
+
+
+-- ==========================================================
+-- 3. CHÈN 5 DƯỢC SĨ (idNguoiDung từ 7 đến 11)
 -- ==========================================================
 
 -- Chèn vào bảng cha NguoiDung
@@ -216,7 +257,7 @@ insert into DanhMucThuoc (idDanhMuc, tenDanhMuc, moTa) values (7, 'Thuốc hệ 
 insert into DanhMucThuoc (idDanhMuc, tenDanhMuc, moTa) values (8, 'Thuốc giải độc khử độc', 'Dùng trong ngộ độc thuốc, hóa chất, kim loại nặng. Ví dụ: N-acetylcystein (giải độc paracetamol), Atropin (giải độc phospho hữu cơ), EDTA (giải độc chì).');
 insert into DanhMucThuoc (idDanhMuc, tenDanhMuc, moTa) values (9, 'Thuốc bổ và vitamin', 'Bao gồm vitamin A, B, C, D, E và khoáng chất (sắt, kẽm, canxi). Giúp tăng cường sức khỏe, phòng thiếu hụt vi chất. Tuy nhiên, lạm dụng có thể gây thừa vitamin, ảnh hưởng gan thận.');
 insert into DanhMucThuoc (idDanhMuc, tenDanhMuc, moTa) values (10, 'Thuốc giảm đau hạ  sốt', 'Phổ biến nhất là Paracetamol (an toàn, ít tác dụng phụ nếu dùng đúng liều). Ngoài ra có nhóm NSAID (Ibuprofen, Diclofenac) vừa giảm đau vừa kháng viêm, nhưng dễ gây kích ứng dạ dày.');
-insert into DanhMucThuoc (idDanhMuc, tenDanhMuc, moTa) values (11, 'Khác', 'Những thứ khác bổ sung bổ sung cho các nhóm trên, ví dụ thuốc chống nôn, thuốc chống say tàu xe, thuốc chống viêm, thuốc chống loét dạ dày.');
+insert into DanhMucThuoc (idDanhMuc, tenDanhMuc, moTa) values (11, 'Chưa phân loại', 'Những thứ khác bổ sung bổ sung cho các nhóm trên, ví dụ thuốc chống nôn, thuốc chống say tàu xe, thuốc chống viêm, thuốc chống loét dạ dày.');
 
 
 
