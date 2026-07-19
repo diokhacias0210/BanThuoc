@@ -98,4 +98,46 @@ class TaiKhoanModel extends Model
         $this->db->bind(':id', $id);
         return $this->db->execute();
     }
+
+    
+    // Kiểm tra thông tin đăng nhập bằng số điện thoại
+    public function kiemTraDangNhap($soDienThoai) {
+        $this->db->query("SELECT * FROM NguoiDung WHERE soDienThoai = :sdt AND trangThai = 1");
+        $this->db->bind(':sdt', $soDienThoai);
+        return $this->db->single();
+    }
+
+    // Đăng ký tài khoản mới cho Khách hàng
+    public function dangKyKhachHang($hoTen, $email, $soDienThoai, $matKhau) {
+        try {
+            $this->db->beginTransaction();
+
+            // 1. Thêm vào bảng NguoiDung với vai trò mặc định KHACH_HANG
+            $this->db->query("INSERT INTO NguoiDung (hoTen, email, soDienThoai, matKhau, vaiTro) 
+                              VALUES (:hoTen, :email, :sdt, :matKhau, 'KHACH_HANG')");
+            $this->db->bind(':hoTen', $hoTen);
+            $this->db->bind(':email', $email);
+            $this->db->bind(':sdt', $soDienThoai);
+            $this->db->bind(':matKhau', $matKhau);
+            $this->db->execute();
+
+            $idNguoiDung = $this->db->lastInsertId();
+
+            // 2. Thêm vào bảng KhachHang để đồng bộ dữ liệu quan hệ
+            $this->db->query("INSERT INTO KhachHang (idNguoiDung) VALUES (:id)");
+            $this->db->bind(':id', $idNguoiDung);
+            $this->db->execute();
+
+            // 3. Tạo giỏ hàng trống mặc định cho khách hàng mới
+            $this->db->query("INSERT INTO GioHang (idKhachHang) VALUES (:idKhach)");
+            $this->db->bind(':idKhach', $idNguoiDung);
+            $this->db->execute();
+
+            $this->db->commit();
+            return true;
+        } catch (Exception $e) {
+            $this->db->rollback();
+            return false;
+        }
+    }
 }

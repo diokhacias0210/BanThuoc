@@ -1,28 +1,250 @@
-/* Giao diện khung chứa form đăng nhập / đăng ký */
-.login-container, .register-container {
-    min-height: 60vh;
+/* =========================================================
+   PharmaCare - Auth pages (Đăng nhập / Đăng ký)
+   Shared stylesheet - PC Only Version
+   ========================================================= */
+
+:root {
+  --green: #0f7a4f;
+  --green-dark: #0b5f3d;
+  --green-soft: #e8f5ef;
+  --green-pale: #f2faf6;
+  --border: #e5e7eb;
+  --text: #1a1a1a;
+  --muted: #6b7280;
+  --placeholder: #9ca3af;
+  --red: #dc2626;
+  --red-soft: #fef2f2;
 }
 
-/* Cấu trúc nút X xóa nhanh input độc lập */
-.clear-input-btn {
-    position: absolute;
-    right: 15px;
-    top: 50%;
-    transform: translateY(-50%);
-    font-size: 20px;
-    color: #ccc;
-    cursor: pointer;
-    display: none;
-    user-select: none;
-    z-index: 5;
+* { box-sizing: border-box; }
+
+body {
+  margin: 0;
+  font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+  background: #fafafa;
+  color: var(--text);
 }
 
-.clear-input-btn:hover {
-    color: #666;
+.wrap {
+  min-height: 100vh;
+  display: grid;
+  grid-template-columns: 1fr 1fr; /* Luôn luôn chia đôi màn hình cố định */
 }
 
-/* Định dạng nhãn text của form cho đồng bộ Bootstrap 5 */
-.form-label-custom {
-    font-weight: 600;
-    margin-bottom: 0.5rem;
+/* -------- LEFT: brand panel -------- */
+.brand-panel {
+  background: linear-gradient(160deg, var(--green) 0%, var(--green-dark) 100%);
+  color: #fff;
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+  padding: 48px;
+  position: relative;
+  overflow: hidden;
+}
+.brand-panel::before {
+  content: '';
+  position: absolute;
+  width: 340px; height: 340px;
+  border-radius: 50%;
+  background: rgba(255,255,255,0.06);
+  top: -120px; right: -100px;
+}
+.brand-panel::after {
+  content: '';
+  position: absolute;
+  width: 220px; height: 220px;
+  border-radius: 50%;
+  background: rgba(255,255,255,0.05);
+  bottom: -80px; left: -60px;
+}
+
+.brand-logo { display: flex; align-items: center; gap: 12px; position: relative; z-index: 1; }
+.brand-logo .logo-icon {
+  width: 44px; height: 44px;
+  border-radius: 12px;
+  background: rgba(255,255,255,0.15);
+  display: flex; align-items: center; justify-content: center;
+  flex-shrink: 0;
+}
+.brand-logo .logo-text { font-size: 19px; font-weight: 700; }
+.brand-logo .logo-sub { font-size: 12px; opacity: 0.85; margin-top: 1px; }
+
+.brand-hero { position: relative; z-index: 1; margin: auto 0; }
+.brand-hero h1 { font-size: 32px; font-weight: 700; line-height: 1.3; margin: 0 0 14px; }
+.brand-hero p { font-size: 14px; opacity: 0.9; line-height: 1.7; max-width: 400px; margin: 0; }
+
+.brand-features { position: relative; z-index: 1; display: grid; gap: 14px; margin-top: 36px; }
+.brand-feature { display: flex; align-items: center; gap: 12px; font-size: 13px; }
+.brand-feature .f-icon {
+  width: 30px; height: 30px;
+  border-radius: 9px;
+  background: rgba(255,255,255,0.15);
+  display: flex; align-items: center; justify-content: center;
+  flex-shrink: 0;
+}
+
+.brand-footer { position: relative; z-index: 1; font-size: 12px; opacity: 0.7; }
+
+/* -------- RIGHT: form panel -------- */
+.form-panel {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 32px;
+  background: #fff;
+}
+.form-box { width: 100%; max-width: 400px; }
+
+.form-title { font-size: 26px; font-weight: 700; margin: 0 0 8px; }
+.form-subtitle { font-size: 14px; color: var(--muted); margin: 0 0 28px; }
+
+.field { margin-bottom: 18px; }
+.field label { display: block; font-size: 13px; font-weight: 600; margin-bottom: 8px; }
+
+.input-wrap {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  border: 1px solid #d1d5db;
+  border-radius: 10px;
+  padding: 0 14px;
+  background: #fff;
+  transition: border-color .15s, box-shadow .15s;
+}
+.input-wrap:focus-within {
+  border-color: var(--green);
+  box-shadow: 0 0 0 3px var(--green-soft);
+}
+.input-wrap .icon { color: var(--placeholder); flex-shrink: 0; }
+.input-wrap input {
+  border: none;
+  outline: none;
+  padding: 13px 0;
+  font-size: 14px;
+  font-family: inherit;
+  flex: 1;
+  min-width: 0;
+  background: transparent;
+  color: var(--text);
+}
+.input-wrap input::placeholder { color: var(--placeholder); }
+
+.field-error { color: var(--red); font-size: 12px; margin-top: 6px; display: none; }
+.field.invalid .input-wrap { border-color: var(--red); }
+.field.invalid .field-error { display: block; }
+
+.btn {
+  width: 100%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  padding: 13px;
+  border-radius: 10px;
+  border: none;
+  font-size: 14px;
+  font-weight: 700;
+  cursor: pointer;
+  font-family: inherit;
+  margin-top: 6px;
+}
+.btn-primary { background: var(--green); color: #fff; }
+.btn-primary:hover { background: var(--green-dark); }
+.btn-primary:disabled { opacity: 0.6; cursor: not-allowed; }
+
+.switch-note { text-align: center; font-size: 13px; color: var(--muted); margin-top: 24px; }
+.switch-note a { color: var(--green-dark); font-weight: 700; text-decoration: none; }
+.switch-note a:hover { text-decoration: underline; }
+
+/* =========================================================
+   CSS-only icons
+   ========================================================= */
+.icon { position: relative; display: block; flex-shrink: 0; }
+.icon-24 { width: 24px; height: 24px; }
+.icon-20 { width: 20px; height: 20px; }
+.icon-16 { width: 16px; height: 16px; }
+.icon-14 { width: 14px; height: 16px; }
+
+/* Plus / cross */
+.icon-plus .bar-h {
+  position: absolute; top: 50%; left: 25%; width: 50%; height: 2px;
+  background-color: currentColor; border-radius: 1px; transform: translateY(-50%);
+}
+.icon-plus .bar-v {
+  position: absolute; left: 50%; top: 25%; width: 2px; height: 50%;
+  background-color: currentColor; border-radius: 1px; transform: translateX(-50%);
+}
+
+/* Truck */
+.icon-truck .box {
+  position: absolute; left: 1px; top: 3px; width: 8px; height: 7px;
+  border: 1.4px solid currentColor; border-radius: 1px;
+}
+.icon-truck .cab {
+  position: absolute; left: 9px; top: 6px; width: 4px; height: 4px;
+  border: 1.4px solid currentColor; border-left: none; border-radius: 0 2px 2px 0;
+}
+.icon-truck .wheel {
+  position: absolute; bottom: 1px; width: 3px; height: 3px;
+  border: 1.4px solid currentColor; border-radius: 50%;
+}
+.icon-truck .wheel.l { left: 2px; }
+.icon-truck .wheel.r { left: 9px; }
+
+/* Shield */
+.icon-shield .plate {
+  position: absolute; top: 0; left: 1px; width: 14px; height: 16px;
+  border: 1.4px solid currentColor;
+  border-radius: 6px 6px 3px 3px / 6px 6px 8px 8px;
+  clip-path: polygon(0% 0%, 100% 0%, 100% 55%, 50% 100%, 0% 55%);
+}
+.icon-shield .check {
+  position: absolute; top: 6px; left: 4px; width: 6px; height: 3px;
+  border-left: 1.4px solid currentColor; border-bottom: 1.4px solid currentColor;
+  transform: rotate(-45deg);
+}
+
+/* Message */
+.icon-message .bubble {
+  position: absolute; top: 0; left: 0; width: 16px; height: 12px;
+  border: 1.4px solid currentColor; border-radius: 3px;
+}
+.icon-message .tail {
+  position: absolute; left: 3px; top: 10px; width: 0; height: 0;
+  border-style: solid; border-width: 4px 4px 0 0;
+  border-color: currentColor transparent transparent transparent;
+  transform: rotate(15deg);
+}
+
+/* Phone */
+.icon-phone .handset {
+  position: absolute; top: 2px; left: 2px; width: 10px; height: 10px;
+  border: 1.4px solid currentColor;
+  border-radius: 45% 45% 45% 10px;
+  transform: rotate(-45deg);
+}
+
+/* Lock */
+.icon-lock .shackle {
+  position: absolute; top: 0; left: 3px; width: 8px; height: 7px;
+  border: 1.4px solid currentColor; border-bottom: none;
+  border-radius: 8px 8px 0 0;
+}
+.icon-lock .body {
+  position: absolute; bottom: 0; left: 0; width: 14px; height: 8px;
+  border: 1.4px solid currentColor; border-radius: 2px;
+}
+
+/* User */
+.icon-user .head {
+  position: absolute; top: 0; left: 50%; width: 6px; height: 6px;
+  border: 1.4px solid currentColor; border-radius: 50%;
+  transform: translateX(-50%);
+}
+.icon-user .body {
+  position: absolute; bottom: 0; left: 50%; width: 12px; height: 7px;
+  border: 1.4px solid currentColor; border-bottom: none;
+  border-radius: 7px 7px 0 0;
+  transform: translateX(-50%);
 }
