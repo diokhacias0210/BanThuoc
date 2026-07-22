@@ -7,7 +7,7 @@ class Controller
      */
     protected function model($model)
     {
-        $modelPath = APPROOT . "/models/" . $model . ".php";
+        $modelPath = APPROOT . "/models/" . App::getModule() . "/" . $model . ".php";
 
         if (!file_exists($modelPath)) {
             die("Model <b>{$model}</b> không tồn tại.");

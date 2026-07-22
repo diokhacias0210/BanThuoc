@@ -8,13 +8,13 @@ class App
     |--------------------------------------------------------------------------
     */
 
-    private $modules = array(
+    private static $modules = array(
         "khachHang",
         "admin",
         "duocSi"
     );
 
-    private $module = "khachHang";
+    private static $module = "khachHang";
 
     private $controller = "TrangChuController";
 
@@ -82,10 +82,10 @@ class App
     {
         if (
             isset($url[0]) &&
-            in_array($url[0], $this->modules)
+            in_array($url[0], self::$modules)
         ) {
 
-            $this->module = $url[0];
+            self::$module = $url[0];
 
             unset($url[0]);
 
@@ -113,7 +113,7 @@ class App
         $path =
             APPROOT .
             "/controllers/" .
-            $this->module .
+            self::$module .
             "/" .
             $controller .
             ".php";
@@ -141,7 +141,7 @@ class App
         $path =
             APPROOT .
             "/controllers/" .
-            $this->module .
+            self::$module .
             "/" .
             $this->controller .
             ".php";
@@ -248,5 +248,13 @@ class App
         echo "<p>".$message."</p>";
 
         exit;
+    }
+
+    /**
+     * Lấy module hiện tại
+     */
+    public static function getModule()
+    {
+        return self::$module;
     }
 }
