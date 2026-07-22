@@ -18,7 +18,6 @@ CREATE TABLE KhachHang (
     FOREIGN KEY (idNguoiDung) REFERENCES NguoiDung(idNguoiDung) ON DELETE CASCADE
 );
 
--- bảng mới để lưu nhiều địa chỉ
 CREATE TABLE DiaChiGiaoHang (
     idDiaChi INT AUTO_INCREMENT PRIMARY KEY,
     idNguoiDung INT NOT NULL,                  -- Liên kết với bảng KhachHang/NguoiDung
@@ -42,7 +41,7 @@ CREATE TABLE QuanTriVien (
     FOREIGN KEY (idNguoiDung) REFERENCES NguoiDung(idNguoiDung) ON DELETE CASCADE
 );
 
-
+-- 2. BẢNG SẢN PHẨM & KHO
 CREATE TABLE DanhMucThuoc (
     idDanhMuc INT AUTO_INCREMENT PRIMARY KEY,
     tenDanhMuc NVARCHAR(255) NOT NULL,
@@ -76,25 +75,7 @@ CREATE TABLE LoThuoc (
     FOREIGN KEY (idThuoc) REFERENCES Thuoc(idThuoc) ON DELETE CASCADE
 );
 
-CREATE TABLE GioHang (
-    idGioHang INT AUTO_INCREMENT PRIMARY KEY,
-    idKhachHang INT UNIQUE NOT NULL, 
-    ngayTao DATETIME DEFAULT CURRENT_TIMESTAMP,
-    FOREIGN KEY (idKhachHang) REFERENCES KhachHang(idNguoiDung) ON DELETE CASCADE
-);
-
-CREATE TABLE ChiTietGioHang (
-    id INT AUTO_INCREMENT PRIMARY KEY,
-    idGioHang INT NOT NULL,
-    idThuoc INT NOT NULL,
-    idDonThuoc INT NULL, -- Liên kết ngược để biết thuốc này thuộc đơn thuốc nào
-    soLuong INT NOT NULL CHECK (soLuong > 0),
-    donGia DECIMAL(12, 2) NOT NULL,
-    trangThaiThaoTac ENUM('CHO_PHEP', 'KHOA') DEFAULT 'CHO_PHEP', -- Khóa thao tác sửa/xóa
-    FOREIGN KEY (idGioHang) REFERENCES GioHang(idGioHang) ON DELETE CASCADE,
-    FOREIGN KEY (idThuoc) REFERENCES Thuoc(idThuoc) ON DELETE CASCADE,
-    FOREIGN KEY (idDonThuoc) REFERENCES DonThuoc(idDonThuoc) ON DELETE SET NULL
-);
+-- 3. BẢNG ĐƠN HÀNG & ĐƠN THUỐC (Được chuyển lên trước ChiTietGioHang)
 CREATE TABLE DonHang (
     idDonHang INT AUTO_INCREMENT PRIMARY KEY,
     idKhachHang INT NOT NULL,
@@ -121,7 +102,7 @@ CREATE TABLE DonThuoc (
     idDonThuoc INT AUTO_INCREMENT PRIMARY KEY,
     idKhachHang INT NOT NULL,
     idDuocSi INT NULL,              
-    idDonHang INT NULL, -- chỉnh      
+    idDonHang INT NULL,             
     ngayGui DATETIME DEFAULT CURRENT_TIMESTAMP,
     ghiChu NVARCHAR(500),
     trangThai ENUM('CHO_DUYET','DA_DUYET','TU_CHOI','KH_HUY') DEFAULT 'CHO_DUYET',
@@ -140,6 +121,28 @@ CREATE TABLE ChiTietDonThuoc (
     FOREIGN KEY (idDonThuoc) REFERENCES DonThuoc(idDonThuoc) ON DELETE CASCADE
 );
 
+-- 4. BẢNG GIỎ HÀNG (Tạo sau DonThuoc để không bị lỗi khóa ngoại)
+CREATE TABLE GioHang (
+    idGioHang INT AUTO_INCREMENT PRIMARY KEY,
+    idKhachHang INT UNIQUE NOT NULL, 
+    ngayTao DATETIME DEFAULT CURRENT_TIMESTAMP,
+    FOREIGN KEY (idKhachHang) REFERENCES KhachHang(idNguoiDung) ON DELETE CASCADE
+);
+
+CREATE TABLE ChiTietGioHang (
+    id INT AUTO_INCREMENT PRIMARY KEY,
+    idGioHang INT NOT NULL,
+    idThuoc INT NOT NULL,
+    idDonThuoc INT NULL,
+    soLuong INT NOT NULL CHECK (soLuong > 0),
+    donGia DECIMAL(12, 2) NOT NULL,
+    trangThaiThaoTac ENUM('CHO_PHEP', 'KHOA') DEFAULT 'CHO_PHEP',
+    FOREIGN KEY (idGioHang) REFERENCES GioHang(idGioHang) ON DELETE CASCADE,
+    FOREIGN KEY (idThuoc) REFERENCES Thuoc(idThuoc) ON DELETE CASCADE,
+    FOREIGN KEY (idDonThuoc) REFERENCES DonThuoc(idDonThuoc) ON DELETE SET NULL
+);
+
+-- 5. BẢNG THANH TOÁN & BÁO CÁO
 CREATE TABLE ThanhToan (
     idThanhToan INT AUTO_INCREMENT PRIMARY KEY,
     idDonHang INT UNIQUE NOT NULL, 
@@ -158,18 +161,6 @@ CREATE TABLE BaoCaoThongKe (
     loaiBaoCao VARCHAR(100),
     FOREIGN KEY (idQuanTriVien) REFERENCES QuanTriVien(idNguoiDung) ON DELETE RESTRICT
 );
-
-INSERT INTO NguoiDung (hoTen, email, soDienThoai, matKhau, trangThai, vaiTro)
-VALUES (
-    'admin', 
-    'admin@.com', 
-    '0999888777', 
-    'admin123', 
-    TRUE, 
-    'QUAN_TRI_VIEN'
-);
-USE HeThongBanThuoc;
-
 -- ==========================================================
 -- 0. CHÈN TÀI KHOẢN QUẢN TRỊ VIÊN (idNguoiDung = 1)
 -- ==========================================================
@@ -320,56 +311,56 @@ insert into Thuoc (idDanhMuc, tenThuoc, thanhPhan, hamLuong, congDung, donViTinh
 
 
 
-insert into LoThuoc (idThuoc, maLo, ngaySanXuat, hanSuDung, soLuongTon, giaNhap) values (1, 'LO-2026-{row_number}', '2025-09-22', '2027-03-26', 176, 80882);
-insert into LoThuoc (idThuoc, maLo, ngaySanXuat, hanSuDung, soLuongTon, giaNhap) values (2, 'LO-2026-{row_number}', '2025-07-19', '2030-02-18', 67, 29864);
-insert into LoThuoc (idThuoc, maLo, ngaySanXuat, hanSuDung, soLuongTon, giaNhap) values (3, 'LO-2026-{row_number}', '2026-03-23', '2025-08-29', 195, 2433);
-insert into LoThuoc (idThuoc, maLo, ngaySanXuat, hanSuDung, soLuongTon, giaNhap) values (4, 'LO-2026-{row_number}', '2025-09-03', '2029-12-31', 104, 31143);
-insert into LoThuoc (idThuoc, maLo, ngaySanXuat, hanSuDung, soLuongTon, giaNhap) values (5, 'LO-2026-{row_number}', '2026-05-25', '2027-08-26', 177, 57486);
-insert into LoThuoc (idThuoc, maLo, ngaySanXuat, hanSuDung, soLuongTon, giaNhap) values (6, 'LO-2026-{row_number}', '2025-09-21', '2029-03-31', 16, 60560);
-insert into LoThuoc (idThuoc, maLo, ngaySanXuat, hanSuDung, soLuongTon, giaNhap) values (7, 'LO-2026-{row_number}', '2026-01-28', '2025-11-28', 3, 63166);
-insert into LoThuoc (idThuoc, maLo, ngaySanXuat, hanSuDung, soLuongTon, giaNhap) values (8, 'LO-2026-{row_number}', '2026-04-10', '2026-09-27', 45, 62868);
-insert into LoThuoc (idThuoc, maLo, ngaySanXuat, hanSuDung, soLuongTon, giaNhap) values (9, 'LO-2026-{row_number}', '2026-05-21', '2025-11-21', 53, 19297);
-insert into LoThuoc (idThuoc, maLo, ngaySanXuat, hanSuDung, soLuongTon, giaNhap) values (10, 'LO-2026-{row_number}', '2025-07-02', '2026-05-11', 170, 24810);
-insert into LoThuoc (idThuoc, maLo, ngaySanXuat, hanSuDung, soLuongTon, giaNhap) values (11, 'LO-2026-{row_number}', '2025-11-15', '2026-04-29', 21, 80975);
-insert into LoThuoc (idThuoc, maLo, ngaySanXuat, hanSuDung, soLuongTon, giaNhap) values (12, 'LO-2026-{row_number}', '2025-12-05', '2029-04-11', 125, 68859);
-insert into LoThuoc (idThuoc, maLo, ngaySanXuat, hanSuDung, soLuongTon, giaNhap) values (13, 'LO-2026-{row_number}', '2025-09-02', '2027-02-23', 97, 96241);
-insert into LoThuoc (idThuoc, maLo, ngaySanXuat, hanSuDung, soLuongTon, giaNhap) values (14, 'LO-2026-{row_number}', '2026-02-28', '2026-02-13', 167, 98496);
-insert into LoThuoc (idThuoc, maLo, ngaySanXuat, hanSuDung, soLuongTon, giaNhap) values (15, 'LO-2026-{row_number}', '2025-08-08', '2028-08-14', 21, 54830);
-insert into LoThuoc (idThuoc, maLo, ngaySanXuat, hanSuDung, soLuongTon, giaNhap) values (16, 'LO-2026-{row_number}', '2026-04-22', '2025-12-23', 131, 54111);
-insert into LoThuoc (idThuoc, maLo, ngaySanXuat, hanSuDung, soLuongTon, giaNhap) values (17, 'LO-2026-{row_number}', '2026-04-29', '2028-11-12', 140, 32289);
-insert into LoThuoc (idThuoc, maLo, ngaySanXuat, hanSuDung, soLuongTon, giaNhap) values (18, 'LO-2026-{row_number}', '2025-12-22', '2027-10-17', 43, 21350);
-insert into LoThuoc (idThuoc, maLo, ngaySanXuat, hanSuDung, soLuongTon, giaNhap) values (19, 'LO-2026-{row_number}', '2026-02-16', '2029-02-27', 177, 82509);
-insert into LoThuoc (idThuoc, maLo, ngaySanXuat, hanSuDung, soLuongTon, giaNhap) values (20, 'LO-2026-{row_number}', '2025-07-28', '2029-07-19', 80, 8056);
-insert into LoThuoc (idThuoc, maLo, ngaySanXuat, hanSuDung, soLuongTon, giaNhap) values (21, 'LO-2026-{row_number}', '2026-04-16', '2026-09-25', 194, 12149);
-insert into LoThuoc (idThuoc, maLo, ngaySanXuat, hanSuDung, soLuongTon, giaNhap) values (22, 'LO-2026-{row_number}', '2026-03-24', '2025-07-09', 31, 55362);
-insert into LoThuoc (idThuoc, maLo, ngaySanXuat, hanSuDung, soLuongTon, giaNhap) values (23, 'LO-2026-{row_number}', '2025-07-05', '2026-01-28', 76, 48871);
-insert into LoThuoc (idThuoc, maLo, ngaySanXuat, hanSuDung, soLuongTon, giaNhap) values (24, 'LO-2026-{row_number}', '2026-06-23', '2027-08-14', 39, 56118);
-insert into LoThuoc (idThuoc, maLo, ngaySanXuat, hanSuDung, soLuongTon, giaNhap) values (25, 'LO-2026-{row_number}', '2025-10-27', '2030-05-13', 86, 37772);
-insert into LoThuoc (idThuoc, maLo, ngaySanXuat, hanSuDung, soLuongTon, giaNhap) values (26, 'LO-2026-{row_number}', '2026-02-02', '2028-12-01', 55, 78038);
-insert into LoThuoc (idThuoc, maLo, ngaySanXuat, hanSuDung, soLuongTon, giaNhap) values (27, 'LO-2026-{row_number}', '2026-06-17', '2028-04-23', 163, 38201);
-insert into LoThuoc (idThuoc, maLo, ngaySanXuat, hanSuDung, soLuongTon, giaNhap) values (28, 'LO-2026-{row_number}', '2025-12-08', '2028-08-24', 71, 70014);
-insert into LoThuoc (idThuoc, maLo, ngaySanXuat, hanSuDung, soLuongTon, giaNhap) values (29, 'LO-2026-{row_number}', '2025-09-15', '2025-11-05', 136, 5435);
-insert into LoThuoc (idThuoc, maLo, ngaySanXuat, hanSuDung, soLuongTon, giaNhap) values (30, 'LO-2026-{row_number}', '2026-01-22', '2028-03-28', 146, 30989);
-insert into LoThuoc (idThuoc, maLo, ngaySanXuat, hanSuDung, soLuongTon, giaNhap) values (31, 'LO-2026-{row_number}', '2025-07-11', '2030-04-27', 158, 29585);
-insert into LoThuoc (idThuoc, maLo, ngaySanXuat, hanSuDung, soLuongTon, giaNhap) values (32, 'LO-2026-{row_number}', '2025-10-29', '2029-08-26', 36, 45007);
-insert into LoThuoc (idThuoc, maLo, ngaySanXuat, hanSuDung, soLuongTon, giaNhap) values (33, 'LO-2026-{row_number}', '2025-08-11', '2028-06-07', 62, 94712);
-insert into LoThuoc (idThuoc, maLo, ngaySanXuat, hanSuDung, soLuongTon, giaNhap) values (34, 'LO-2026-{row_number}', '2026-01-23', '2029-01-11', 67, 71713);
-insert into LoThuoc (idThuoc, maLo, ngaySanXuat, hanSuDung, soLuongTon, giaNhap) values (35, 'LO-2026-{row_number}', '2025-12-07', '2029-10-03', 20, 23410);
-insert into LoThuoc (idThuoc, maLo, ngaySanXuat, hanSuDung, soLuongTon, giaNhap) values (36, 'LO-2026-{row_number}', '2025-11-18', '2028-10-01', 5, 28164);
-insert into LoThuoc (idThuoc, maLo, ngaySanXuat, hanSuDung, soLuongTon, giaNhap) values (37, 'LO-2026-{row_number}', '2026-06-10', '2026-08-16', 7, 16996);
-insert into LoThuoc (idThuoc, maLo, ngaySanXuat, hanSuDung, soLuongTon, giaNhap) values (38, 'LO-2026-{row_number}', '2025-11-16', '2027-05-14', 49, 74869);
-insert into LoThuoc (idThuoc, maLo, ngaySanXuat, hanSuDung, soLuongTon, giaNhap) values (39, 'LO-2026-{row_number}', '2025-10-07', '2028-04-11', 69, 49816);
-insert into LoThuoc (idThuoc, maLo, ngaySanXuat, hanSuDung, soLuongTon, giaNhap) values (40, 'LO-2026-{row_number}', '2025-09-25', '2026-04-07', 177, 99903);
-insert into LoThuoc (idThuoc, maLo, ngaySanXuat, hanSuDung, soLuongTon, giaNhap) values (41, 'LO-2026-{row_number}', '2026-01-26', '2029-04-22', 171, 61752);
-insert into LoThuoc (idThuoc, maLo, ngaySanXuat, hanSuDung, soLuongTon, giaNhap) values (42, 'LO-2026-{row_number}', '2026-05-11', '2028-04-11', 6, 79506);
-insert into LoThuoc (idThuoc, maLo, ngaySanXuat, hanSuDung, soLuongTon, giaNhap) values (43, 'LO-2026-{row_number}', '2026-01-12', '2028-11-14', 151, 72568);
-insert into LoThuoc (idThuoc, maLo, ngaySanXuat, hanSuDung, soLuongTon, giaNhap) values (44, 'LO-2026-{row_number}', '2025-08-14', '2028-12-07', 109, 6518);
-insert into LoThuoc (idThuoc, maLo, ngaySanXuat, hanSuDung, soLuongTon, giaNhap) values (45, 'LO-2026-{row_number}', '2025-12-08', '2029-12-16', 21, 97532);
-insert into LoThuoc (idThuoc, maLo, ngaySanXuat, hanSuDung, soLuongTon, giaNhap) values (46, 'LO-2026-{row_number}', '2026-04-09', '2026-03-11', 106, 98945);
-insert into LoThuoc (idThuoc, maLo, ngaySanXuat, hanSuDung, soLuongTon, giaNhap) values (47, 'LO-2026-{row_number}', '2025-10-04', '2030-06-17', 181, 79470);
-insert into LoThuoc (idThuoc, maLo, ngaySanXuat, hanSuDung, soLuongTon, giaNhap) values (48, 'LO-2026-{row_number}', '2026-02-23', '2028-01-18', 5, 32004);
-insert into LoThuoc (idThuoc, maLo, ngaySanXuat, hanSuDung, soLuongTon, giaNhap) values (49, 'LO-2026-{row_number}', '2026-01-22', '2030-01-06', 159, 84806);
-insert into LoThuoc (idThuoc, maLo, ngaySanXuat, hanSuDung, soLuongTon, giaNhap) values (50, 'LO-2026-{row_number}', '2026-02-19', '2029-06-24', 88, 38303);
+insert into LoThuoc (idThuoc, maLo, ngaySanXuat, hanSuDung, soLuongTon, giaNhap) values (1, 'LO-2026-1', '2025-09-22', '2027-03-26', 176, 80882);
+insert into LoThuoc (idThuoc, maLo, ngaySanXuat, hanSuDung, soLuongTon, giaNhap) values (2, 'LO-2026-2', '2025-07-19', '2030-02-18', 67, 29864);
+insert into LoThuoc (idThuoc, maLo, ngaySanXuat, hanSuDung, soLuongTon, giaNhap) values (3, 'LO-2026-3', '2026-03-23', '2025-08-29', 195, 2433);
+insert into LoThuoc (idThuoc, maLo, ngaySanXuat, hanSuDung, soLuongTon, giaNhap) values (4, 'LO-2026-4', '2025-09-03', '2029-12-31', 104, 31143);
+insert into LoThuoc (idThuoc, maLo, ngaySanXuat, hanSuDung, soLuongTon, giaNhap) values (5, 'LO-2026-5', '2026-05-25', '2027-08-26', 177, 57486);
+insert into LoThuoc (idThuoc, maLo, ngaySanXuat, hanSuDung, soLuongTon, giaNhap) values (6, 'LO-2026-6', '2025-09-21', '2029-03-31', 16, 60560);
+insert into LoThuoc (idThuoc, maLo, ngaySanXuat, hanSuDung, soLuongTon, giaNhap) values (7, 'LO-2026-7', '2026-01-28', '2025-11-28', 3, 63166);
+insert into LoThuoc (idThuoc, maLo, ngaySanXuat, hanSuDung, soLuongTon, giaNhap) values (8, 'LO-2026-8', '2026-04-10', '2026-09-27', 45, 62868);
+insert into LoThuoc (idThuoc, maLo, ngaySanXuat, hanSuDung, soLuongTon, giaNhap) values (9, 'LO-2026-9', '2026-05-21', '2025-11-21', 53, 19297);
+insert into LoThuoc (idThuoc, maLo, ngaySanXuat, hanSuDung, soLuongTon, giaNhap) values (10, 'LO-2026-10', '2025-07-02', '2026-05-11', 170, 24810);
+insert into LoThuoc (idThuoc, maLo, ngaySanXuat, hanSuDung, soLuongTon, giaNhap) values (11, 'LO-2026-11', '2025-11-15', '2026-04-29', 21, 80975);
+insert into LoThuoc (idThuoc, maLo, ngaySanXuat, hanSuDung, soLuongTon, giaNhap) values (12, 'LO-2026-12', '2025-12-05', '2029-04-11', 125, 68859);
+insert into LoThuoc (idThuoc, maLo, ngaySanXuat, hanSuDung, soLuongTon, giaNhap) values (13, 'LO-2026-13', '2025-09-02', '2027-02-23', 97, 96241);
+insert into LoThuoc (idThuoc, maLo, ngaySanXuat, hanSuDung, soLuongTon, giaNhap) values (14, 'LO-2026-14', '2026-02-28', '2026-02-13', 167, 98496);
+insert into LoThuoc (idThuoc, maLo, ngaySanXuat, hanSuDung, soLuongTon, giaNhap) values (15, 'LO-2026-15', '2025-08-08', '2028-08-14', 21, 54830);
+insert into LoThuoc (idThuoc, maLo, ngaySanXuat, hanSuDung, soLuongTon, giaNhap) values (16, 'LO-2026-16', '2026-04-22', '2025-12-23', 131, 54111);
+insert into LoThuoc (idThuoc, maLo, ngaySanXuat, hanSuDung, soLuongTon, giaNhap) values (17, 'LO-2026-17', '2026-04-29', '2028-11-12', 140, 32289);
+insert into LoThuoc (idThuoc, maLo, ngaySanXuat, hanSuDung, soLuongTon, giaNhap) values (18, 'LO-2026-18', '2025-12-22', '2027-10-17', 43, 21350);
+insert into LoThuoc (idThuoc, maLo, ngaySanXuat, hanSuDung, soLuongTon, giaNhap) values (19, 'LO-2026-19', '2026-02-16', '2029-02-27', 177, 82509);
+insert into LoThuoc (idThuoc, maLo, ngaySanXuat, hanSuDung, soLuongTon, giaNhap) values (20, 'LO-2026-20', '2025-07-28', '2029-07-19', 80, 8056);
+insert into LoThuoc (idThuoc, maLo, ngaySanXuat, hanSuDung, soLuongTon, giaNhap) values (21, 'LO-2026-21', '2026-04-16', '2026-09-25', 194, 12149);
+insert into LoThuoc (idThuoc, maLo, ngaySanXuat, hanSuDung, soLuongTon, giaNhap) values (22, 'LO-2026-22', '2026-03-24', '2025-07-09', 31, 55362);
+insert into LoThuoc (idThuoc, maLo, ngaySanXuat, hanSuDung, soLuongTon, giaNhap) values (23, 'LO-2026-23', '2025-07-05', '2026-01-28', 76, 48871);
+insert into LoThuoc (idThuoc, maLo, ngaySanXuat, hanSuDung, soLuongTon, giaNhap) values (24, 'LO-2026-24', '2026-06-23', '2027-08-14', 39, 56118);
+insert into LoThuoc (idThuoc, maLo, ngaySanXuat, hanSuDung, soLuongTon, giaNhap) values (25, 'LO-2026-25', '2025-10-27', '2030-05-13', 86, 37772);
+insert into LoThuoc (idThuoc, maLo, ngaySanXuat, hanSuDung, soLuongTon, giaNhap) values (26, 'LO-2026-26', '2026-02-02', '2028-12-01', 55, 78038);
+insert into LoThuoc (idThuoc, maLo, ngaySanXuat, hanSuDung, soLuongTon, giaNhap) values (27, 'LO-2026-27', '2026-06-17', '2028-04-23', 163, 38201);
+insert into LoThuoc (idThuoc, maLo, ngaySanXuat, hanSuDung, soLuongTon, giaNhap) values (28, 'LO-2026-28', '2025-12-08', '2028-08-24', 71, 70014);
+insert into LoThuoc (idThuoc, maLo, ngaySanXuat, hanSuDung, soLuongTon, giaNhap) values (29, 'LO-2026-29', '2025-09-15', '2025-11-05', 136, 5435);
+insert into LoThuoc (idThuoc, maLo, ngaySanXuat, hanSuDung, soLuongTon, giaNhap) values (30, 'LO-2026-30', '2026-01-22', '2028-03-28', 146, 30989);
+insert into LoThuoc (idThuoc, maLo, ngaySanXuat, hanSuDung, soLuongTon, giaNhap) values (31, 'LO-2026-31', '2025-07-11', '2030-04-27', 158, 29585);
+insert into LoThuoc (idThuoc, maLo, ngaySanXuat, hanSuDung, soLuongTon, giaNhap) values (32, 'LO-2026-32', '2025-10-29', '2029-08-26', 36, 45007);
+insert into LoThuoc (idThuoc, maLo, ngaySanXuat, hanSuDung, soLuongTon, giaNhap) values (33, 'LO-2026-33', '2025-08-11', '2028-06-07', 62, 94712);
+insert into LoThuoc (idThuoc, maLo, ngaySanXuat, hanSuDung, soLuongTon, giaNhap) values (34, 'LO-2026-34', '2026-01-23', '2029-01-11', 67, 71713);
+insert into LoThuoc (idThuoc, maLo, ngaySanXuat, hanSuDung, soLuongTon, giaNhap) values (35, 'LO-2026-35', '2025-12-07', '2029-10-03', 20, 23410);
+insert into LoThuoc (idThuoc, maLo, ngaySanXuat, hanSuDung, soLuongTon, giaNhap) values (36, 'LO-2026-36', '2025-11-18', '2028-10-01', 5, 28164);
+insert into LoThuoc (idThuoc, maLo, ngaySanXuat, hanSuDung, soLuongTon, giaNhap) values (37, 'LO-2026-37', '2026-06-10', '2026-08-16', 7, 16996);
+insert into LoThuoc (idThuoc, maLo, ngaySanXuat, hanSuDung, soLuongTon, giaNhap) values (38, 'LO-2026-38', '2025-11-16', '2027-05-14', 49, 74869);
+insert into LoThuoc (idThuoc, maLo, ngaySanXuat, hanSuDung, soLuongTon, giaNhap) values (39, 'LO-2026-39', '2025-10-07', '2028-04-11', 69, 49816);
+insert into LoThuoc (idThuoc, maLo, ngaySanXuat, hanSuDung, soLuongTon, giaNhap) values (40, 'LO-2026-40', '2025-09-25', '2026-04-07', 177, 99903);
+insert into LoThuoc (idThuoc, maLo, ngaySanXuat, hanSuDung, soLuongTon, giaNhap) values (41, 'LO-2026-41', '2026-01-26', '2029-04-22', 171, 61752);
+insert into LoThuoc (idThuoc, maLo, ngaySanXuat, hanSuDung, soLuongTon, giaNhap) values (42, 'LO-2026-42', '2026-05-11', '2028-04-11', 6, 79506);
+insert into LoThuoc (idThuoc, maLo, ngaySanXuat, hanSuDung, soLuongTon, giaNhap) values (43, 'LO-2026-43', '2026-01-12', '2028-11-14', 151, 72568);
+insert into LoThuoc (idThuoc, maLo, ngaySanXuat, hanSuDung, soLuongTon, giaNhap) values (44, 'LO-2026-44', '2025-08-14', '2028-12-07', 109, 6518);
+insert into LoThuoc (idThuoc, maLo, ngaySanXuat, hanSuDung, soLuongTon, giaNhap) values (45, 'LO-2026-45', '2025-12-08', '2029-12-16', 21, 97532);
+insert into LoThuoc (idThuoc, maLo, ngaySanXuat, hanSuDung, soLuongTon, giaNhap) values (46, 'LO-2026-46', '2026-04-09', '2026-03-11', 106, 98945);
+insert into LoThuoc (idThuoc, maLo, ngaySanXuat, hanSuDung, soLuongTon, giaNhap) values (47, 'LO-2026-47', '2025-10-04', '2030-06-17', 181, 79470);
+insert into LoThuoc (idThuoc, maLo, ngaySanXuat, hanSuDung, soLuongTon, giaNhap) values (48, 'LO-2026-48', '2026-02-23', '2028-01-18', 5, 32004);
+insert into LoThuoc (idThuoc, maLo, ngaySanXuat, hanSuDung, soLuongTon, giaNhap) values (49, 'LO-2026-49', '2026-01-22', '2030-01-06', 159, 84806);
+insert into LoThuoc (idThuoc, maLo, ngaySanXuat, hanSuDung, soLuongTon, giaNhap) values (50, 'LO-2026-50', '2026-02-19', '2029-06-24', 88, 38303);
 
 
 
