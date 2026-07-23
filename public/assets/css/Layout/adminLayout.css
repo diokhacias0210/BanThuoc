@@ -75,7 +75,7 @@ button { font-family: inherit; cursor: pointer; }
 .nav-item.active { background: var(--side-active); color: #fff; font-weight: 600; }
 .nav-item.active i { color: var(--green-500); opacity: 1; }
 .logout-link { display: flex; align-items: center; gap: 8px; font-size: 13.5px; color: #d5362f; padding: 10px 12px; margin-top: auto; border-radius: 10px; font-weight: 600; }
-...link:hover { background: rgba(213, 54, 47, .1); }
+.logout-link:hover { background: rgba(213, 54, 47, .1); }
 
 /* GLOBAL NÚT BẤM */
 .btn { display: inline-flex; align-items: center; gap: 7px; font-size: 13.5px; font-weight: 600; border-radius: 10px; padding: 9.5px 16px; border: 1px solid transparent; white-space: nowrap; transition: .15s; }
