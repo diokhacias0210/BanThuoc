@@ -43,7 +43,7 @@ class App
 
         $this->detectParams($url);
 
-        //$this->checkPermission();
+        $this->checkPermission();
 
         $this->run();
     }
@@ -180,7 +180,6 @@ class App
             unset($url[0]);
 
             $url = array_values($url);
-
         } else {
 
             $this->show404("Không tìm thấy Method.");
@@ -228,7 +227,28 @@ class App
 
     private function checkPermission()
     {
+        // Bắt đầu Session nếu chưa mở
+        if (session_status() == PHP_SESSION_NONE) {
+            session_start();
+        }
 
+        $userRole = isset($_SESSION['user_role']) ? $_SESSION['user_role'] : null;
+
+        // 1. Phân hệ Admin: Bắt buộc vai trò phải là QUAN_TRI_VIEN
+        if (self::$module === 'admin') {
+            if ($userRole !== 'QUAN_TRI_VIEN') {
+                header("Location: " . URLROOT . "/khachHang/xacThuc/dangNhap");
+                exit;
+            }
+        }
+
+        // 2. Phân hệ Dược sĩ: Bắt buộc vai trò là DUOC_SI hoặc QUAN_TRI_VIEN
+        if (self::$module === 'duocSi') {
+            if ($userRole !== 'DUOC_SI' && $userRole !== 'QUAN_TRI_VIEN') {
+                header("Location: " . URLROOT . "/khachHang/xacThuc/dangNhap");
+                exit;
+            }
+        }
     }
 
 
@@ -245,7 +265,7 @@ class App
 
         echo "<h2>404 - Not Found</h2>";
         echo "<hr>";
-        echo "<p>".$message."</p>";
+        echo "<p>" . $message . "</p>";
 
         exit;
     }
