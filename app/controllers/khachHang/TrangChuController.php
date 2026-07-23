@@ -13,7 +13,7 @@ class TrangChuController extends Controller
     {
         $data = array(
 
-            "danhSachThuoc"=>$this->thuoc->getAllThuoc(),
+            "danhSachThuoc"=>$this->thuoc->getAll(),
 
             "content"=>"khachHang/trangChu/index"
 

@@ -4,18 +4,38 @@ class Controller
 {
     /**
      * Load Model
+     * Ưu tiên tìm trong module hiện tại.
+     * Nếu không thấy, quét tất cả các module khác.
      */
     protected function model($model)
     {
-        $modelPath = APPROOT . "/models/" . App::getModule() . "/" . $model . ".php";
+        // 1. Ưu tiên tìm trong thư mục module hiện tại
+        $currentModule = App::getModule();
+        $modelPath = APPROOT . "/models/" . $currentModule . "/" . $model . ".php";
 
-        if (!file_exists($modelPath)) {
-            die("Model <b>{$model}</b> không tồn tại.");
+        if (file_exists($modelPath)) {
+            require_once $modelPath;
+            return new $model();
         }
 
-        require_once $modelPath;
+        // 2. Fallback: quét tất cả các module
+        $modules = array("khachHang", "admin", "duocSi");
 
-        return new $model();
+        foreach ($modules as $module) {
+            if ($module === $currentModule) {
+                continue; // đã kiểm tra ở bước 1
+            }
+
+            $modelPath = APPROOT . "/models/" . $module . "/" . $model . ".php";
+
+            if (file_exists($modelPath)) {
+                require_once $modelPath;
+                return new $model();
+            }
+        }
+
+        // 3. Không tìm thấy ở bất kỳ module nào
+        die("Model <b>{$model}</b> không tồn tại trong bất kỳ module nào.");
     }
 
     /**
