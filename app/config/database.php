@@ -4,9 +4,9 @@
  * Cấu hình Database
  */
 
-// define('DB_HOST', 'localhost');
+define('DB_HOST', 'localhost');
 
-define('DB_HOST', '127.0.0.1;port=3307');
+//define('DB_HOST', '127.0.0.1;port=3307');
 
 define('DB_NAME', 'HeThongBanThuoc');
 
