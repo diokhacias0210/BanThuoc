@@ -362,7 +362,131 @@ insert into LoThuoc (idThuoc, maLo, ngaySanXuat, hanSuDung, soLuongTon, giaNhap)
 insert into LoThuoc (idThuoc, maLo, ngaySanXuat, hanSuDung, soLuongTon, giaNhap) values (49, 'LO-2026-49', '2026-01-22', '2030-01-06', 159, 84806);
 insert into LoThuoc (idThuoc, maLo, ngaySanXuat, hanSuDung, soLuongTon, giaNhap) values (50, 'LO-2026-50', '2026-02-19', '2029-06-24', 88, 38303);
 
+-- ==========================================================
+-- 1. GIỎ HÀNG & CHI TIẾT GIỎ HÀNG
+-- (Mỗi khách hàng idNguoiDung từ 2 -> 6 có 1 giỏ hàng)
+-- ==========================================================
+INSERT INTO GioHang (idGioHang, idKhachHang, ngayTao) VALUES
+(1, 2, '2026-01-10 08:30:00'),
+(2, 3, '2026-02-15 10:15:00'),
+(3, 4, '2026-03-01 14:20:00'),
+(4, 5, '2026-05-12 09:00:00'),
+(5, 6, '2026-07-01 16:45:00');
 
+INSERT INTO ChiTietGioHang (idGioHang, idThuoc, idDonThuoc, soLuong, donGia, trangThaiThaoTac) VALUES
+-- Giỏ hàng KH 2
+(1, 1, NULL, 2, 53000.00, 'CHO_PHEP'),
+(1, 12, NULL, 1, 60000.00, 'CHO_PHEP'),
+-- Giỏ hàng KH 3
+(2, 5, NULL, 3, 55000.00, 'CHO_PHEP'),
+(2, 18, NULL, 1, 83000.00, 'CHO_PHEP'),
+-- Giỏ hàng KH 4
+(3, 28, NULL, 2, 55000.00, 'CHO_PHEP'),
+-- Giỏ hàng KH 5
+(4, 37, NULL, 1, 36000.00, 'CHO_PHEP'),
+(4, 41, NULL, 5, 72000.00, 'CHO_PHEP'),
+-- Giỏ hàng KH 6
+(5, 46, NULL, 2, 500.00, 'CHO_PHEP');
+
+
+-- ==========================================================
+-- 2. ĐƠN HÀNG (DonHang)
+-- Đa dạng thời gian (2025 - 2026) và các trạng thái
+-- ==========================================================
+INSERT INTO DonHang (idDonHang, idKhachHang, ngayDat, tongTien, phiVanChuyen, trangThai, lyDoHuy) VALUES
+-- Đơn hàng năm 2025
+(1, 2, '2025-11-10 09:15:00', 166000.00, 15000.00, 'DA_GIAO', NULL),
+(2, 3, '2025-12-05 14:30:00', 165000.00, 20000.00, 'DA_HUY', 'Khách hàng đổi ý không mua nữa'),
+(3, 4, '2025-12-20 18:00:00', 183000.00, 15000.00, 'DA_GIAO', NULL),
+
+-- Đơn hàng năm 2026 (Quý 1 & 2)
+(4, 2, '2026-01-15 10:00:00', 210000.00, 0.00, 'DA_GIAO', NULL),
+(5, 5, '2026-02-14 11:20:00', 135000.00, 15000.00, 'DA_GIAO', NULL),
+(6, 6, '2026-03-08 15:45:00', 90000.00, 15000.00, 'DA_HUY', 'Đặt nhầm sản phẩm'),
+(7, 3, '2026-04-10 08:30:00', 400000.00, 0.00, 'DA_GIAO', NULL),
+(8, 4, '2026-05-22 16:10:00', 144000.00, 15000.00, 'DA_GIAO', NULL),
+(9, 2, '2026-06-18 13:25:00', 170000.00, 15000.00, 'DA_GIAO', NULL),
+
+-- Đơn hàng gần đây (Tháng 7/2026)
+(10, 5, '2026-07-20 09:00:00', 220000.00, 15000.00, 'DA_GIAO', NULL),
+(11, 6, '2026-07-22 14:10:00', 110000.00, 15000.00, 'DANG_GIAO', NULL),
+(12, 3, '2026-07-23 10:05:00', 165000.00, 15000.00, 'CHO_XAC_NHAN', NULL);
+
+
+-- ==========================================================
+-- 3. CHI TIẾT ĐƠN HÀNG (ChiTietDonHang)
+-- ==========================================================
+INSERT INTO ChiTietDonHang (idDonHang, idThuoc, soLuong, donGia, giamGia) VALUES
+-- Đơn 1 (Đã giao - 166.000đ)
+(1, 1, 2, 53000.00, 0.00),         -- Siro HoAstex-S (106k)
+(1, 12, 1, 60000.00, 0.00),        -- Exopadin 60mg (60k)
+
+-- Đơn 2 (Đã hủy)
+(2, 5, 3, 55000.00, 0.00),         -- Strepsils (165k)
+
+-- Đơn 3 (Đã giao - 183.000đ)
+(3, 17, 1, 80000.00, 0.00),        -- Dầu gừng Thái Dương (80k)
+(3, 18, 1, 83000.00, 0.00),        -- Dầu Khuynh Diệp OPC (83k)
+(3, 8, 1, 20000.00, 0.00),         -- Biroxime (20k)
+
+-- Đơn 4 (Đã giao - 210.000đ)
+(4, 3, 3, 70000.00, 0.00),         -- Tocemux (210k)
+
+-- Đơn 5 (Đã giao - 135.000đ)
+(5, 19, 3, 45000.00, 0.00),        -- Cao dán Salonpas (135k)
+
+-- Đơn 6 (Đã hủy)
+(6, 20, 2, 34000.00, 0.00),        -- Cao dán Salonsip (68k)
+(6, 24, 1, 2200.00, 0.00),         -- Mebendazole (2.2k)
+
+-- Đơn 7 (Đã giao - 400.000đ)
+(7, 43, 10, 40000.00, 0.00),       -- Tovalgan Ef (400k)
+
+-- Đơn 8 (Đã giao - 144.000đ)
+(8, 41, 2, 72000.00, 0.00),        -- Ceelin + Z (144k)
+
+-- Đơn 9 (Đã giao - 170.000đ)
+(9, 28, 2, 55000.00, 0.00),        -- V.Rohto Vitamin (110k)
+(9, 33, 1, 60000.00, 0.00),        -- Laferine 80mg (60k)
+
+-- Đơn 10 (Đã giao - 220.000đ)
+(10, 1, 2, 53000.00, 3000.00),     -- Siro HoAstex-S (100k)
+(10, 12, 2, 60000.00, 0.00),       -- Exopadin 60mg (120k)
+
+-- Đơn 11 (Đang giao)
+(11, 6, 10, 11000.00, 0.00),       -- Ketoconazol (110k)
+
+-- Đơn 12 (Chờ xác nhận)
+(12, 5, 3, 55000.00, 0.00);        -- Strepsils (165k)
+
+
+-- ==========================================================
+-- 4. THANH TOÁN (ThanhToan)
+-- ==========================================================
+INSERT INTO ThanhToan (idDonHang, phuongThuc, soTien, ngayThanhToan, trangThai) VALUES
+(1, 'Thanh toán khi nhận hàng (COD)', 181000.00, '2025-11-12 14:20:00', 'DA_THANH_TOAN'),
+(2, 'Chuyển khoản ngân hàng', 185000.00, '2025-12-05 14:35:00', 'DA_HOAN_TIEN'),
+(3, 'Thanh toán khi nhận hàng (COD)', 198000.00, '2025-12-22 10:15:00', 'DA_THANH_TOAN'),
+(4, 'Ví MoMo', 210000.00, '2026-01-15 10:02:00', 'DA_THANH_TOAN'),
+(5, 'Thanh toán khi nhận hàng (COD)', 150000.00, '2026-02-16 16:40:00', 'DA_THANH_TOAN'),
+(6, 'Ví MoMo', 105000.00, '2026-03-08 15:46:00', 'DA_HOAN_TIEN'),
+(7, 'Chuyển khoản ngân hàng', 400000.00, '2026-04-10 08:32:00', 'DA_THANH_TOAN'),
+(8, 'Thanh toán khi nhận hàng (COD)', 159000.00, '2026-05-24 11:00:00', 'DA_THANH_TOAN'),
+(9, 'Ví VNPay', 185000.00, '2026-06-18 13:27:00', 'DA_THANH_TOAN'),
+(10, 'Chuyển khoản ngân hàng', 235000.00, '2026-07-20 09:05:00', 'DA_THANH_TOAN'),
+(11, 'Thanh toán khi nhận hàng (COD)', 125000.00, '2026-07-22 14:10:00', 'CHUA_THANH_TOAN'),
+(12, 'Chuyển khoản ngân hàng', 180000.00, '2026-07-23 10:05:00', 'CHUA_THANH_TOAN');
+
+
+-- ==========================================================
+-- 5. BÁO CÁO THỐNG KÊ (BaoCaoThongKe)
+-- Lưu lại các lịch sử xuất báo cáo của admin (idNguoiDung = 1)
+-- ==========================================================
+INSERT INTO BaoCaoThongKe (idQuanTriVien, thoiGianBatDau, thoiGianKetThuc, loaiBaoCao) VALUES
+(1, '2025-01-01', '2025-12-31', 'Báo cáo doanh thu năm 2025'),
+(1, '2026-01-01', '2026-03-31', 'Báo cáo doanh thu Quý 1/2026'),
+(1, '2026-04-01', '2026-06-30', 'Báo cáo doanh thu Quý 2/2026'),
+(1, '2026-07-01', '2026-07-23', 'Báo cáo bán hàng tháng 7/2026');
 
 
 
