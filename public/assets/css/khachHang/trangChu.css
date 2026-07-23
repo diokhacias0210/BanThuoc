@@ -1,23 +1,424 @@
-/* Định dạng lưới card sản phẩm thuốc */
-.thuoc-card {
-    transition: transform 0.2s ease-in-out, box-shadow 0.2s ease-in-out;
-    border: 1px solid #e0e0e0;
+/* ══ PAGE WRAP CONTAINER ══ */
+.wrap {
+  max-width: 900px;
+  margin: 0 auto;
+  padding: 20px 24px 60px;
 }
 
-.thuoc-card:hover {
-    transform: translateY(-5px);
-    box-shadow: 0 8px 15px rgba(0,0,0,0.1) !important;
+/* ══ HERO BANNER ══ */
+.hero {
+  background: linear-gradient(135deg, #2d7a4f 0%, #1a5c38 100%);
+  border-radius: 12px;
+  padding: 36px 40px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 24px;
+  overflow: hidden;
+  position: relative;
+  box-shadow: var(--shadow-green-black);
 }
 
-.thuoc-gia {
-    color: #dc3545;
-    font-size: 1.15rem;
+.hero-title {
+  font-size: 26px;
+  font-weight: 700;
+  color: #fff;
+  line-height: 1.35;
+  margin-bottom: 12px;
+  letter-spacing: -0.5px;
 }
 
-.badge-danh-muc {
-    font-size: 0.75rem;
-    position: absolute;
-    top: 10px;
-    left: 10px;
-    z-index: 2;
+.hero-desc {
+  font-size: 13.5px;
+  color: rgba(255, 255, 255, 0.8);
+  line-height: 1.6;
+  margin-bottom: 22px;
+  max-width: 440px;
+}
+
+.hero-btns {
+  display: flex;
+  gap: 10px;
+}
+
+.hero-btn-main {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  padding: 11px 22px;
+  background: #fff;
+  color: #2d7a4f;
+  border-radius: 8px;
+  font-size: 13.5px;
+  font-weight: 700;
+  cursor: pointer;
+  border: none;
+  text-decoration: none;
+}
+
+.hero-btn-sec {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  padding: 11px 20px;
+  background: rgba(255, 255, 255, 0.12);
+  color: white;
+  border-radius: 8px;
+  font-size: 13.5px;
+  font-weight: 600;
+  cursor: pointer;
+  border: 1px solid rgba(255, 255, 255, 0.25);
+  text-decoration: none;
+}
+
+/* ══ QUICK ACTIONS ══ */
+.quick-actions {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 12px;
+  margin-bottom: 24px;
+}
+
+.qa {
+  background: #fff;
+  border: 1px solid var(--border);
+  border-radius: 12px;
+  padding: 18px 16px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 10px;
+  cursor: pointer;
+  transition: all 0.15s;
+  box-shadow: var(--shadow-green-black-sm);
+  text-decoration: none;
+}
+
+.qa:hover {
+  border-color: #2d7a4f;
+  transform: translateY(-2px);
+  box-shadow: var(--shadow-green-black);
+}
+
+.qa-icon {
+  width: 46px;
+  height: 46px;
+  border-radius: 12px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.qa-icon i {
+  font-size: 20px;
+}
+.qa-label {
+  font-size: 13px;
+  font-weight: 700;
+  color: var(--text);
+  text-align: center;
+}
+.qa-sub {
+  font-size: 11px;
+  color: var(--muted);
+  text-align: center;
+  line-height: 1.4;
+}
+
+/* ══ SECTION HEADER ══ */
+.sec-head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 16px;
+  border-bottom: 1px solid #f1f2f4;
+  padding-bottom: 8px;
+}
+
+.sec-title {
+  font-size: 15.5px;
+  font-weight: 700;
+  color: var(--green-dark);
+  letter-spacing: -0.2px;
+}
+
+.sec-more {
+  font-size: 12.5px;
+  color: var(--green);
+  font-weight: 600;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  text-decoration: none;
+}
+
+.sec-more:hover {
+  text-decoration: underline;
+}
+
+/* ══ LƯỚI SẢN PHẨM PHỔ BIẾN (4 CỘT) ══ */
+.popular-grid {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 14px;
+  margin-bottom: 28px;
+}
+
+.pcard {
+  background: #fff;
+  border: 1px solid var(--border);
+  border-radius: 12px;
+  overflow: hidden;
+  width: 100%;
+  cursor: pointer;
+  transition: all 0.15s;
+  box-shadow: var(--shadow-green-black-sm);
+  text-decoration: none;
+  color: inherit;
+  display: block;
+}
+
+.pcard:hover {
+  border-color: var(--green);
+  box-shadow: var(--shadow-green-black);
+}
+
+.pcard-img {
+  aspect-ratio: 1 / 1;
+  width: 100%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  position: relative;
+  background: #fcfdfc;
+  overflow: hidden;
+}
+
+.pcard-img img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+.pcard-tag {
+  position: absolute;
+  top: 8px;
+  left: 8px;
+  font-size: 10px;
+  padding: 2px 7px;
+  border-radius: 4px;
+  font-weight: 700;
+}
+
+.tag-rx {
+  background: var(--orange-soft);
+  color: var(--orange);
+  border: 1px solid #ffe6cc;
+}
+
+.pcard-body {
+  padding: 12px;
+}
+
+.pcard-name {
+  font-size: 13.5px;
+  font-weight: 700;
+  color: var(--text);
+  margin-bottom: 12px;
+  line-height: 1.4;
+  display: -webkit-box;
+  -webkit-line-clamp: 2;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  height: 38px;
+}
+
+.pcard-foot {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+}
+
+.pcard-price {
+  font-size: 14px;
+  font-weight: 700;
+  color: var(--green);
+}
+
+.add-btn {
+  width: 28px;
+  height: 28px;
+  border-radius: 50%;
+  background: var(--green);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border: none;
+  cursor: pointer;
+  transition: background 0.15s;
+}
+
+.add-btn:hover {
+  background: var(--green-dark);
+}
+.add-btn i {
+  color: white;
+  font-size: 12px;
+}
+
+.btn-view-detail {
+  padding: 5px 10px;
+  background: #fff;
+  border: 1px solid var(--green);
+  color: var(--green-dark);
+  font-size: 11.5px;
+  font-weight: 600;
+  border-radius: 6px;
+  display: inline-block;
+}
+
+/* ══ KHUNG TẤT CẢ SẢN PHẨM (3 CỘT LỚN) ══ */
+.all-products-grid {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 16px;
+  margin-bottom: 28px;
+}
+
+.pcard-large {
+  background: #fff;
+  border: 1px solid var(--border);
+  border-radius: 12px;
+  padding: 16px;
+  display: flex;
+  gap: 14px;
+  cursor: pointer;
+  transition: all 0.15s;
+  box-shadow: var(--shadow-green-black-sm);
+  align-items: center;
+  text-decoration: none;
+  color: inherit;
+}
+
+.pcard-large:hover {
+  border-color: var(--green);
+  box-shadow: var(--shadow-green-black);
+}
+
+.plarge-img {
+  width: 68px;
+  height: 68px;
+  background: var(--green-light);
+  border-radius: 8px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+  overflow: hidden;
+}
+
+.plarge-img img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+.plarge-info {
+  flex: 1;
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+}
+
+.plarge-name {
+  font-size: 14px;
+  font-weight: 700;
+  color: var(--text);
+  line-height: 1.4;
+  display: -webkit-box;
+  -webkit-line-clamp: 2;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+  height: 38px;
+  margin-bottom: 6px;
+}
+
+.plarge-foot {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
+.plarge-price {
+  font-size: 14.5px;
+  font-weight: 700;
+  color: var(--green);
+}
+
+/* ══ TIN TỨC SỨC KHỎE ══ */
+.blog-grid {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 14px;
+  margin-bottom: 28px;
+}
+
+.blog-card {
+  background: #fff;
+  border: 1px solid var(--border);
+  border-radius: 12px;
+  overflow: hidden;
+  box-shadow: var(--shadow-green-black-sm);
+}
+
+.blog-img {
+  height: 110px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 36px;
+  background: #fafafa;
+}
+
+.blog-body {
+  padding: 12px 14px;
+}
+.blog-cat {
+  font-size: 10.5px;
+  font-weight: 700;
+  color: var(--green);
+  text-transform: uppercase;
+  margin-bottom: 5px;
+}
+.blog-title {
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--text);
+  line-height: 1.4;
+  margin-bottom: 6px;
+}
+.blog-meta {
+  font-size: 11px;
+  color: var(--muted2);
+}
+
+.divider {
+  height: 1px;
+  background: var(--border);
+  margin: 4px 0 28px;
+}
+
+@media (max-width: 768px) {
+  .popular-grid,
+  .all-products-grid,
+  .blog-grid {
+    grid-template-columns: 1fr 1fr;
+  }
+  .quick-actions {
+    grid-template-columns: 1fr 1fr 1fr;
+  }
 }

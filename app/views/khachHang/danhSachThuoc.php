@@ -159,7 +159,7 @@
         grid.innerHTML = pageItems.map(p => {
             const isRx = p.yeuCauKeDon === 'Kê đơn';
             return `
-                <a class="pcard" href="<?php echo URLROOT; ?>/khachHang/chiTietThuoc/${p.idThuoc}">
+                <a class="pcard" href="<?php echo URLROOT; ?>/khachHang/thuoc/chiTiet/${p.idThuoc}">
                     <div class="pcard-img">
                         ${isRx ? `<span class="pcard-tag">Kê đơn</span>` : ''}
                         <img src="${resolveImageUrl(p.hinhAnh)}" alt="${p.tenThuoc}">
@@ -168,7 +168,7 @@
                         <div class="pcard-name">${p.tenThuoc}</div>
                         <div class="pcard-foot">
                             <span class="pcard-price">${fmtMoney(p.giaBan)}</span>
-                            ${isRx ? `<span class="btn-view-detail">Xem chi tiết</span>` : `<button type="button" class="add-btn"><i class="fa-solid fa-plus"></i></button>`}
+                            ${isRx ? `<span class="btn-view-detail">Xem chi tiết</span>` : `<button type="button" class="add-btn" onclick="themNhanhGioHang(event, ${p.idThuoc})"><i class="fa-solid fa-plus"></i></button>`}
                         </div>
                     </div>
                 </a>
@@ -176,6 +176,19 @@
         }).join('');
 
         renderPaginationControls(totalPages);
+    }
+
+    // Xử lý nút cộng thêm nhanh giỏ hàng
+    function themNhanhGioHang(event, idThuoc) {
+        event.preventDefault();
+        event.stopPropagation();
+
+        // Thông báo thử nghiệm
+        if (typeof hienThiThongBao === 'function') {
+            hienThiThongBao("Đã thêm sản phẩm vào giỏ hàng!");
+        } else {
+            alert("Đã thêm sản phẩm vào giỏ hàng thành công!");
+        }
     }
 
     function renderPaginationControls(totalPages) {
