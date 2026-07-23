@@ -1,22 +1,12 @@
-<?php require APPROOT . '/views/layouts/partials/header.php'; ?>
-
-<body>
-
-<?php require APPROOT . '/views/layouts/partials/navbar.php'; ?>
-
-<div class="container py-4">
-
 <?php
-
-if(isset($content))
-{
-    require APPROOT . "/views/" . $content . ".php";
-}
-
+require_once APPROOT . '/views/layouts/partials/header.php';
+require_once APPROOT . '/views/layouts/partials/navbar.php';
 ?>
 
-
-
+<div class="page">
+    <?php echo $content; ?>
 </div>
 
-<?php require APPROOT . '/views/layouts/partials/footer.php'; ?>
+<?php
+require_once APPROOT . '/views/layouts/partials/footer.php';
+?>

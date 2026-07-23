@@ -1,61 +1,54 @@
-<?php if (empty($is_auth)): ?>
-<footer class="bg-dark text-white mt-5">
-
-    <div class="container py-4">
-
-        <div class="row">
-
-            <div class="col-md-4">
-
-                <h5>PharmaStore</h5>
-
-                <p>
-                    Hệ thống bán thuốc trực tuyến.
-                </p>
-
-            </div>
-
-            <div class="col-md-4">
-
-                <h5>Liên hệ</h5>
-
-                <p>Email: support@pharmastore.vn</p>
-
-                <p>Hotline: 1900 1234</p>
-
-            </div>
-
-            <div class="col-md-4">
-
-                <h5>Theo dõi</h5>
-
-                <i class="bi bi-facebook fs-4"></i>
-
-                <i class="bi bi-youtube fs-4 ms-2"></i>
-
-                <i class="bi bi-instagram fs-4 ms-2"></i>
-
-            </div>
-
+<footer class="site-footer">
+    <div class="footer-container">
+        <div class="footer-col">
+            <div class="footer-logo"><i class="fa-solid fa-notes-medical"></i> <span>PharmaCare</span></div>
+            <p class="footer-text">Hệ thống nhà thuốc trực tuyến đạt chuẩn GPP. Chuyên cung ứng dược phẩm, thực phẩm chức năng chính hãng, an toàn và bảo mật.</p>
         </div>
-
-        <hr>
-
-        <div class="text-center">
-
-            © <?= date("Y") ?>
-
-            PharmaStore
-
+        <div class="footer-col">
+            <h4>Thông tin liên hệ</h4>
+            <ul class="footer-info-list">
+                <li><i class="fa-solid fa-location-dot"></i> 123 Đường Nguyễn Trãi, P. An Bình, Q. Ninh Kiều, TP. Cần Thơ</li>
+                <li><i class="fa-solid fa-phone"></i> Hotline: 0912 345 678</li>
+                <li><i class="fa-solid fa-envelope"></i> Email: troly@pharmacare.vn</li>
+            </ul>
         </div>
-
+        <div class="footer-col">
+            <h4>Thời gian mở cửa</h4>
+            <ul class="footer-info-list">
+                <li><i class="fa-solid fa-calendar-days"></i> Thứ 2 — Chủ Nhật</li>
+                <li><i class="fa-solid fa-clock"></i> Giờ mở cửa: 06:00 — 22:00</li>
+                <li><i class="fa-solid fa-user-doctor"></i> Tư vấn Dược sĩ 24/7</li>
+            </ul>
+        </div>
+        <div class="footer-col">
+            <h4>Giấy phép hoạt động</h4>
+            <p class="footer-text">Số GPDKKD: 0102345678 do Sở Kế hoạch và Đầu tư cấp.</p>
+            <p class="footer-text" style="margin-top: 8px;">Số giấy chứng nhận đủ điều kiện kinh doanh dược: 123/GCN-KKDD-CT.</p>
+        </div>
     </div>
-
+    <div class="footer-bottom">
+        <p>© 2026 PharmaCare. Hệ thống quản lý thông tin nhà thuốc nội bộ.</p>
+    </div>
 </footer>
-<?php endif; ?>
 
-<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
+<script>
+    const menuToggle = document.getElementById('menuToggle');
+    const drawer = document.getElementById('drawer');
+    const overlay = document.getElementById('overlay');
 
+    if (menuToggle && drawer && overlay) {
+        menuToggle.addEventListener('click', () => {
+            drawer.classList.add('open');
+            overlay.classList.add('open');
+            document.body.style.overflow = 'hidden';
+        });
+        overlay.addEventListener('click', () => {
+            drawer.classList.remove('open');
+            overlay.classList.remove('open');
+            document.body.style.overflow = '';
+        });
+    }
+</script>
 </body>
 
 </html>
