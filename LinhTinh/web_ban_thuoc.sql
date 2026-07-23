@@ -57,13 +57,17 @@ CREATE TABLE Thuoc (
     congDung NVARCHAR(255) NOT NULL,
     donViTinh NVARCHAR(50),
     giaBan DECIMAL(12, 2) NOT NULL,
-    hinhAnh VARCHAR(500),
     yeuCauKeDon ENUM('Kê đơn', 'Không kê đơn') NOT NULL DEFAULT 'Không kê đơn',
     gioiHanMua INT DEFAULT -1, -- -1: Không giới hạn, >0: Giới hạn tối đa
     trangThai BOOLEAN DEFAULT TRUE,
     FOREIGN KEY (idDanhMuc) REFERENCES DanhMucThuoc(idDanhMuc) ON DELETE SET NULL
 );
-
+CREATE TABLE HinhAnhThuoc (
+    idHinhAnh INT AUTO_INCREMENT PRIMARY KEY,
+    idThuoc INT NOT NULL,
+    duongDan VARCHAR(500) NOT NULL,
+    FOREIGN KEY (idThuoc) REFERENCES Thuoc(idThuoc) ON DELETE CASCADE
+);
 CREATE TABLE LoThuoc (
     idLo INT AUTO_INCREMENT PRIMARY KEY,
     idThuoc INT NOT NULL,
@@ -254,57 +258,56 @@ insert into DanhMucThuoc (idDanhMuc, tenDanhMuc, moTa) values (11, 'Chưa phân 
 
 
 
-insert into Thuoc (idDanhMuc, tenThuoc, thanhPhan, hamLuong, congDung, donViTinh, giaBan, hinhAnh, yeuCauKeDon, gioiHanMua, trangThai) values (1, 'Siro HoAstex-S 90ml', 'Húng chanh (45.00g), Núc nác (11.25g), Tinh dầu bạch đàn (119.52mg)', '90ml', 'Siro HoAtex dùng trị ho, giảm ho trong viêm họng, viêm phế quản, viêm khí quản (viêm đường hô hấp)', 'Chai', 53000, 'images/-1.jpg', 'Không kê đơn', 2, 'true');
-insert into Thuoc (idDanhMuc, tenThuoc, thanhPhan, hamLuong, congDung, donViTinh, giaBan, hinhAnh, yeuCauKeDon, gioiHanMua, trangThai) values (1, 'Siro Deslotid OPV', '1ml chứa: Desloratadin (0.5mg)', '60ml', 'Siro Deslotid được chỉ định dùng trong các trường hợp sau: Viêm mũi dị ứng: Hắt hơi, sổ mũi, nghẹt mũi, ngứa mũi họng và ngứa, chảy nước mắt. Phản ứng dị ứng da: Mày đay, ngứa, phát ban.', 'Hộp', 65000, 'images/-1.jpg', 'Không kê đơn', 2, 'true');
-insert into Thuoc (idDanhMuc, tenThuoc, thanhPhan, hamLuong, congDung, donViTinh, giaBan, hinhAnh, yeuCauKeDon, gioiHanMua, trangThai) values (1, 'Thuốc Tocemux', '1 viên chứa: Acetylcysteine (200mg)', '10 viên', 'Dùng làm thuốc tiêu chất nhầy trong bệnh nhầy nhớt (mucoviscidosis) (xơ nang tuyến tụy), bệnh lý hô hấp có đờm nhầy quánh như trong viêm phế quản cấp và mạn, và làm sạch thường quy trong mở khí quản.', 'Hộp', 70000, 'images/-1.jpg', 'Không kê đơn', 5, 'true');
-insert into Thuoc (idDanhMuc, tenThuoc, thanhPhan, hamLuong, congDung, donViTinh, giaBan, hinhAnh, yeuCauKeDon, gioiHanMua, trangThai) values (1, 'Thuốc ho người lớn OPC', '90ml chứa: cineol (18.00mg), Hoàng cầm (1.80 ), Bạch linh (1.80 ), Thiên môn đông (2.70 )', '90ml', 'Điều trị các bệnh viêm nhiễm đường hô hấp, các chứng ho gió, ho cảm, ho có đàm, đau họng.', 'Chai', 38000, 'images/-1.jpg', 'Không kê đơn', 7, 'true');
-insert into Thuoc (idDanhMuc, tenThuoc, thanhPhan, hamLuong, congDung, donViTinh, giaBan, hinhAnh, yeuCauKeDon, gioiHanMua, trangThai) values (1, 'Viên ngậm Strepsils Throat Irritation & Cough Reckitt Benckiser', '1 viên chứa: Ambroxol (15mg)', '12 viên', 'Viên ngậm Strepsils Throat Irritation & Cough Reckitt Benckiser là thuốc làm tan chất nhầy trong các bệnh đường hô hấp có tăng tiết chất nhầy (long đờm). Thuốc cũng được dùng để làm lỏng các chất nhầy đặc trong các bệnh phế quản và phổi cấp và mãn tính.', 'Vỉ', 55000, 'images/-1.jpg', 'Không kê đơn', 10, 'true');
-insert into Thuoc (idDanhMuc, tenThuoc, thanhPhan, hamLuong, congDung, donViTinh, giaBan, hinhAnh, yeuCauKeDon, gioiHanMua, trangThai) values (2, 'Kem bôi da Ketoconazol 2% Medipharco', '1g chứa: Ketoconazol (20mg)', '10g', 'Thuốc bôi da Ketoconazol 2% Medipharco được dùng bôi tại chỗ để điều trị các bệnh nấm ở da và niêm mạc (Candida, Trichophyton rubrum, T. mentagrophytes, Epidermophyton floccosum, Malassezia furfur...).', 'Hộp', 11000, 'images/-1.jpg', 'Không kê đơn', 7, 'true');
-insert into Thuoc (idDanhMuc, tenThuoc, thanhPhan, hamLuong, congDung, donViTinh, giaBan, hinhAnh, yeuCauKeDon, gioiHanMua, trangThai) values (2, 'Dung dịch PVP - IODINE 10% Danapha', '1 chai chứa: Povidone-iodine (10%)', '20mg', 'Thuốc Pvp - Iodine 10% được chỉ định dùng trong các trường hợp sau: Sát trùng vết thương hoặc vết bỏng bề mặt, mức độ nhẹ. Điều trị hỗ trợ các tình trạng da, niêm mạc tổn thương để tránh nhiễm khuẩn. Sát trùng da, niêm mạc trước khi phẫu thuật. Lau rửa các dụng cụ y tế trước khi tiệt khuẩn', 'Chai', 8500, 'images/-1.jpg', 'Không kê đơn', -1, 'true');
-insert into Thuoc (idDanhMuc, tenThuoc, thanhPhan, hamLuong, congDung, donViTinh, giaBan, hinhAnh, yeuCauKeDon, gioiHanMua, trangThai) values (2, 'Thuốc bôi ngoài da Biroxime 1% ', '1g chứa: Clotrimazol (10mg)', '20g', 'Điều trị nấm da chân, nấm kẽ, nấm bẹn, lác đồng tiền. Bệnh nấm Candida do C.albicans.', 'Tuýp', 28000, 'images/-1.jpg', 'Không kê đơn', 2, 'true');
-insert into Thuoc (idDanhMuc, tenThuoc, thanhPhan, hamLuong, congDung, donViTinh, giaBan, hinhAnh, yeuCauKeDon, gioiHanMua, trangThai) values (2, 'Dung dịch LeoPovidone 10% ', '1 chai chứa: Povidone-iodine (10%)', '15ml', 'Điều trị các vết thương và ngăn ngừa nhiễm trùng đối với các vi khuẩn nhạy cảm. LeoPovidone có thể được dùng cho các vết bỏng, vết trầy xước.', 'Chai', 16000, 'images/-1.jpg', 'Không kê đơn', 10, 'true');
-insert into Thuoc (idDanhMuc, tenThuoc, thanhPhan, hamLuong, congDung, donViTinh, giaBan, hinhAnh, yeuCauKeDon, gioiHanMua, trangThai) values (2, 'Dung dịch dùng ngoài Xanh Methylen 1% ', '10ml chứa: Xanh Methylen (0.1g)', '17ml', 'Dung dịch dùng ngoài Xanh Methylen 1% dùng để điều trị chốc lở, viêm da mủ, điều trị nhiễm virus ngoài da.', 'Lọ', 13000, 'images/-1.jpg', 'Không kê đơn', 3, 'true');
-insert into Thuoc (idDanhMuc, tenThuoc, thanhPhan, hamLuong, congDung, donViTinh, giaBan, hinhAnh, yeuCauKeDon, gioiHanMua, trangThai) values (3, 'Thuốc Cetirizin 10mg ', '1 viên chứa: Cetirizin (10mg)', '10 viên', 'Thuốc Cetirizin 10mg Trường Thọ được chỉ định điều trị triệu chứng viêm mũi dị theo mùa hoặc không theo mùa, các bệnh ngứa ngoài da do dị ứng, nổi mề đay mãn tính, bệnh viêm kết mạc dị ứng.', 'Hộp', 40000, 'images/-1.jpg', 'Không kê đơn', 14, 'true');
-insert into Thuoc (idDanhMuc, tenThuoc, thanhPhan, hamLuong, congDung, donViTinh, giaBan, hinhAnh, yeuCauKeDon, gioiHanMua, trangThai) values (3, 'Thuốc Exopadin 60mg Trường Thọ', '1 viên chứa: Fexofenadin Hydroclorid (60mg)', '10 viên', 'Viêm mũi dị ứng: Exopadin được chỉ định để điều trị viêm mũi dị ứng theo mùa ở người lớn và trẻ em từ 12 tuổi trở lên. Mày đay vô căn mạn tính: Exopadin được chỉ định để điều trị các biểu hiện ngoài da không biến chứng của mày đay vô căn mạn tính ở người lớn và trẻ em từ 12 tuổi trở lên. Thuốc làm giảm ngứa và số lượng dát mày đay một cách đáng kể.', 'Vỉ', 60000, 'images/-1.jpg', 'Không kê đơn', 10, 'true');
-insert into Thuoc (idDanhMuc, tenThuoc, thanhPhan, hamLuong, congDung, donViTinh, giaBan, hinhAnh, yeuCauKeDon, gioiHanMua, trangThai) values (3, 'Thuốc Clorpheniramin 4mg Khapharco', '1 viên chứa: Clorpheniramin maleat (4mg)', '10 viên', 'Clorpheniramin maleat được dùng để điều trị triệu chứng các bệnh dị ứng như mày đay, phù mạch, viêm mũi dị ứng, viêm màng tiếp hợp dị ứng và ngứa. Thuốc là thành phần phổ biến trong many chế phẩm để điều trị ho, cảm lạnh. Tuy vậy, các chế phẩm này phải dùng thận trọng ở trẻ em và thường phải tránh dùng cho trẻ nhỏ dưới 2 tuổi, vì có nguy cơ gây tử vong.', 'Vỉ', 2000, 'images/-1.jpg', 'Không kê đơn', 7, 'true');
-insert into Thuoc (idDanhMuc, tenThuoc, thanhPhan, hamLuong, congDung, donViTinh, giaBan, hinhAnh, yeuCauKeDon, gioiHanMua, trangThai) values (3, 'Thuốc Allerphast 180mg Mebiphar', '1 viên chứa: Fexofenadin Hydroclorid (180mg)', '10 viên', 'Ðiều trị triệu chứng trong viêm mũi dị ứng theo mùa, mày đay mạn tính vô căn ở người lớn và trẻ em trên 6 tuổi', 'Vỉ', 2500, 'images/-1.jpg', 'Không kê đơn', -1, 'true');
-insert into Thuoc (idDanhMuc, tenThuoc, thanhPhan, hamLuong, congDung, donViTinh, giaBan, hinhAnh, yeuCauKeDon, gioiHanMua, trangThai) values (3, 'Thuốc Histalong - L 5mg Dr. Reddy', '1 viên chứa: Levocetirizine (5mg)', '10 viên', 'Ðiều trị triệu chứng viêm mũi dị ứng (kể cả viêm mũi dị ứng dai dẳng) and mày đay ở người lớn và trẻ em từ 6 tuổi trở lên.', 'Vỉ', 38000, 'images/-1.jpg', 'Không kê đơn', -1, 'true');
-insert into Thuoc (idDanhMuc, tenThuoc, thanhPhan, hamLuong, congDung, donViTinh, giaBan, hinhAnh, yeuCauKeDon, gioiHanMua, trangThai) values (4, 'Cao Sao Vàng Danapha', 'Camphor (4.128 ), Menthol (0.656 ), Tinh dầu bạc hà (2 ), Tinh dầu tràm (1.408 ), Tinh dầu đinh hương (0.144 )', '16g', 'Cao xoa Sao Vàng chỉ định điều trị trong các trường hợp cảm cúm, đau đầu, sổ mũi, chóng mặt, đau khớp, bị muỗi và côn trùng khác đốt.', 'Hộp', 29000, 'images/-1.jpg', 'Không kê đơn', 14, 'true');
-insert into Thuoc (idDanhMuc, tenThuoc, thanhPhan, hamLuong, congDung, donViTinh, giaBan, hinhAnh, yeuCauKeDon, gioiHanMua, trangThai) values (4, 'Dầu gừng Thái Dương', '24ml chứa: Gừng (12g), Tinh dầu bạc hà (0.96ml), Methyl salicylate (4.8g), Long não (0.48ml)', '24ml', 'Đau đầu, đau lưng, đau dây thần kinh, đau vai gáy, đau nhức do phong thấp, lòng bàn chân, bàn tay lạnh giá, tê, mỏi. Cảm cúm, ngạt mũi, sổ mũi, đau bụng lạnh, buồn nôn do cảm gió, cảm lạnh, say tàu xe, ngứa do muỗi đốt, côn trùng cắn.', 'Chai', 80000, 'images/-1.jpg', 'Không kê đơn', 2, 'true');
-insert into Thuoc (idDanhMuc, tenThuoc, thanhPhan, hamLuong, congDung, donViTinh, giaBan, hinhAnh, yeuCauKeDon, gioiHanMua, trangThai) values (4, 'Dầu Khuynh Diệp OPC', 'Eucalyptol (12.44g)', '25ml', 'Phòng, trị cảm cúm, sổ mũi, nghẹt mũi, ho tức ngực, đau bụng, nhức mỏi, nhức đầu, chóng mặt, buồn nôn, côn trùng đốt, trật gân, sưng.', 'Chai', 83000, 'images/-1.jpg', 'Không kê đơn', -1, 'true');
-insert into Thuoc (idDanhMuc, tenThuoc, thanhPhan, hamLuong, congDung, donViTinh, giaBan, hinhAnh, yeuCauKeDon, gioiHanMua, trangThai) values (4, 'Cao dán Salonpas Diclofenac Patch Hisamitsu', 'Diclofenac Sodium (15mg)', '2 miếng', 'Người lớn và trẻ em từ 15 tuổi trở lên: Dùng giảm đau, kháng viêm trong các cơn đau liên quan đến: Đau cơ.Đau vai.Đau lưng.Bầm tím.Bong gân.Căng cơ.Đau khớp.Viêm gân.Đau khuỷu tay.', 'Gói', 45000, 'images/-1.jpg', 'Không kê đơn', -1, 'true');
-insert into Thuoc (idDanhMuc, tenThuoc, thanhPhan, hamLuong, congDung, donViTinh, giaBan, hinhAnh, yeuCauKeDon, gioiHanMua, trangThai) values (4, 'Cao dán Salonsip Gel - Patch Hisamitsu', 'L-menthol (1g), DL-camphor (0.3g), Glycol salicylate (1.25g), Tocopherol acetat (1g)', '3 miếng', 'Cao dán Salonsip Gel - Patch chỉ định dùng cho người lớn và trẻ em từ 30 tháng tuổi trở lên dùng giảm đau, kháng viêm trong các cơn đau liên quan đến: Mỏi cơ, đau cơ, đau vai, đau lưng đơn thuần, bầm tím, bong gân, căng cơ, viêm khớp.', 'Gói', 34000, 'images/-1.jpg', 'Không kê đơn', 7, 'true');
-insert into Thuoc (idDanhMuc, tenThuoc, thanhPhan, hamLuong, congDung, donViTinh, giaBan, hinhAnh, yeuCauKeDon, gioiHanMua, trangThai) values (5, 'Thuốc Fucagi 500mg Agimexpharm', '1 viên chứa: Mebendazol (500mg)', '1 viên', 'Điều trị trong các trường hợp nhiễm một hay nhiều loại giun đường ruột: Enterobius vermicularis (giun kim); Trichuris trichiura (giun tóc); Ascaris lumbricoides (giun đũa); Ancylostoma duodenale, Necator americanus (giun móc)', 'Hộp', 8000, 'images/-1.jpg', 'Không kê đơn', 3, 'true');
-insert into Thuoc (idDanhMuc, tenThuoc, thanhPhan, hamLuong, congDung, donViTinh, giaBan, hinhAnh, yeuCauKeDon, gioiHanMua, trangThai) values (5, 'Thuốc mỡ bôi da Agiclovir 5% Agimexpharm', '5g chứa: Aciclovir (0.25g), Excipients q.s (5g)', '5g', 'Các trường hợp nhiễm Herpes simplex trên da và niêm mạc, nhiễm Herpes zoster, Herpes sinh dục, Herpes môi khởi phát và tái phát.', 'Tuýp', 10000, 'images/-1.jpg', 'Không kê đơn', 2, 'true');
-insert into Thuoc (idDanhMuc, tenThuoc, thanhPhan, hamLuong, congDung, donViTinh, giaBan, hinhAnh, yeuCauKeDon, gioiHanMua, trangThai) values (5, 'Thuốc Fugacar 500mg Janssen', '1 viên chứa: Mebendazole (500mg)', '1 viên 500mg', 'Để điều trị nhiễm một hoặc nhiều loại giun ở đường ruột bao gồm giun tóc (Trichuris trichuria), giun kim (Enterobius vermicularis), giun đũa (Ascaris lumbricoides), giun móc (Ancylostoma duodenale, Necator americanus). Không có bằng chứng nào cho thấy viên nén Fugacar có hiệu quả trong điều trị bệnh nhiễm ấu trùng sán lợn.', 'Hộp', 23000, 'images/-1.jpg', 'Không kê đơn', 2, 'true');
-insert into Thuoc (idDanhMuc, tenThuoc, thanhPhan, hamLuong, congDung, donViTinh, giaBan, hinhAnh, yeuCauKeDon, gioiHanMua, trangThai) values (5, 'Viên nén Mebendazole 500mg Mekophar', '1 viên chứa: Mebendazole (500mg)', '1 viên', 'Điều trị nhiễm một hay nhiều loại giun, như giun kim, giun tóc, giun móc, giun đũa và giun lươn.', 'hộp', 2200, 'images/-1.jpg', 'Không kê đơn', 5, 'true');
-insert into Thuoc (idDanhMuc, tenThuoc, thanhPhan, hamLuong, congDung, donViTinh, giaBan, hinhAnh, yeuCauKeDon, gioiHanMua, trangThai) values (5, 'Thuốc rơ miệng Nyst 25.000IU OPC', '1g chứa: Nystatin (25000iu)', '1g', 'Thuốc Nyst 25.000 IU được chỉ định dùng trong trường hợp dự phòng và điều trị bệnh Candida miệng (đẹn): Tưa miệng, viêm miệng, lưỡi bị mất nhú, lưỡi đẹn, viêm họng do Candida albicans.', 'Gói', 1900, 'images/-1.jpg', 'Không kê đơn', 2, 'true');
-insert into Thuoc (idDanhMuc, tenThuoc, thanhPhan, hamLuong, congDung, donViTinh, giaBan, hinhAnh, yeuCauKeDon, gioiHanMua, trangThai) values (6, 'Dung dịch xịt mũi Otrera 0.1% An Thiên', 'Xylometazoline hydrochloride (0.1%)', '10ml', 'Nghẹt mũi, sung huyết mũi do viêm mũi cấp hoặc mạn tính, viêm xoang, cảm lạnh, cảm mạo, dị ứng đường hô hấp trên. Hỗ trợ điều trị sung huyết mũi họng trong viêm tai giữa.', 'Hộp', 2500, 'images/-1.jpg', 'Không kê đơn', 7, 'true');
-insert into Thuoc (idDanhMuc, tenThuoc, thanhPhan, hamLuong, congDung, donViTinh, giaBan, hinhAnh, yeuCauKeDon, gioiHanMua, trangThai) values (6, 'Thuốc viêm xoang Abipha Cap', '1 viên chứa: Bạch chỉ (225mg), Thương nhĩ tử (300mg), Phòng phong (225mg), Hoàng kỳ (375mg), Tân di hoa', '10 viên', 'Nghẹt mũi, sổ mũi, chảy nước mũi, nhức đầu vùng trán, viêm mũi dị ứng, viêm mũi, viêm xoang cấp và mạn tính', 'Vỉ', 400, 'images/-1.jpg', 'Không kê đơn', 10, 'true');
-insert into Thuoc (idDanhMuc, tenThuoc, thanhPhan, hamLuong, congDung, donViTinh, giaBan, hinhAnh, yeuCauKeDon, gioiHanMua, trangThai) values (6, 'Thuốc nhỏ mắt V.Rohto Vitamin', '13ml chứa: Natri chondroitin sulfat (13.0mg), Chlorphenamine (3.9mg), Vitamin B6 (13.0mg)', '13ml', 'Hỗ trợ cải thiện tình trạng giảm thị lực. Xung huyết kết mạc.Mắt mờ (do tiết dịch).Ngứa mắt.Mắt mỏi mệt.Viêm mí mắt.Phòng ngừa các bệnh về mắt (do bơi lội hoặc bụi, mồ hôi rơi vào mắt).Viêm mắt do tia tử ngoại hoặc do các tia sáng khác (như mù tuyết).Cảm giác khó chịu khi sử dụng kính tiếp xúc cứng.', 'Chai', 55000, 'images/-1.jpg', 'Không kê đơn', -1, 'true');
-insert into Thuoc (idDanhMuc, tenThuoc, thanhPhan, hamLuong, congDung, donViTinh, giaBan, hinhAnh, yeuCauKeDon, gioiHanMua, trangThai) values (6, 'Nước súc miệng Thái Dương hương bạc hà', '250ml chứa: Tinh dầu bạc hà (0.2), Menthol (0.2), Long não (2)', '500ml', 'Sát trùng răng, miệng, vòm họng, thúc đẩy tuần hoàn lợi (nướu), ngăn ngừa nguy cơ cao răng và viêm nhiễm gây sâu răng. Giúp khử sạch mùi hôi miệng, giữ cho hơi thở thơm mát. Giúp răng chắc khỏe mỗi ngày.', 'Chai', 400, 'images/-1.jpg', 'Không kê đơn', 2, 'true');
-insert into Thuoc (idDanhMuc, tenThuoc, thanhPhan, hamLuong, congDung, donViTinh, giaBan, hinhAnh, yeuCauKeDon, gioiHanMua, trangThai) values (6, 'Ống hít Sao Vàng Danapha', 'Menthol (769mg), Camphor (145mg), Tinh dầu đinh hương (312.5mg), Tinh dầu tràm (39mg', '1.5g', 'công dụng', 'Ống', 9000, 'images/-1.jpg', 'Không kê đơn', 5, 'true');
-insert into Thuoc (idDanhMuc, tenThuoc, thanhPhan, hamLuong, congDung, donViTinh, giaBan, hinhAnh, yeuCauKeDon, gioiHanMua, trangThai) values (7, 'Viên an thần Mimosa OPC', '1 viên chứa: Củ Bình vôi (150mg), lá sen (180mg), Lá vông nem (600mg), Lạc tiên (600mg), Trinh nữ', '10 viên', 'Dùng cho những trường hợp mất ngủ hoặc giấc ngủ đến chậm, suy nhược thần kinh.   Dùng thay thế cho Diazepam khi bệnh nhân bị quen thuốc.', 'Vỉ', 1900, 'images/-1.jpg', 'Không kê đơn', 10, 'true');
-insert into Thuoc (idDanhMuc, tenThuoc, thanhPhan, hamLuong, congDung, donViTinh, giaBan, hinhAnh, yeuCauKeDon, gioiHanMua, trangThai) values (7, 'Thuốc chống say tàu xe Momvina Hadiphar', '1 viên chứa: Dimenhydrinate (50mg)', '4 viên', 'Thuốc chống say tàu xe Momvina dùng trong phòng và điều trị chứng buồn nôn, nôn, chóng mặt khi say tàu xe. Điều trị chứng nôn và chóng mặt trong bệnh Ménière và các rối loạn tiền đình khác.', 'Vỉ', 91000, 'images/-1.jpg', 'Không kê đơn', -1, 'true');
-insert into Thuoc (idDanhMuc, tenThuoc, thanhPhan, hamLuong, congDung, donViTinh, giaBan, hinhAnh, yeuCauKeDon, gioiHanMua, trangThai) values (7, 'Dung dịch uống Laferine 80mg Cho-A', '1 ống chứa: Cao khô lá Bạch quả (80mg)', '20 ml', 'Người bị suy giảm khả năng ghi nhớ, kém tập trung, giảm trí nhớ và đặc biệt ở người lớn tuổi. Thiểu năng chức năng tuần hoàn máu não.Chóng mặt, đau đầu, đau nửa đầu, ù tai, giảm thính lực.Chân đi kiểu chân cao, chân thấp, loạng choạng.Một số người bị thiếu máu võng mạc.Nhược dương.', 'Ống', 60000, 'images/-1.jpg', 'Không kê đơn', 2, 'true');
-insert into Thuoc (idDanhMuc, tenThuoc, thanhPhan, hamLuong, congDung, donViTinh, giaBan, hinhAnh, yeuCauKeDon, gioiHanMua, trangThai) values (7, 'Thuốc Dưỡng Tâm An Thần Danapha', '1 viên chứa: Long nhãn (91.25mg), Lá vông (91.25mg), Lá dâu (91.25mg), Hắc táo nhân (91.25mg)', '100 viên', 'Mất ngủ do lo âu, làm việc quá sức, tim đập hồi hộp.Tâm thần bất an, giảm trí nhớ, suy nhược cơ thể, ăn không ngon.', 'Hộp', 500, 'images/-1.jpg', 'Không kê đơn', 3, 'true');
-insert into Thuoc (idDanhMuc, tenThuoc, thanhPhan, hamLuong, congDung, donViTinh, giaBan, hinhAnh, yeuCauKeDon, gioiHanMua, trangThai) values (7, 'Thuốc Hoàn An Thần Traphaco', '1 viên chứa: Táo Nhân (2g), Thảo quyết minh (1.5g), Tâm sen (1g), Đăng tâm thảo (0.6g)', '10 viên', 'Mất ngủ do suy nhược cơ thể. Các trường hợp lo lắng căng thẳng, khó ngủ, giấc ngủ không sâu dẫn đến mệt mỏi.', 'Vỉ', 400, 'images/-1.jpg', 'Không kê đơn', 10, 'true');
-insert into Thuoc (idDanhMuc, tenThuoc, thanhPhan, hamLuong, congDung, donViTinh, giaBan, hinhAnh, yeuCauKeDon, gioiHanMua, trangThai) values (8, 'Viên nhai OH NO Việt Phúc', '1 viên chứa: Nicotine (2mg), Natri hydro carbonat (30mg), Sorbitol (65mg), Aspartame (1.5mg)Amoxicillin', '12 viên', 'công dụng', 'Lọ', 36000, 'images/-1.jpg', 'Không kê đơn', 14, 'true');
-insert into Thuoc (idDanhMuc, tenThuoc, thanhPhan, hamLuong, congDung, donViTinh, giaBan, hinhAnh, yeuCauKeDon, gioiHanMua, trangThai) values (8, 'Thuốc tiêm Vinluta 600 Vinphaco', 'Glutathion (600mg)', '10ml', 'Hỗ trợ làm giảm độc tính trên thần kinh của xạ trị và của các hóa chất điều trị ung thư bao gồm cisplatin, cyclophosphamid, oxaplatin, 5-fluorouracil, carboplatin: Tiêm truyền tĩnh mạch ngay trước khi tiến hành xạ trị và trước phác đồ hóa trị liệu của các hóa chất trên. Hỗ trợ điều trị ngộ độc thủy ngân: Phối hợp các thuốc điều trị ngộ độc thủy ngân đặc hiệu như 2,3-dimercaptopropanl-sulfonat và meso-1,3-dimercaptosuccinic acid với tiêm truyền glutathion và vitamin C liều cao làm giảm nồng độ thủy ngân trong máu.Hỗ trợ điều trị xơ gan do rượu, xơ gan, viêm gan do virus B, C, D và gan nhiễm mỡ giúp cải thiện thể trạng của bệnh nhân và các chỉ số sinh hóa như bilirubin, GOT, GT cũng như giảm MDA và tổn thương tế bào gan rõ rệt.', 'Hộp', 400, 'images/-1.jpg', 'Không kê đơn', 14, 'true');
-insert into Thuoc (idDanhMuc, tenThuoc, thanhPhan, hamLuong, congDung, donViTinh, giaBan, hinhAnh, yeuCauKeDon, gioiHanMua, trangThai) values (8, 'Bột pha tiêm và dung môi Glumidtab 600 Pharbaco', 'Glutathione (600mg)', '600ml', 'Hỗ trợ giảm độc tính trên thần kinh của xạ trị và của các hóa chất điều trị ung thư. Hỗ trợ trong điều trị xơ gan do rượu, xơ gan, viêm gan do virus B, C, D và gan nhiễm mỡ.Hỗ trợ trong điều trị liên quan đến rối loạn mạch ngoại vi, mạch vành và các rối loạn huyết học.Cải thiện đáp ứng vận mạch với các thuốc giãn mạch vành như acetylcholin, nitro glycerin ở những bệnh nhân có các yếu tố nguy cơ bệnh mạch vành.Cải thiện tình trạng thiếu máu ở các bệnh nhân lọc máu do suy thận mãn.Hỗ trợ điều trị đái tháo đường không phụ thuộc insulin.Hỗ trợ trong điều trị viêm tụy cấp.Hỗ trợ điều trị ngộ độc thủy ngân.Hỗ trợ điều trị chảy máu dưới nhện.', 'Hộp', 50000, 'images/-1.jpg', 'Không kê đơn', 7, 'true');
-insert into Thuoc (idDanhMuc, tenThuoc, thanhPhan, hamLuong, congDung, donViTinh, giaBan, hinhAnh, yeuCauKeDon, gioiHanMua, trangThai) values (8, 'Thuốc Methionin 250mg Domesco', '1 viên chứa: Methionin (250mg)', '100 viên', 'mô tả', 'Hộp', 49000, 'images/-1.jpg', 'Không kê đơn', 3, 'true');
-insert into Thuoc (idDanhMuc, tenThuoc, thanhPhan, hamLuong, congDung, donViTinh, giaBan, hinhAnh, yeuCauKeDon, gioiHanMua, trangThai) values (8, 'Thuốc Nodict 50mg Sun Pharma', '1 viên chứa: Naltrexone HCL (50mg)', '10 viên', 'Dùng cho bệnh nhân cắt cơn cai nghiện ma túy và mong muốn được điều trị để duy trì chống tái nghiện', 'Vỉ', 5000, 'images/-1.jpg', 'Không kê đơn', 10, 'true');
-insert into Thuoc (idDanhMuc, tenThuoc, thanhPhan, hamLuong, congDung, donViTinh, giaBan, hinhAnh, yeuCauKeDon, gioiHanMua, trangThai) values (9, 'Siro Ceelin + Z United', '5ml chứa: Kẽm (10mg), Vitamin C (100mg)', '60 ml', 'mô tả', 'Hộp', 72000, 'images/-1.jpg', 'Không kê đơn', 5, 'true');
-insert into Thuoc (idDanhMuc, tenThuoc, thanhPhan, hamLuong, congDung, donViTinh, giaBan, hinhAnh, yeuCauKeDon, gioiHanMua, trangThai) values (9, 'Dung dịch uống Pokemine 50mg Medisun', '10ml chứa: Sắt (50mg)', '10 ml', 'Bổ sung sắt cho bệnh nhân có nguy cơ bị thiếu máu do thiếu sắt như: Phụ nữ mang thai. Phụ nữ cho con bú. Người suy dinh dưỡng. Người bệnh sau phẫu thuật. Trẻ em thiếu máu do thiếu sắt, chậm lớn, còi cọc', 'Ống', 500, 'images/-1.jpg', 'Không kê đơn', 5, 'true');
-insert into Thuoc (idDanhMuc, tenThuoc, thanhPhan, hamLuong, congDung, donViTinh, giaBan, hinhAnh, yeuCauKeDon, gioiHanMua, trangThai) values (9, 'Thuốc Enervon United', '1 viên chứa: Vitamin B12 (5mcg), Vitamin B1 (50mg), Vitamin B2 (20mg), Vitamin B3 (50mg), Vitamin B5', '10 viên', 'Thuốc Enervon là chế phẩm bổ sung để điều trị thiếu vitamin C và B ở người lớn và thanh thiếu niên trên 16 tuổi trong trường hợp thiếu hụt hoặc tăng nhu cầu như thời kì tăng trưởng nhanh, mệt mỏi, các trường hợp gắng sức về tinh thần và thể chất.', 'Vỉ', 2290, 'images/-1.jpg', 'Không kê đơn', 5, 'true');
-insert into Thuoc (idDanhMuc, tenThuoc, thanhPhan, hamLuong, congDung, donViTinh, giaBan, hinhAnh, yeuCauKeDon, gioiHanMua, trangThai) values (9, 'Thuốc Myhemo 305mg Reliv', '1 viên chứa: Acid folic (0.35mg), Sắt (100mg)', '1o viên', 'Dự phòng thiếu sắt và folic acid trong khi mang thai.', 'Vỉ', 5500, 'images/-1.jpg', 'Không kê đơn', 2, 'true');
-insert into Thuoc (idDanhMuc, tenThuoc, thanhPhan, hamLuong, congDung, donViTinh, giaBan, hinhAnh, yeuCauKeDon, gioiHanMua, trangThai) values (9, 'Thuốc Cardioton Lipa Pharma', '1 viên chứa: Ubidecarenone (30mg), D-alpha tocopherol (6.71mg)', '10 viên', 'mô tả', 'Vỉ', 7670, 'images/-1.jpg', 'Không kê đơn', 3, 'true');
-insert into Thuoc (idDanhMuc, tenThuoc, thanhPhan, hamLuong, congDung, donViTinh, giaBan, hinhAnh, yeuCauKeDon, gioiHanMua, trangThai) values (10, 'Thuốc Actadol 500 Medipharco', '1 viên chứa: Paracetamol (500mg)', '10 viên', 'Paracetamol được dùng rộng rãi trong điều trị các chứng đau và sốt từ nhẹ đến vừa. Đau:Paracetamol được dùng giảm đau tạm thời trong điều trị chứng đau nhẹ và vừa: Đau đầu, đau răng, đau bụng kinh, đau cơ... Thuốc có hiệu quả nhất là làm giảm đau cường độ thấp có nguồn gốc không phải nội tạng. Paracetamol không có tác dụng trị thấp khớp.Paracetamol là thuốc thay thế salicylat (được ưa thích ở người bệnh chống chỉ định hoặc không dung nạp salicylat) để giảm đau nhẹ hoặc hạ sốt;Sốt:Paracetamol thường được dùng để giảm thân nhiệt ở người bệnh sốt, khi sốt có thể có hại hoặc khi hạ sốt, người bệnh sẽ dễ chịu hơn. Tuy vậy, liệu pháp hạ sốt nói chung không đặc hiệu, không ảnh hưởng đến tiến trình của bệnh cơ bản, và có thể che lấp tình trạng bệnh của người bệnh', 'Vỉ', 500, 'images/-1.jpg', 'Không kê đơn', 3, 'true');
-insert into Thuoc (idDanhMuc, tenThuoc, thanhPhan, hamLuong, congDung, donViTinh, giaBan, hinhAnh, yeuCauKeDon, gioiHanMua, trangThai) values (10, 'Viên nén Paracetamol Stada 500mg', '1 viên chứa: Paracetamol (500mg)', '10 viên', 'Paracetamol có tác dụng gì? Thuốc Paracetamol 500mg được chỉ định điều trị trong các trường hợp sau: Các cơn đau từ nhẹ đến trung bình bao gồm đau đầu, đau nửa đầu, đau thần kinh đau răng, đau họng, đau do hành kinh, đau nhức.Giảm triệu chứng đau nhức do thấp khớp, cảm cúm, cảm sốt và cảm lạnh.', 'Vỉ', 400, 'images/-1.jpg', 'Không kê đơn', 10, 'true');
-insert into Thuoc (idDanhMuc, tenThuoc, thanhPhan, hamLuong, congDung, donViTinh, giaBan, hinhAnh, yeuCauKeDon, gioiHanMua, trangThai) values (10, 'Viên sủi Tovalgan Ef Trường Thọ Pharma', '1 viên chứa: Paracetamol (500mg)', '4 viên', 'Viên nén sủi bọt Tovalgan Ef chứa Paracetamol là một chất giảm đau và hạ sốt được dùng trong các trường hợp: Các cơn đau nhẹ đến trung bình bao gồm: Nhức đầu, đau nhức do cảm lạnh hay cảm cúm, đau họng, đau do hành kinh, đau nhức cơ xương, đau sau khi tiêm ngừa hay nhổ răng, đau răng, đau trong viêm xương khớp, nhức nửa đầu.Sốt.', 'Vỉ', 40000, 'images/-1.jpg', 'Không kê đơn', 3, 'true');
-insert into Thuoc (idDanhMuc, tenThuoc, thanhPhan, hamLuong, congDung, donViTinh, giaBan, hinhAnh, yeuCauKeDon, gioiHanMua, trangThai) values (10, 'Bột Glotadol 250 Abbott', '1 gói chứa: Paracetamol (250mg)Paracetamol', '2.5g', 'Bột pha hỗn dịch uống Glotadol có dùng hạ sốt và giảm các cơn đau do cảm cúm hay cảm lạnh thông thường, đau đầu, đau họng, mọc răng, tiêm ngừa, cắt amiđan.', 'Gói', 48000, 'images/-1.jpg', 'Không kê đơn', 7, 'true');
-insert into Thuoc (idDanhMuc, tenThuoc, thanhPhan, hamLuong, congDung, donViTinh, giaBan, hinhAnh, yeuCauKeDon, gioiHanMua, trangThai) values (10, 'Thuốc Ameflu Không Gây Buồn Ngủ OPV', '1 viên chứa: Paracetamol (500mg), Phenylephrine hydrochloride (5mg), Caffeine (25mg)', '10 viên', 'Thuốc Ameflu được chỉ định dùng trong các trường hợp sau: Làm giảm các triệu chứng cảm lạnh và cảm cúm như nhức đầu, đau họng, đau nhức cơ thể, sung huyết mũi, đau xoang trong viêm xoang và sốt.', 'Vỉ', 1100, 'images/-1.jpg', 'Không kê đơn', 2, 'true');
-
+insert into Thuoc (idDanhMuc, tenThuoc, thanhPhan, hamLuong, congDung, donViTinh, giaBan, yeuCauKeDon, gioiHanMua, trangThai) values (1, 'Siro HoAstex-S 90ml', 'Húng chanh (45.00g), Núc nác (11.25g), Tinh dầu bạch đàn (119.52mg)', '90ml', 'Siro HoAtex dùng trị ho, giảm ho trong viêm họng, viêm phế quản, viêm khí quản (viêm đường hô hấp)', 'Chai', 53000, 'Không kê đơn', 2, TRUE);
+insert into Thuoc (idDanhMuc, tenThuoc, thanhPhan, hamLuong, congDung, donViTinh, giaBan, yeuCauKeDon, gioiHanMua, trangThai) values (1, 'Siro Deslotid OPV', '1ml chứa: Desloratadin (0.5mg)', '60ml', 'Siro Deslotid được chỉ định dùng trong các trường hợp sau: Viêm mũi dị ứng: Hắt hơi, sổ mũi, nghẹt mũi, ngứa mũi họng và ngứa, chảy nước mắt. Phản ứng dị ứng da: Mày đay, ngứa, phát ban.', 'Hộp', 65000, 'Không kê đơn', 2, TRUE);
+insert into Thuoc (idDanhMuc, tenThuoc, thanhPhan, hamLuong, congDung, donViTinh, giaBan, yeuCauKeDon, gioiHanMua, trangThai) values (1, 'Thuốc Tocemux', '1 viên chứa: Acetylcysteine (200mg)', '10 viên', 'Dùng làm thuốc tiêu chất nhầy trong bệnh nhầy nhớt (mucoviscidosis) (xơ nang tuyến tụy), bệnh lý hô hấp có đờm nhầy quánh như trong viêm phế quản cấp và mạn, và làm sạch thường quy trong mở khí quản.', 'Hộp', 70000, 'Không kê đơn', 5, TRUE);
+insert into Thuoc (idDanhMuc, tenThuoc, thanhPhan, hamLuong, congDung, donViTinh, giaBan, yeuCauKeDon, gioiHanMua, trangThai) values (1, 'Thuốc ho người lớn OPC', '90ml chứa: cineol (18.00mg), Hoàng cầm (1.80 ), Bạch linh (1.80 ), Thiên môn đông (2.70 )', '90ml', 'Điều trị các bệnh viêm nhiễm đường hô hấp, các chứng ho gió, ho cảm, ho có đàm, đau họng.', 'Chai', 38000, 'Không kê đơn', 7, TRUE);
+insert into Thuoc (idDanhMuc, tenThuoc, thanhPhan, hamLuong, congDung, donViTinh, giaBan, yeuCauKeDon, gioiHanMua, trangThai) values (1, 'Viên ngậm Strepsils Throat Irritation & Cough Reckitt Benckiser', '1 viên chứa: Ambroxol (15mg)', '12 viên', 'Viên ngậm Strepsils Throat Irritation & Cough Reckitt Benckiser là thuốc làm tan chất nhầy trong các bệnh đường hô hấp có tăng tiết chất nhầy (long đờm). Thuốc cũng được dùng để làm lỏng các chất nhầy đặc trong các bệnh phế quản và phổi cấp và mãn tính.', 'Vỉ', 55000, 'Không kê đơn', 10, TRUE);
+insert into Thuoc (idDanhMuc, tenThuoc, thanhPhan, hamLuong, congDung, donViTinh, giaBan, yeuCauKeDon, gioiHanMua, trangThai) values (2, 'Kem bôi da Ketoconazol 2% Medipharco', '1g chứa: Ketoconazol (20mg)', '10g', 'Thuốc bôi da Ketoconazol 2% Medipharco được dùng bôi tại chỗ để điều trị các bệnh nấm ở da và niêm mạc (Candida, Trichophyton rubrum, T. mentagrophytes, Epidermophyton floccosum, Malassezia furfur...).', 'Hộp', 11000, 'Không kê đơn', 7, TRUE);
+insert into Thuoc (idDanhMuc, tenThuoc, thanhPhan, hamLuong, congDung, donViTinh, giaBan, yeuCauKeDon, gioiHanMua, trangThai) values (2, 'Dung dịch PVP - IODINE 10% Danapha', '1 chai chứa: Povidone-iodine (10%)', '20mg', 'Thuốc Pvp - Iodine 10% được chỉ định dùng trong các trường hợp sau: Sát trùng vết thương hoặc vết bỏng bề mặt, mức độ nhẹ. Điều trị hỗ trợ các tình trạng da, niêm mạc tổn thương để tránh nhiễm khuẩn. Sát trùng da, niêm mạc trước khi phẫu thuật. Lau rửa các dụng cụ y tế trước khi tiệt khuẩn', 'Chai', 8500, 'Không kê đơn', -1, TRUE);
+insert into Thuoc (idDanhMuc, tenThuoc, thanhPhan, hamLuong, congDung, donViTinh, giaBan, yeuCauKeDon, gioiHanMua, trangThai) values (2, 'Thuốc bôi ngoài da Biroxime 1% ', '1g chứa: Clotrimazol (10mg)', '20g', 'Điều trị nấm da chân, nấm kẽ, nấm bẹn, lác đồng tiền. Bệnh nấm Candida do C.albicans.', 'Tuýp', 28000, 'Không kê đơn', 2, TRUE);
+insert into Thuoc (idDanhMuc, tenThuoc, thanhPhan, hamLuong, congDung, donViTinh, giaBan, yeuCauKeDon, gioiHanMua, trangThai) values (2, 'Dung dịch LeoPovidone 10% ', '1 chai chứa: Povidone-iodine (10%)', '15ml', 'Điều trị các vết thương và ngăn ngừa nhiễm trùng đối với các vi khuẩn nhạy cảm. LeoPovidone có thể được dùng cho các vết bỏng, vết trầy xước.', 'Chai', 16000, 'Không kê đơn', 10, TRUE);
+insert into Thuoc (idDanhMuc, tenThuoc, thanhPhan, hamLuong, congDung, donViTinh, giaBan, yeuCauKeDon, gioiHanMua, trangThai) values (2, 'Dung dịch dùng ngoài Xanh Methylen 1% ', '10ml chứa: Xanh Methylen (0.1g)', '17ml', 'Dung dịch dùng ngoài Xanh Methylen 1% dùng để điều trị chốc lở, viêm da mủ, điều trị nhiễm virus ngoài da.', 'Lọ', 13000, 'Không kê đơn', 3, TRUE);
+insert into Thuoc (idDanhMuc, tenThuoc, thanhPhan, hamLuong, congDung, donViTinh, giaBan, yeuCauKeDon, gioiHanMua, trangThai) values (3, 'Thuốc Cetirizin 10mg ', '1 viên chứa: Cetirizin (10mg)', '10 viên', 'Thuốc Cetirizin 10mg Trường Thọ được chỉ định điều trị triệu chứng viêm mũi dị theo mùa hoặc không theo mùa, các bệnh ngứa ngoài da do dị ứng, nổi mề đay mãn tính, bệnh viêm kết mạc dị ứng.', 'Hộp', 40000, 'Không kê đơn', 14, TRUE);
+insert into Thuoc (idDanhMuc, tenThuoc, thanhPhan, hamLuong, congDung, donViTinh, giaBan, yeuCauKeDon, gioiHanMua, trangThai) values (3, 'Thuốc Exopadin 60mg Trường Thọ', '1 viên chứa: Fexofenadin Hydroclorid (60mg)', '10 viên', 'Viêm mũi dị ứng: Exopadin được chỉ định để điều trị viêm mũi dị ứng theo mùa ở người lớn và trẻ em từ 12 tuổi trở lên. Mày đay vô căn mạn tính: Exopadin được chỉ định để điều trị các biểu hiện ngoài da không biến chứng của mày đay vô căn mạn tính ở người lớn và trẻ em từ 12 tuổi trở lên. Thuốc làm giảm ngứa và số lượng dát mày đay một cách đáng kể.', 'Vỉ', 60000, 'Không kê đơn', 10, TRUE);
+insert into Thuoc (idDanhMuc, tenThuoc, thanhPhan, hamLuong, congDung, donViTinh, giaBan, yeuCauKeDon, gioiHanMua, trangThai) values (3, 'Thuốc Clorpheniramin 4mg Khapharco', '1 viên chứa: Clorpheniramin maleat (4mg)', '10 viên', 'Clorpheniramin maleat được dùng để điều trị triệu chứng các bệnh dị ứng như mày đay, phù mạch, viêm mũi dị ứng, viêm màng tiếp hợp dị ứng và ngứa. Thuốc là thành phần phổ biến trong many chế phẩm để điều trị ho, cảm lạnh. Tuy vậy, các chế phẩm này phải dùng thận trọng ở trẻ em và thường phải tránh dùng cho trẻ nhỏ dưới 2 tuổi, vì có nguy cơ gây tử vong.', 'Vỉ', 2000, 'Không kê đơn', 7, TRUE);
+insert into Thuoc (idDanhMuc, tenThuoc, thanhPhan, hamLuong, congDung, donViTinh, giaBan, yeuCauKeDon, gioiHanMua, trangThai) values (3, 'Thuốc Allerphast 180mg Mebiphar', '1 viên chứa: Fexofenadin Hydroclorid (180mg)', '10 viên', 'Ðiều trị triệu chứng trong viêm mũi dị ứng theo mùa, mày đay mạn tính vô căn ở người lớn và trẻ em trên 6 tuổi', 'Vỉ', 2500, 'Không kê đơn', -1, TRUE);
+insert into Thuoc (idDanhMuc, tenThuoc, thanhPhan, hamLuong, congDung, donViTinh, giaBan, yeuCauKeDon, gioiHanMua, trangThai) values (3, 'Thuốc Histalong - L 5mg Dr. Reddy', '1 viên chứa: Levocetirizine (5mg)', '10 viên', 'Ðiều trị triệu chứng viêm mũi dị ứng (kể cả viêm mũi dị ứng dai dẳng) and mày đay ở người lớn và trẻ em từ 6 tuổi trở lên.', 'Vỉ', 38000, 'Không kê đơn', -1, TRUE);
+insert into Thuoc (idDanhMuc, tenThuoc, thanhPhan, hamLuong, congDung, donViTinh, giaBan, yeuCauKeDon, gioiHanMua, trangThai) values (4, 'Cao Sao Vàng Danapha', 'Camphor (4.128 ), Menthol (0.656 ), Tinh dầu bạc hà (2 ), Tinh dầu tràm (1.408 ), Tinh dầu đinh hương (0.144 )', '16g', 'Cao xoa Sao Vàng chỉ định điều trị trong các trường hợp cảm cúm, đau đầu, sổ mũi, chóng mặt, đau khớp, bị muỗi và côn trùng khác đốt.', 'Hộp', 29000, 'Không kê đơn', 14, TRUE);
+insert into Thuoc (idDanhMuc, tenThuoc, thanhPhan, hamLuong, congDung, donViTinh, giaBan, yeuCauKeDon, gioiHanMua, trangThai) values (4, 'Dầu gừng Thái Dương', '24ml chứa: Gừng (12g), Tinh dầu bạc hà (0.96ml), Methyl salicylate (4.8g), Long não (0.48ml)', '24ml', 'Đau đầu, đau lưng, đau dây thần kinh, đau vai gáy, đau nhức do phong thấp, lòng bàn chân, bàn tay lạnh giá, tê, mỏi. Cảm cúm, ngạt mũi, sổ mũi, đau bụng lạnh, buồn nôn do cảm gió, cảm lạnh, say tàu xe, ngứa do muỗi đốt, côn trùng cắn.', 'Chai', 80000, 'Không kê đơn', 2, TRUE);
+insert into Thuoc (idDanhMuc, tenThuoc, thanhPhan, hamLuong, congDung, donViTinh, giaBan, yeuCauKeDon, gioiHanMua, trangThai) values (4, 'Dầu Khuynh Diệp OPC', 'Eucalyptol (12.44g)', '25ml', 'Phòng, trị cảm cúm, sổ mũi, nghẹt mũi, ho tức ngực, đau bụng, nhức mỏi, nhức đầu, chóng mặt, buồn nôn, côn trùng đốt, trật gân, sưng.', 'Chai', 83000, 'Không kê đơn', -1, TRUE);
+insert into Thuoc (idDanhMuc, tenThuoc, thanhPhan, hamLuong, congDung, donViTinh, giaBan, yeuCauKeDon, gioiHanMua, trangThai) values (4, 'Cao dán Salonpas Diclofenac Patch Hisamitsu', 'Diclofenac Sodium (15mg)', '2 miếng', 'Người lớn và trẻ em từ 15 tuổi trở lên: Dùng giảm đau, kháng viêm trong các cơn đau liên quan đến: Đau cơ.Đau vai.Đau lưng.Bầm tím.Bong gân.Căng cơ.Đau khớp.Viêm gân.Đau khuỷu tay.', 'Gói', 45000, 'Không kê đơn', -1, TRUE);
+insert into Thuoc (idDanhMuc, tenThuoc, thanhPhan, hamLuong, congDung, donViTinh, giaBan, yeuCauKeDon, gioiHanMua, trangThai) values (4, 'Cao dán Salonsip Gel - Patch Hisamitsu', 'L-menthol (1g), DL-camphor (0.3g), Glycol salicylate (1.25g), Tocopherol acetat (1g)', '3 miếng', 'Cao dán Salonsip Gel - Patch chỉ định dùng cho người lớn và trẻ em từ 30 tháng tuổi trở lên dùng giảm đau, kháng viêm trong các cơn đau liên quan đến: Mỏi cơ, đau cơ, đau vai, đau lưng đơn thuần, bầm tím, bong gân, căng cơ, viêm khớp.', 'Gói', 34000, 'Không kê đơn', 7, TRUE);
+insert into Thuoc (idDanhMuc, tenThuoc, thanhPhan, hamLuong, congDung, donViTinh, giaBan, yeuCauKeDon, gioiHanMua, trangThai) values (5, 'Thuốc Fucagi 500mg Agimexpharm', '1 viên chứa: Mebendazol (500mg)', '1 viên', 'Điều trị trong các trường hợp nhiễm một hay nhiều loại giun đường ruột: Enterobius vermicularis (giun kim); Trichuris trichiura (giun tóc); Ascaris lumbricoides (giun đũa); Ancylostoma duodenale, Necator americanus (giun móc)', 'Hộp', 8000, 'Không kê đơn', 3, TRUE);
+insert into Thuoc (idDanhMuc, tenThuoc, thanhPhan, hamLuong, congDung, donViTinh, giaBan, yeuCauKeDon, gioiHanMua, trangThai) values (5, 'Thuốc mỡ bôi da Agiclovir 5% Agimexpharm', '5g chứa: Aciclovir (0.25g), Excipients q.s (5g)', '5g', 'Các trường hợp nhiễm Herpes simplex trên da và niêm mạc, nhiễm Herpes zoster, Herpes sinh dục, Herpes môi khởi phát và tái phát.', 'Tuýp', 10000, 'Không kê đơn', 2, TRUE);
+insert into Thuoc (idDanhMuc, tenThuoc, thanhPhan, hamLuong, congDung, donViTinh, giaBan, yeuCauKeDon, gioiHanMua, trangThai) values (5, 'Thuốc Fugacar 500mg Janssen', '1 viên chứa: Mebendazole (500mg)', '1 viên 500mg', 'Để điều trị nhiễm một hoặc nhiều loại giun ở đường ruột bao gồm giun tóc (Trichuris trichuria), giun kim (Enterobius vermicularis), giun đũa (Ascaris lumbricoides), giun móc (Ancylostoma duodenale, Necator americanus). Không có bằng chứng nào cho thấy viên nén Fugacar có hiệu quả trong điều trị bệnh nhiễm ấu trùng sán lợn.', 'Hộp', 23000, 'Không kê đơn', 2, TRUE);
+insert into Thuoc (idDanhMuc, tenThuoc, thanhPhan, hamLuong, congDung, donViTinh, giaBan, yeuCauKeDon, gioiHanMua, trangThai) values (5, 'Viên nén Mebendazole 500mg Mekophar', '1 viên chứa: Mebendazole (500mg)', '1 viên', 'Điều trị nhiễm một hay nhiều loại giun, như giun kim, giun tóc, giun móc, giun đũa và giun lươn.', 'hộp', 2200, 'Không kê đơn', 5, TRUE);
+insert into Thuoc (idDanhMuc, tenThuoc, thanhPhan, hamLuong, congDung, donViTinh, giaBan, yeuCauKeDon, gioiHanMua, trangThai) values (5, 'Thuốc rơ miệng Nyst 25.000IU OPC', '1g chứa: Nystatin (25000iu)', '1g', 'Thuốc Nyst 25.000 IU được chỉ định dùng trong trường hợp dự phòng và điều trị bệnh Candida miệng (đẹn): Tưa miệng, viêm miệng, lưỡi bị mất nhú, lưỡi đẹn, viêm họng do Candida albicans.', 'Gói', 1900, 'Không kê đơn', 2, TRUE);
+insert into Thuoc (idDanhMuc, tenThuoc, thanhPhan, hamLuong, congDung, donViTinh, giaBan, yeuCauKeDon, gioiHanMua, trangThai) values (6, 'Dung dịch xịt mũi Otrera 0.1% An Thiên', 'Xylometazoline hydrochloride (0.1%)', '10ml', 'Nghẹt mũi, sung huyết mũi do viêm mũi cấp hoặc mạn tính, viêm xoang, cảm lạnh, cảm mạo, dị ứng đường hô hấp trên. Hỗ trợ điều trị sung huyết mũi họng trong viêm tai giữa.', 'Hộp', 2500, 'Không kê đơn', 7, TRUE);
+insert into Thuoc (idDanhMuc, tenThuoc, thanhPhan, hamLuong, congDung, donViTinh, giaBan, yeuCauKeDon, gioiHanMua, trangThai) values (6, 'Thuốc viêm xoang Abipha Cap', '1 viên chứa: Bạch chỉ (225mg), Thương nhĩ tử (300mg), Phòng phong (225mg), Hoàng kỳ (375mg), Tân di hoa', '10 viên', 'Nghẹt mũi, sổ mũi, chảy nước mũi, nhức đầu vùng trán, viêm mũi dị ứng, viêm mũi, viêm xoang cấp và mạn tính', 'Vỉ', 400, 'Không kê đơn', 10, TRUE);
+insert into Thuoc (idDanhMuc, tenThuoc, thanhPhan, hamLuong, congDung, donViTinh, giaBan, yeuCauKeDon, gioiHanMua, trangThai) values (6, 'Thuốc nhỏ mắt V.Rohto Vitamin', '13ml chứa: Natri chondroitin sulfat (13.0mg), Chlorphenamine (3.9mg), Vitamin B6 (13.0mg)', '13ml', 'Hỗ trợ cải thiện tình trạng giảm thị lực. Xung huyết kết mạc.Mắt mờ (do tiết dịch).Ngứa mắt.Mắt mỏi mệt.Viêm mí mắt.Phòng ngừa các bệnh về mắt (do bơi lội hoặc bụi, mồ hôi rơi vào mắt).Viêm mắt do tia tử ngoại hoặc do các tia sáng khác (như mù tuyết).Cảm giác khó chịu khi sử dụng kính tiếp xúc cứng.', 'Chai', 55000, 'Không kê đơn', -1, TRUE);
+insert into Thuoc (idDanhMuc, tenThuoc, thanhPhan, hamLuong, congDung, donViTinh, giaBan, yeuCauKeDon, gioiHanMua, trangThai) values (6, 'Nước súc miệng Thái Dương hương bạc hà', '250ml chứa: Tinh dầu bạc hà (0.2), Menthol (0.2), Long não (2)', '500ml', 'Sát trùng răng, miệng, vòm họng, thúc đẩy tuần hoàn lợi (nướu), ngăn ngừa nguy cơ cao răng và viêm nhiễm gây sâu răng. Giúp khử sạch mùi hôi miệng, giữ cho hơi thở thơm mát. Giúp răng chắc khỏe mỗi ngày.', 'Chai', 400, 'Không kê đơn', 2, TRUE);
+insert into Thuoc (idDanhMuc, tenThuoc, thanhPhan, hamLuong, congDung, donViTinh, giaBan, yeuCauKeDon, gioiHanMua, trangThai) values (6, 'Ống hít Sao Vàng Danapha', 'Menthol (769mg), Camphor (145mg), Tinh dầu đinh hương (312.5mg), Tinh dầu tràm (39mg', '1.5g', 'công dụng', 'Ống', 9000, 'Không kê đơn', 5, TRUE);
+insert into Thuoc (idDanhMuc, tenThuoc, thanhPhan, hamLuong, congDung, donViTinh, giaBan, yeuCauKeDon, gioiHanMua, trangThai) values (7, 'Viên an thần Mimosa OPC', '1 viên chứa: Củ Bình vôi (150mg), lá sen (180mg), Lá vông nem (600mg), Lạc tiên (600mg), Trinh nữ', '10 viên', 'Dùng cho những trường hợp mất ngủ hoặc giấc ngủ đến chậm, suy nhược thần kinh.   Dùng thay thế cho Diazepam khi bệnh nhân bị quen thuốc.', 'Vỉ', 1900, 'Không kê đơn', 10, TRUE);
+insert into Thuoc (idDanhMuc, tenThuoc, thanhPhan, hamLuong, congDung, donViTinh, giaBan, yeuCauKeDon, gioiHanMua, trangThai) values (7, 'Thuốc chống say tàu xe Momvina Hadiphar', '1 viên chứa: Dimenhydrinate (50mg)', '4 viên', 'Thuốc chống say tàu xe Momvina dùng trong phòng và điều trị chứng buồn nôn, nôn, chóng mặt khi say tàu xe. Điều trị chứng nôn và chóng mặt trong bệnh Ménière và các rối loạn tiền đình khác.', 'Vỉ', 91000, 'Không kê đơn', -1, TRUE);
+insert into Thuoc (idDanhMuc, tenThuoc, thanhPhan, hamLuong, congDung, donViTinh, giaBan, yeuCauKeDon, gioiHanMua, trangThai) values (7, 'Dung dịch uống Laferine 80mg Cho-A', '1 ống chứa: Cao khô lá Bạch quả (80mg)', '20 ml', 'Người bị suy giảm khả năng ghi nhớ, kém tập trung, giảm trí nhớ và đặc biệt ở người lớn tuổi. Thiểu năng chức năng tuần hoàn máu não.Chóng mặt, đau đầu, đau nửa đầu, ù tai, giảm thính lực.Chân đi kiểu chân cao, chân thấp, loạng choạng.Một số người bị thiếu máu võng mạc.Nhược dương.', 'Ống', 60000, 'Không kê đơn', 2, TRUE);
+insert into Thuoc (idDanhMuc, tenThuoc, thanhPhan, hamLuong, congDung, donViTinh, giaBan, yeuCauKeDon, gioiHanMua, trangThai) values (7, 'Thuốc Dưỡng Tâm An Thần Danapha', '1 viên chứa: Long nhãn (91.25mg), Lá vông (91.25mg), Lá dâu (91.25mg), Hắc táo nhân (91.25mg)', '100 viên', 'Mất ngủ do lo âu, làm việc quá sức, tim đập hồi hộp.Tâm thần bất an, giảm trí nhớ, suy nhược cơ thể, ăn không ngon.', 'Hộp', 500, 'Không kê đơn', 3, TRUE);
+insert into Thuoc (idDanhMuc, tenThuoc, thanhPhan, hamLuong, congDung, donViTinh, giaBan, yeuCauKeDon, gioiHanMua, trangThai) values (7, 'Thuốc Hoàn An Thần Traphaco', '1 viên chứa: Táo Nhân (2g), Thảo quyết minh (1.5g), Tâm sen (1g), Đăng tâm thảo (0.6g)', '10 viên', 'Mất ngủ do suy nhược cơ thể. Các trường hợp lo lắng căng thẳng, khó ngủ, giấc ngủ không sâu dẫn đến mệt mỏi.', 'Vỉ', 400, 'Không kê đơn', 10, TRUE);
+insert into Thuoc (idDanhMuc, tenThuoc, thanhPhan, hamLuong, congDung, donViTinh, giaBan, yeuCauKeDon, gioiHanMua, trangThai) values (8, 'Viên nhai OH NO Việt Phúc', '1 viên chứa: Nicotine (2mg), Natri hydro carbonat (30mg), Sorbitol (65mg), Aspartame (1.5mg)Amoxicillin', '12 viên', 'công dụng', 'Lọ', 36000, 'Không kê đơn', 14, TRUE);
+insert into Thuoc (idDanhMuc, tenThuoc, thanhPhan, hamLuong, congDung, donViTinh, giaBan, yeuCauKeDon, gioiHanMua, trangThai) values (8, 'Thuốc tiêm Vinluta 600 Vinphaco', 'Glutathion (600mg)', '10ml', 'Hỗ trợ làm giảm độc tính trên thần kinh của xạ trị và của các hóa chất điều trị ung thư bao gồm cisplatin, cyclophosphamid, oxaplatin, 5-fluorouracil, carboplatin: Tiêm truyền tĩnh mạch ngay trước khi tiến hành xạ trị và trước phác đồ hóa trị liệu của các hóa chất trên. Hỗ trợ điều trị ngộ độc thủy ngân: Phối hợp các thuốc điều trị ngộ độc thủy ngân đặc hiệu như 2,3-dimercaptopropanl-sulfonat và meso-1,3-dimercaptosuccinic acid với tiêm truyền glutathion và vitamin C liều cao làm giảm nồng độ thủy ngân trong máu.Hỗ trợ điều trị xơ gan do rượu, xơ gan, viêm gan do virus B, C, D và gan nhiễm mỡ giúp cải thiện thể trạng của bệnh nhân và các chỉ số sinh hóa như bilirubin, GOT, GT cũng như giảm MDA và tổn thương tế bào gan rõ rệt.', 'Hộp', 400, 'Không kê đơn', 14, TRUE);
+insert into Thuoc (idDanhMuc, tenThuoc, thanhPhan, hamLuong, congDung, donViTinh, giaBan, yeuCauKeDon, gioiHanMua, trangThai) values (8, 'Bột pha tiêm và dung môi Glumidtab 600 Pharbaco', 'Glutathione (600mg)', '600ml', 'Hỗ trợ giảm độc tính trên thần kinh của xạ trị và của các hóa chất điều trị ung thư. Hỗ trợ trong điều trị xơ gan do rượu, xơ gan, viêm gan do virus B, C, D và gan nhiễm mỡ.Hỗ trợ trong điều trị liên quan đến rối loạn mạch ngoại vi, mạch vành và các rối loạn huyết học.Cải thiện đáp ứng vận mạch với các thuốc giãn mạch vành như acetylcholin, nitro glycerin ở những bệnh nhân có các yếu tố nguy cơ bệnh mạch vành.Cải thiện tình trạng thiếu máu ở các bệnh nhân lọc máu do suy thận mãn.Hỗ trợ điều trị đái tháo đường không phụ thuộc insulin.Hỗ trợ trong điều trị viêm tụy cấp.Hỗ trợ điều trị ngộ độc thủy ngân.Hỗ trợ điều trị chảy máu dưới nhện.', 'Hộp', 50000, 'Không kê đơn', 7, TRUE);
+insert into Thuoc (idDanhMuc, tenThuoc, thanhPhan, hamLuong, congDung, donViTinh, giaBan, yeuCauKeDon, gioiHanMua, trangThai) values (8, 'Thuốc Methionin 250mg Domesco', '1 viên chứa: Methionin (250mg)', '100 viên', 'mô tả', 'Hộp', 49000, 'Không kê đơn', 3, TRUE);
+insert into Thuoc (idDanhMuc, tenThuoc, thanhPhan, hamLuong, congDung, donViTinh, giaBan, yeuCauKeDon, gioiHanMua, trangThai) values (8, 'Thuốc Nodict 50mg Sun Pharma', '1 viên chứa: Naltrexone HCL (50mg)', '10 viên', 'Dùng cho bệnh nhân cắt cơn cai nghiện ma túy và mong muốn được điều trị để duy trì chống tái nghiện', 'Vỉ', 5000, 'Không kê đơn', 10, TRUE);
+insert into Thuoc (idDanhMuc, tenThuoc, thanhPhan, hamLuong, congDung, donViTinh, giaBan, yeuCauKeDon, gioiHanMua, trangThai) values (9, 'Siro Ceelin + Z United', '5ml chứa: Kẽm (10mg), Vitamin C (100mg)', '60 ml', 'mô tả', 'Hộp', 72000, 'Không kê đơn', 5, TRUE);
+insert into Thuoc (idDanhMuc, tenThuoc, thanhPhan, hamLuong, congDung, donViTinh, giaBan, yeuCauKeDon, gioiHanMua, trangThai) values (9, 'Dung dịch uống Pokemine 50mg Medisun', '10ml chứa: Sắt (50mg)', '10 ml', 'Bổ sung sắt cho bệnh nhân có nguy cơ bị thiếu máu do thiếu sắt như: Phụ nữ mang thai. Phụ nữ cho con bú. Người suy dinh dưỡng. Người bệnh sau phẫu thuật. Trẻ em thiếu máu do thiếu sắt, chậm lớn, còi cọc', 'Ống', 500, 'Không kê đơn', 5, TRUE);
+insert into Thuoc (idDanhMuc, tenThuoc, thanhPhan, hamLuong, congDung, donViTinh, giaBan, yeuCauKeDon, gioiHanMua, trangThai) values (9, 'Thuốc Enervon United', '1 viên chứa: Vitamin B12 (5mcg), Vitamin B1 (50mg), Vitamin B2 (20mg), Vitamin B3 (50mg), Vitamin B5', '10 viên', 'Thuốc Enervon là chế phẩm bổ sung để điều trị thiếu vitamin C và B ở người lớn và thanh thiếu niên trên 16 tuổi trong trường hợp thiếu hụt hoặc tăng nhu cầu như thời kì tăng trưởng nhanh, mệt mỏi, các trường hợp gắng sức về tinh thần và thể chất.', 'Vỉ', 2290, 'Không kê đơn', 5, TRUE);
+insert into Thuoc (idDanhMuc, tenThuoc, thanhPhan, hamLuong, congDung, donViTinh, giaBan, yeuCauKeDon, gioiHanMua, trangThai) values (9, 'Thuốc Myhemo 305mg Reliv', '1 viên chứa: Acid folic (0.35mg), Sắt (100mg)', '1o viên', 'Dự phòng thiếu sắt và folic acid trong khi mang thai.', 'Vỉ', 5500, 'Không kê đơn', 2, TRUE);
+insert into Thuoc (idDanhMuc, tenThuoc, thanhPhan, hamLuong, congDung, donViTinh, giaBan, yeuCauKeDon, gioiHanMua, trangThai) values (9, 'Thuốc Cardioton Lipa Pharma', '1 viên chứa: Ubidecarenone (30mg), D-alpha tocopherol (6.71mg)', '10 viên', 'mô tả', 'Vỉ', 7670, 'Không kê đơn', 3, TRUE);
+insert into Thuoc (idDanhMuc, tenThuoc, thanhPhan, hamLuong, congDung, donViTinh, giaBan, yeuCauKeDon, gioiHanMua, trangThai) values (10, 'Thuốc Actadol 500 Medipharco', '1 viên chứa: Paracetamol (500mg)', '10 viên', 'Paracetamol được dùng rộng rãi trong điều trị các chứng đau và sốt từ nhẹ đến vừa. Đau:Paracetamol được dùng giảm đau tạm thời trong điều trị chứng đau nhẹ và vừa: Đau đầu, đau răng, đau bụng kinh, đau cơ... Thuốc có hiệu quả nhất là làm giảm đau cường độ thấp có nguồn gốc không phải nội tạng. Paracetamol không có tác dụng trị thấp khớp.Paracetamol là thuốc thay thế salicylat (được ưa thích ở người bệnh chống chỉ định hoặc không dung nạp salicylat) để giảm đau nhẹ hoặc hạ sốt;Sốt:Paracetamol thường được dùng để giảm thân nhiệt ở người bệnh sốt, khi sốt có thể có hại hoặc khi hạ sốt, người bệnh sẽ dễ chịu hơn. Tuy vậy, liệu pháp hạ sốt nói chung không đặc hiệu, không ảnh hưởng đến tiến trình của bệnh cơ bản, và có thể che lấp tình trạng bệnh của người bệnh', 'Vỉ', 500, 'Không kê đơn', 3, TRUE);
+insert into Thuoc (idDanhMuc, tenThuoc, thanhPhan, hamLuong, congDung, donViTinh, giaBan, yeuCauKeDon, gioiHanMua, trangThai) values (10, 'Viên nén Paracetamol Stada 500mg', '1 viên chứa: Paracetamol (500mg)', '10 viên', 'Paracetamol có tác dụng gì? Thuốc Paracetamol 500mg được chỉ định điều trị trong các trường hợp sau: Các cơn đau từ nhẹ đến trung bình bao gồm đau đầu, đau nửa đầu, đau thần kinh đau răng, đau họng, đau do hành kinh, đau nhức.Giảm triệu chứng đau nhức do thấp khớp, cảm cúm, cảm sốt và cảm lạnh.', 'Vỉ', 400, 'Không kê đơn', 10, TRUE);
+insert into Thuoc (idDanhMuc, tenThuoc, thanhPhan, hamLuong, congDung, donViTinh, giaBan, yeuCauKeDon, gioiHanMua, trangThai) values (10, 'Viên sủi Tovalgan Ef Trường Thọ Pharma', '1 viên chứa: Paracetamol (500mg)', '4 viên', 'Viên nén sủi bọt Tovalgan Ef chứa Paracetamol là một chất giảm đau và hạ sốt được dùng trong các trường hợp: Các cơn đau nhẹ đến trung bình bao gồm: Nhức đầu, đau nhức do cảm lạnh hay cảm cúm, đau họng, đau do hành kinh, đau nhức cơ xương, đau sau khi tiêm ngừa hay nhổ răng, đau răng, đau trong viêm xương khớp, nhức nửa đầu.Sốt.', 'Vỉ', 40000, 'Không kê đơn', 3, TRUE);
+insert into Thuoc (idDanhMuc, tenThuoc, thanhPhan, hamLuong, congDung, donViTinh, giaBan, yeuCauKeDon, gioiHanMua, trangThai) values (10, 'Bột Glotadol 250 Abbott', '1 gói chứa: Paracetamol (250mg)Paracetamol', '2.5g', 'Bột pha hỗn dịch uống Glotadol có dùng hạ sốt và giảm các cơn đau do cảm cúm hay cảm lạnh thông thường, đau đầu, đau họng, mọc răng, tiêm ngừa, cắt amiđan.', 'Gói', 48000, 'Không kê đơn', 7, TRUE);
+insert into Thuoc (idDanhMuc, tenThuoc, thanhPhan, hamLuong, congDung, donViTinh, giaBan, yeuCauKeDon, gioiHanMua, trangThai) values (10, 'Thuốc Ameflu Không Gây Buồn Ngủ OPV', '1 viên chứa: Paracetamol (500mg), Phenylephrine hydrochloride (5mg), Caffeine (25mg)', '10 viên', 'Thuốc Ameflu được chỉ định dùng trong các trường hợp sau: Làm giảm các triệu chứng cảm lạnh và cảm cúm như nhức đầu, đau họng, đau nhức cơ thể, sung huyết mũi, đau xoang trong viêm xoang và sốt.', 'Vỉ', 1100, 'Không kê đơn', 2, TRUE);
 
 
 
@@ -489,7 +492,232 @@ INSERT INTO BaoCaoThongKe (idQuanTriVien, thoiGianBatDau, thoiGianKetThuc, loaiB
 (1, '2026-07-01', '2026-07-23', 'Báo cáo bán hàng tháng 7/2026');
 
 
+INSERT INTO HinhAnhThuoc (idThuoc, duongDan) VALUES
+-- Thuốc 1
+(1, 'assets/images/uploads/1/1-1.jpg'),
+(1, 'assets/images/uploads/1/1-2.jpg'),
+(1, 'assets/images/uploads/1/1-3.jpg'),
 
+-- Thuốc 2
+(2, 'assets/images/uploads/2/2-1.jpg'),
+(2, 'assets/images/uploads/2/2-2.jpg'),
+(2, 'assets/images/uploads/2/2-3.jpg'),
+
+-- Thuốc 3
+(3, 'assets/images/uploads/3/3-1.jpg'),
+(3, 'assets/images/uploads/3/3-2.jpg'),
+(3, 'assets/images/uploads/3/3-3.jpg'),
+(3, 'assets/images/uploads/3/3-4.jpg'),
+(3, 'assets/images/uploads/3/3-5.jpg'),
+
+-- Thuốc 4
+(4, 'assets/images/uploads/4/4-1.jpg'),
+(4, 'assets/images/uploads/4/4-2.jpg'),
+(4, 'assets/images/uploads/4/4-3.jpg'),
+
+-- Thuốc 5
+(5, 'assets/images/uploads/5/5-1.jpg'),
+(5, 'assets/images/uploads/5/5-2.jpg'),
+(5, 'assets/images/uploads/5/5-3.jpg'),
+
+-- Thuốc 6
+(6, 'assets/images/uploads/6/6-1.jpg'),
+(6, 'assets/images/uploads/6/6-2.jpg'),
+(6, 'assets/images/uploads/6/6-3.jpg'),
+
+-- Thuốc 7
+(7, 'assets/images/uploads/7/7-1.jpg'),
+(7, 'assets/images/uploads/7/7-2.jpg'),
+(7, 'assets/images/uploads/7/7-3.jpg'),
+
+-- Thuốc 8
+(8, 'assets/images/uploads/8/8-1.jpg'),
+
+-- Thuốc 9
+(9, 'assets/images/uploads/9/9-1.jpg'),
+(9, 'assets/images/uploads/9/9-2.jpg'),
+(9, 'assets/images/uploads/9/9-3.jpg'),
+(9, 'assets/images/uploads/9/9-4.jpg'),
+
+-- Thuốc 10
+(10, 'assets/images/uploads/10/10-1.jpg'),
+
+-- Thuốc 11
+(11, 'assets/images/uploads/11/11-1.jpg'),
+(11, 'assets/images/uploads/11/11-2.jpg'),
+(11, 'assets/images/uploads/11/11-3.jpg'),
+(11, 'assets/images/uploads/11/11-4.jpg'),
+
+-- Thuốc 12
+(12, 'assets/images/uploads/12/12-1.jpg'),
+(12, 'assets/images/uploads/12/12-2.jpg'),
+
+-- Thuốc 13
+(13, 'assets/images/uploads/13/13-1.jpg'),
+(13, 'assets/images/uploads/13/13-2.jpg'),
+(13, 'assets/images/uploads/13/13-3.jpg'),
+(13, 'assets/images/uploads/13/13-4.jpg'),
+
+-- Thuốc 14
+(14, 'assets/images/uploads/14/14-1.jpg'),
+(14, 'assets/images/uploads/14/14-2.jpg'),
+(14, 'assets/images/uploads/14/14-3.jpg'),
+
+-- Thuốc 15
+(15, 'assets/images/uploads/15/15-1.jpg'),
+(15, 'assets/images/uploads/15/15-2.jpg'),
+(15, 'assets/images/uploads/15/15-3.jpg'),
+
+-- Thuốc 16
+(16, 'assets/images/uploads/16/16-1.jpg'),
+(16, 'assets/images/uploads/16/16-2.jpg'),
+(16, 'assets/images/uploads/16/16-3.jpg'),
+
+-- Thuốc 17
+(17, 'assets/images/uploads/17/17-1.jpg'),
+(17, 'assets/images/uploads/17/17-2.jpg'),
+
+-- Thuốc 18
+(18, 'assets/images/uploads/18/18-2.jpg'),
+
+-- Thuốc 19
+(19, 'assets/images/uploads/19/19-1.jpg'),
+(19, 'assets/images/uploads/19/19-2.jpg'),
+(19, 'assets/images/uploads/19/19-3.jpg'),
+
+-- Thuốc 20
+(20, 'assets/images/uploads/20/20-1.jpg'),
+(20, 'assets/images/uploads/20/20-2.jpg'),
+(20, 'assets/images/uploads/20/20-3.jpg'),
+
+-- Thuốc 21
+(21, 'assets/images/uploads/21/21-1.jpg'),
+(21, 'assets/images/uploads/21/21-2.jpg'),
+(21, 'assets/images/uploads/21/21-3.jpg'),
+
+-- Thuốc 22
+(22, 'assets/images/uploads/22/22-1.jpg'),
+(22, 'assets/images/uploads/22/22-2.jpg'),
+(22, 'assets/images/uploads/22/22-3.jpg'),
+
+-- Thuốc 23
+(23, 'assets/images/uploads/23/23-1.jpg'),
+(23, 'assets/images/uploads/23/23-2.jpg'),
+(23, 'assets/images/uploads/23/23-3.jpg'),
+
+-- Thuốc 24
+(24, 'assets/images/uploads/24/24-1.jpg'),
+(24, 'assets/images/uploads/24/24-2.jpg'),
+
+-- Thuốc 25
+(25, 'assets/images/uploads/25/25-1.jpg'),
+
+-- Thuốc 26
+(26, 'assets/images/uploads/26/26-1.jpg'),
+(26, 'assets/images/uploads/26/26-2.jpg'),
+(26, 'assets/images/uploads/26/26-3.jpg'),
+
+-- Thuốc 27
+(27, 'assets/images/uploads/27/27-1.jpg'),
+(27, 'assets/images/uploads/27/27-2.jpg'),
+
+-- Thuốc 28
+(28, 'assets/images/uploads/28/28-1.jpg'),
+(28, 'assets/images/uploads/28/28-2.jpg'),
+(28, 'assets/images/uploads/28/28-3.jpg'),
+
+-- Thuốc 29
+(29, 'assets/images/uploads/29/29-1.jpg'),
+(29, 'assets/images/uploads/29/29-2.jpg'),
+
+-- Thuốc 30
+(30, 'assets/images/uploads/30/30-1.jpg'),
+
+-- Thuốc 31
+(31, 'assets/images/uploads/31/31-1.jpg'),
+(31, 'assets/images/uploads/31/31-2.jpg'),
+
+-- Thuốc 32
+(32, 'assets/images/uploads/32/32-1.jpg'),
+(32, 'assets/images/uploads/32/32-2.jpg'),
+
+-- Thuốc 33
+(33, 'assets/images/uploads/33/33-1.jpg'),
+
+-- Thuốc 34
+(34, 'assets/images/uploads/34/34-1.jpg'),
+
+-- Thuốc 35
+(35, 'assets/images/uploads/35/35-1.jpg'),
+
+-- Thuốc 36
+(36, 'assets/images/uploads/36/36-1.jpg'),
+(36, 'assets/images/uploads/36/36-2.jpg'),
+(36, 'assets/images/uploads/36/36-3.jpg'),
+
+-- Thuốc 37
+(37, 'assets/images/uploads/37/37-1.jpg'),
+
+-- Thuốc 38
+(38, 'assets/images/uploads/38/38-1.jpg'),
+
+-- Thuốc 39
+(39, 'assets/images/uploads/39/39-1.jpg'),
+
+-- Thuốc 40
+(40, 'assets/images/uploads/40/40-1.jpg'),
+
+-- Thuốc 41
+(41, 'assets/images/uploads/41/41-1.jpg'),
+(41, 'assets/images/uploads/41/41-2.jpg'),
+(41, 'assets/images/uploads/41/41-3.jpg'),
+
+-- Thuốc 42
+(42, 'assets/images/uploads/42/42-1.jpg'),
+(42, 'assets/images/uploads/42/42-2.jpg'),
+(42, 'assets/images/uploads/42/42-3.jpg'),
+(42, 'assets/images/uploads/42/42-4.jpg'),
+(42, 'assets/images/uploads/42/42-5.jpg'),
+
+-- Thuốc 43
+(43, 'assets/images/uploads/43/43-1.jpg'),
+(43, 'assets/images/uploads/43/43-2.jpg'),
+(43, 'assets/images/uploads/43/43-3.jpg'),
+
+-- Thuốc 44
+(44, 'assets/images/uploads/44/44-1.jpg'),
+(44, 'assets/images/uploads/44/44-2.jpg'),
+
+-- Thuốc 45
+(45, 'assets/images/uploads/45/45-1.jpg'),
+(45, 'assets/images/uploads/45/45-2.jpg'),
+(45, 'assets/images/uploads/45/45-3.jpg'),
+
+-- Thuốc 46
+(46, 'assets/images/uploads/46/46-1.jpg'),
+(46, 'assets/images/uploads/46/46-2.jpg'),
+(46, 'assets/images/uploads/46/46-3.jpg'),
+(46, 'assets/images/uploads/46/46-4.jpg'),
+
+-- Thuốc 47
+(47, 'assets/images/uploads/47/47-1.jpg'),
+(47, 'assets/images/uploads/47/47-2.jpg'),
+(47, 'assets/images/uploads/47/47-3.jpg'),
+(47, 'assets/images/uploads/47/47-4.jpg'),
+(47, 'assets/images/uploads/47/47-5.jpg'),
+
+-- Thuốc 48
+(48, 'assets/images/uploads/48/48-1.jpg'),
+(48, 'assets/images/uploads/48/48-2.jpg'),
+(48, 'assets/images/uploads/48/48-3.jpg'),
+
+-- Thuốc 49
+(49, 'assets/images/uploads/49/49-1.jpg'),
+(49, 'assets/images/uploads/49/49-2.jpg'),
+
+-- Thuốc 50
+(50, 'assets/images/uploads/50/50-1.jpg'),
+(50, 'assets/images/uploads/50/50-2.jpg');
 
 
 
