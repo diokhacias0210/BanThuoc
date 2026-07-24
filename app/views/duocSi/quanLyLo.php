@@ -1,72 +1,151 @@
 <div id="tab-lothuoc">
-    <div class="stat-grid">
-        <div class="stat-card" data-quickfilter="all">
-            <div class="stat-icon green">
-                <div class="icon icon-box"></div>
-            </div>
-            <div class="stat-value" id="statTotal">0</div>
-            <div class="stat-label">Tổng số lô thuốc</div>
-        </div>
-        <div class="stat-card" data-quickfilter="warn">
-            <div class="stat-icon orange">
-                <div class="icon icon-box"></div>
-            </div>
-            <div class="stat-value" id="statWarn">0</div>
-            <div class="stat-label">Sắp hết hạn (< 90 ngày)</div>
-        </div>
-        <div class="stat-card" data-quickfilter="disabled">
-            <div class="stat-icon red">
-                <div class="icon icon-box"></div>
-            </div>
-            <div class="stat-value" id="statDisabled">0</div>
-            <div class="stat-label">Tự động vô hiệu hóa (< 30 ngày)</div>
-        </div>
-    </div>
 
-    <div class="toolbar">
-        <div class="toolbar-search">
-            <div class="icon icon-search"></div>
-            <input type="text" id="searchInput" placeholder="Tìm theo mã lô hoặc tên thuốc...">
-        </div>
-        <select class="filter-select" id="filterStatus">
-            <option value="all">Tất cả trạng thái</option>
-            <option value="active">Còn hạn</option>
-            <option value="warn">Sắp hết hạn (<90 ngày)</option>
-            <option value="disabled">Đã vô hiệu hóa (<30 ngày)</option>
-            <option value="expired">Đã hết hạn</option>
-        </select>
-        <select class="filter-select" id="filterDanhMuc">
-            <option value="all">Tất cả danh mục</option>
-        </select>
-        <button class="btn btn-ghost" id="btnResetFilter">Đặt lại</button>
-        <button class="btn btn-primary" id="btnAddLo" style="margin-left:auto;">Thêm lô thuốc</button>
+  <div class="stat-grid">
+    <div class="stat-card" data-quickfilter="all">
+      <div class="stat-icon green">
+        <div class="icon icon-box"></div>
+      </div>
+      <div class="stat-value" id="statTotal">0</div>
+      <div class="stat-label">Tổng số lô thuốc</div>
     </div>
+    <div class="stat-card" data-quickfilter="warn">
+      <div class="stat-icon orange">
+        <div class="icon icon-box"></div>
+      </div>
+      <div class="stat-value" id="statWarn">0</div>
+      <div class="stat-label">Sắp hết hạn (< 90 ngày)</div>
+    </div>
+    <div class="stat-card" data-quickfilter="disabled">
+      <div class="stat-icon red">
+        <div class="icon icon-box"></div>
+      </div>
+      <div class="stat-value" id="statDisabled">0</div>
+      <div class="stat-label">Tự động vô hiệu hóa (< 30 ngày)</div>
+    </div>
+  </div>
 
-    <div class="table-card">
-        <div class="table-scroll">
-            <table>
-                <thead>
-                    <tr>
-                        <th>Mã lô</th>
-                        <th>Thuốc</th>
-                        <th>Ngày SX</th>
-                        <th>Hạn sử dụng</th>
-                        <th>SL tồn</th>
-                        <th>Giá nhập</th>
-                        <th>Trạng thái</th>
-                        <th style="text-align:right;">Thao tác</th>
-                    </tr>
-                </thead>
-                <tbody id="tableBody"></tbody>
-            </table>
-        </div>
-        <div id="emptyState" class="empty-state" style="display:none;">
-            <div class="t1">Không tìm thấy lô thuốc nào</div>
-        </div>
-        <div class="pagination-bar">
-            <div class="pagination" id="pagination"></div>
-        </div>
+  <div class="toolbar">
+    <div class="toolbar-search">
+      <div class="icon icon-search"></div>
+      <input type="text" id="searchInput" placeholder="Tìm theo mã lô hoặc tên thuốc...">
     </div>
+    <select class="filter-select" id="filterStatus">
+      <option value="all">Tất cả trạng thái</option>
+      <option value="active">Còn hạn</option>
+      <option value="warn">Sắp hết hạn (<90 ngày)</option>
+      <option value="disabled">Đã vô hiệu hóa (<30 ngày)</option>
+      <option value="expired">Đã hết hạn</option>
+    </select>
+    <select class="filter-select" id="filterDanhMuc">
+      <option value="all">Tất cả danh mục</option>
+    </select>
+    <button class="btn btn-ghost" id="btnResetFilter">Đặt lại</button>
+    <button class="btn btn-primary" id="btnAddLo" style="margin-left:auto;">Thêm lô thuốc</button>
+  </div>
+
+  <div class="table-card">
+    <div class="table-scroll">
+      <table>
+        <thead>
+          <tr>
+            <th>Mã lô</th>
+            <th>Thuốc</th>
+            <th>Ngày SX</th>
+            <th>Hạn sử dụng</th>
+            <th>SL tồn</th>
+            <th>Giá nhập</th>
+            <th>Trạng thái</th>
+            <th style="text-align:right;">Thao tác</th>
+          </tr>
+        </thead>
+        <tbody id="tableBody"></tbody>
+      </table>
+    </div>
+    <div id="emptyState" class="empty-state" style="display:none;">
+      <div class="t1">Không tìm thấy lô thuốc nào</div>
+    </div>
+    <div class="pagination-bar">
+      <div class="pagination" id="pagination"></div>
+    </div>
+  </div>
+</div>
+
+<!-- Modal Form Thêm/Sửa lô thuốc -->
+<div class="modal-overlay hidden" id="modalForm">
+  <div class="modal-box">
+    <div class="modal-head">
+      <div>
+        <h2 id="formModalTitle">Thêm lô thuốc mới</h2>
+        <div class="desc">Nhập đầy đủ thông tin lô thuốc theo dữ liệu hệ thống</div>
+      </div>
+      <button class="modal-close" data-close="modalForm">&times;</button>
+    </div>
+    <div class="modal-body">
+      <form id="loThuocForm" onsubmit="return false;">
+        <input type="hidden" id="f_idLo" name="idLo">
+        <div class="form-grid">
+          <div class="form-field">
+            <label>Thuốc <span class="req">*</span></label>
+            <select id="f_idThuoc" name="idThuoc" required>
+              <option value="">— Chọn thuốc —</option>
+            </select>
+          </div>
+          <div class="form-field">
+            <label>Mã lô <span class="req">*</span></label>
+            <input type="text" id="f_maLo" name="maLo" placeholder="VD: LOT-2024-001" required>
+          </div>
+          <div class="form-field">
+            <label>Ngày sản xuất</label>
+            <input type="date" id="f_ngaySanXuat" name="ngaySanXuat">
+          </div>
+          <div class="form-field">
+            <label>Hạn sử dụng <span class="req">*</span></label>
+            <input type="date" id="f_hanSuDung" name="hanSuDung" required>
+          </div>
+          <div class="form-field">
+            <label>Số lượng tồn <span class="req">*</span></label>
+            <input type="number" id="f_soLuongTon" name="soLuongTon" min="0" required>
+          </div>
+          <div class="form-field">
+            <label>Giá nhập (đ) <span class="req">*</span></label>
+            <input type="number" id="f_giaNhap" name="giaNhap" min="0" required>
+          </div>
+          <div class="form-field">
+            <label>Thành tiền</label>
+            <input type="text" id="f_thanhTien" readonly style="background:#f1f5f9; font-weight:600; color:var(--green-700);">
+          </div>
+        </div>
+      </form>
+    </div>
+    <div class="modal-foot">
+      <button class="btn btn-ghost" data-close="modalForm">Hủy bỏ</button>
+      <button class="btn btn-primary" id="btnSaveLo"><i class="fa-solid fa-floppy-disk"></i> Lưu dữ liệu</button>
+    </div>
+  </div>
+</div>
+
+<!-- Modal Xem chi tiết lô thuốc -->
+<div class="modal-overlay hidden" id="modalDetail">
+  <div class="modal-box">
+    <div class="modal-head">
+      <div>
+        <h2>Chi tiết lô thuốc</h2>
+      </div>
+      <button class="modal-close" data-close="modalDetail">&times;</button>
+    </div>
+    <div class="modal-body" id="detailBody">
+    </div>
+    <div class="modal-foot">
+      <button class="btn btn-ghost" data-close="modalDetail">Đóng</button>
+      <button class="btn btn-primary" id="btnEditFromDetail"><i class="fa-solid fa-pen-to-square"></i> Chỉnh sửa</button>
+    </div>
+  </div>
+</div>
+
+<!-- Toast Notification -->
+<div class="toast" id="toast">
+  <i class="fa-solid fa-circle-check"></i>
+  <span id="toastMsg">Thao tác thành công</span>
 </div>
 
 <!-- Modal Form Thêm/Sửa lô thuốc -->
@@ -247,7 +326,7 @@ function fetchData() {
         _: Date.now()
     });
 
-    fetch('<?php echo URLROOT; ?>/duocsi/quanLyLo/getList?' + params.toString())
+    fetch('<?php echo URLROOT; ?>/duocSi/quanLyLo/getList?' + params.toString())
         .then(res => res.json())
         .then(res => {
             if (res.status) {
@@ -358,7 +437,7 @@ function goToPage(page) {
 
 // ===== LOAD THUOC LIST FOR FORM SELECT =====
 function loadThuocList() {
-    fetch('<?php echo URLROOT; ?>/duocsi/quanLyLo/getListThuoc?_=' + Date.now())
+    fetch('<?php echo URLROOT; ?>/duocSi/quanLyLo/getListThuoc?_=' + Date.now())
         .then(res => res.json())
         .then(res => {
             if (res.status && res.data) {
@@ -391,7 +470,7 @@ function openEditForm(idLo) {
     clearFormErrors();
     document.getElementById('formModalTitle').textContent = 'Sửa lô thuốc';
 
-    fetch('<?php echo URLROOT; ?>/duocsi/quanLyLo/detail/' + idLo)
+    fetch('<?php echo URLROOT; ?>/duocSi/quanLyLo/detail/' + idLo)
         .then(res => res.json())
         .then(res => {
             if (res.status) {
@@ -418,7 +497,7 @@ function openEditForm(idLo) {
 // ===== OPEN DETAIL MODAL =====
 function openDetailModal(idLo) {
     state.detailId = idLo;
-    fetch('<?php echo URLROOT; ?>/duocsi/quanLyLo/detail/' + idLo)
+    fetch('<?php echo URLROOT; ?>/duocSi/quanLyLo/detail/' + idLo)
         .then(res => res.json())
         .then(res => {
             if (res.status) {
@@ -474,7 +553,7 @@ document.getElementById('btnSaveLo').addEventListener('click', function() {
 
     var formData = new FormData(document.getElementById('loThuocForm'));
 
-    fetch('<?php echo URLROOT; ?>/duocsi/quanLyLo/save', {
+    fetch('<?php echo URLROOT; ?>/duocSi/quanLyLo/save', {
         method: 'POST',
         body: formData
     })
@@ -499,7 +578,7 @@ document.getElementById('btnSaveLo').addEventListener('click', function() {
 function deleteLo(idLo) {
     if (!confirm('Bạn có chắc chắn muốn xóa lô thuốc này?')) return;
 
-    fetch('<?php echo URLROOT; ?>/duocsi/quanLyLo/delete/' + idLo, {
+    fetch('<?php echo URLROOT; ?>/duocSi/quanLyLo/delete/' + idLo, {
         method: 'POST'
     })
     .then(function(res) { return res.json(); })
