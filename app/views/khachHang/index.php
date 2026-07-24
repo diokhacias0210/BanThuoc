@@ -9,7 +9,8 @@
                 <a class="hero-btn-main" href="<?php echo URLROOT; ?>/khachHang/thuoc">
                     <i class="fa-solid fa-magnifying-glass"></i> Tìm thuốc ngay
                 </a>
-                <a class="hero-btn-sec" href="<?php echo URLROOT; ?>/khachHang/taiDonThuoc">
+                <!-- ĐÃ SỬA: Đổi /khachHang/taiDonThuoc thành /khachHang/dangKeToaThuoc -->
+                <a class="hero-btn-sec" href="<?php echo URLROOT; ?>/khachHang/dangKeToaThuoc">
                     <i class="fa-solid fa-file-arrow-up"></i> Gửi đơn thuốc
                 </a>
             </div>
@@ -23,7 +24,8 @@
             <div class="qa-label">Tìm thuốc</div>
             <div class="qa-sub">Hàng nghìn sản phẩm</div>
         </a>
-        <a class="qa" href="<?php echo URLROOT; ?>/khachHang/taiDonThuoc">
+        <!-- ĐÃ SỬA: Đổi /khachHang/taiDonThuoc thành /khachHang/dangKeToaThuoc -->
+        <a class="qa" href="<?php echo URLROOT; ?>/khachHang/dangKeToaThuoc">
             <div class="qa-icon" style="background:#fff3e0"><i class="fa-solid fa-file-medical" style="color:#e65100"></i></div>
             <div class="qa-label">Gửi đơn thuốc</div>
             <div class="qa-sub">Kê đơn RX nhanh chóng</div>
@@ -124,7 +126,7 @@
 
     <div class="divider"></div>
 
-    <!-- TIN TỨC SỨC KHỎE (Chỉ xem) -->
+    <!-- TIN TỨC SỨC KHỎE -->
     <div class="sec-head">
         <div class="sec-title">Tin tức sức khoẻ</div>
         <span class="sec-more">Xem tất cả <i class="fa-solid fa-angle-right"></i></span>
@@ -159,9 +161,42 @@
 </div>
 
 <script>
+    // ĐÃ BỔ SUNG: Kết nối API thật, bắt buộc đăng nhập trước khi thêm giỏ hàng
     function themNhanhGioHang(event, idThuoc) {
         event.preventDefault();
         event.stopPropagation();
-        alert("Đã thêm sản phẩm vào giỏ hàng thành công!");
+
+        fetch(`<?php echo URLROOT; ?>/khachHang/gioHang/themVaoGio`, {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/x-www-form-urlencoded'
+                },
+                body: `idThuoc=${idThuoc}&soLuong=1`
+            })
+            .then(res => res.text())
+            .then(text => {
+                try {
+                    const res = JSON.parse(text);
+                    if (res.status) {
+                        alert(res.message);
+                        const badge = document.getElementById('cartCountBadge');
+                        if (badge) {
+                            badge.textContent = parseInt(badge.textContent || 0) + 1;
+                        }
+                    } else if (res.requireLogin) {
+                        alert(res.message);
+                        window.location.href = `<?php echo URLROOT; ?>/khachHang/xacThuc/dangNhap`;
+                    } else {
+                        alert(res.message || "Thêm giỏ hàng thất bại.");
+                    }
+                } catch (e) {
+                    console.error("Server response:", text);
+                    alert("Có lỗi phản hồi từ máy chủ.");
+                }
+            })
+            .catch(err => {
+                console.error("Fetch error:", err);
+                alert("Không thể kết nối đến máy chủ.");
+            });
     }
 </script>

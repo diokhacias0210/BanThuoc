@@ -110,7 +110,6 @@ CREATE TABLE DonThuoc (
     ngayGui DATETIME DEFAULT CURRENT_TIMESTAMP,
     ghiChu NVARCHAR(500),
     trangThai ENUM('CHO_DUYET','DA_DUYET','TU_CHOI','KH_HUY') DEFAULT 'CHO_DUYET',
-    hinhAnhDonThuoc VARCHAR(255) NOT NULL,
     FOREIGN KEY (idKhachHang) REFERENCES KhachHang(idNguoiDung) ON DELETE RESTRICT,
     FOREIGN KEY (idDuocSi) REFERENCES DuocSi(idNguoiDung) ON DELETE SET NULL,
     FOREIGN KEY (idDonHang) REFERENCES DonHang(idDonHang) ON DELETE SET NULL
@@ -122,6 +121,12 @@ CREATE TABLE ChiTietDonThuoc (
     tenThuoc VARCHAR(255) NOT NULL,
     lieuDung TEXT,
     soLuong INT NOT NULL CHECK (soLuong > 0),
+    FOREIGN KEY (idDonThuoc) REFERENCES DonThuoc(idDonThuoc) ON DELETE CASCADE
+);
+CREATE TABLE HinhAnhDonThuoc (
+    idHinhAnh INT AUTO_INCREMENT PRIMARY KEY,
+    idDonThuoc INT NOT NULL,
+    duongDan VARCHAR(500) NOT NULL,
     FOREIGN KEY (idDonThuoc) REFERENCES DonThuoc(idDonThuoc) ON DELETE CASCADE
 );
 

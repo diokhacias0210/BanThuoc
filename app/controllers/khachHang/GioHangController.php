@@ -1,220 +1,137 @@
 <?php
-
 class GioHangController extends Controller
 {
     private $gioHangModel;
-    private $thuocModel;
 
     public function __construct()
     {
-        $this->gioHangModel = $this->model("GioHangModel");
-        $this->thuocModel   = $this->model("ThuocModel");
+        $this->gioHangModel = $this->model("gioHangModel");
     }
 
-    /**
-     * Hiển thị giỏ hàng
-     */
+    private function checkLogin()
+    {
+        if (isset($_SESSION['user_id'])) return $_SESSION['user_id'];
+        if (isset($_SESSION['user']) && isset($_SESSION['user']['idNguoiDung'])) return $_SESSION['user']['idNguoiDung'];
+        return null;
+    }
+
+    // Hiển thị giao diện Giỏ hàng
     public function index()
     {
-        if (!isset($_SESSION["user"]))
-        {
-            header("Location: " . URLROOT . "/khachHang/XacThuc/dangNhap");
-            exit();
+        $idKhachHang = $this->checkLogin();
+        if (!$idKhachHang) {
+            $this->redirect('khachHang/xacThuc/dangNhap');
         }
 
-        $idKhachHang = $_SESSION["user"]["idNguoiDung"];
+        $idGioHang = $this->gioHangModel->layHoacTaoGioHang($idKhachHang);
+        $rawItems = $this->gioHangModel->layDanhSachChiTietGioHang($idGioHang);
 
-        $gioHang = $this->gioHangModel->getByKhachHang($idKhachHang);
-
-        $danhSachThuoc = [];
-
-        if ($gioHang)
-        {
-            $danhSachThuoc = $this->gioHangModel->getDanhSachThuoc(
-                $gioHang["idGioHang"]
-            );
+        $items = array();
+        if (!empty($rawItems)) {
+            foreach ($rawItems as $item) {
+                $item['hinhAnhUrl'] = $this->xuLyDuongDanAnh(isset($item['hinhAnh']) ? $item['hinhAnh'] : '');
+                $items[] = $item;
+            }
         }
 
-        $tongTien = 0;
+        $data['title'] = "PharmaCare – Giỏ hàng của bạn";
+        $data['page_title'] = "Giỏ hàng";
+        $data['active_tab'] = "giohang";
+        $data['page_css'] = "gioHang";
+        $data['cartItems'] = $items;
 
-        foreach ($danhSachThuoc as $thuoc)
-        {
-            $tongTien += $thuoc["soLuong"] * $thuoc["donGia"];
-        }
+        ob_start();
+        extract($data);
+        require_once APPROOT . '/views/khachHang/gioHang.php';
+        $data['content'] = ob_get_clean();
 
-        $data = [
-
-            "title" => "Giỏ hàng",
-
-            "content" => "khachHang/gioHang",
-
-            "danhSachThuoc" => $danhSachThuoc,
-
-            "tongTien" => $tongTien
-
-        ];
-
-        $this->view("layouts/khachHangLayout", $data);
+        $this->view('layouts/khachHangLayout', $data);
     }
 
-    /**
-     * Thêm thuốc vào giỏ hàng
-     */
-    public function them($idThuoc)
+    // API: Thêm thuốc không kê đơn (OTC) vào giỏ
+    public function themVaoGio()
     {
-        //====================================
-        // 1. Kiểm tra đăng nhập
-        //====================================
+        ob_clean(); // Làm sạch bộ nhớ đệm trước khi xuất JSON
+        header('Content-Type: application/json');
 
-        if (!isset($_SESSION["user"]))
-        {
-            header("Location: " . URLROOT . "/khachHang/XacThuc/dangNhap");
-            exit();
+        $idKhachHang = $this->checkLogin();
+
+        // BẮT BUỘC ĐĂNG NHẬP: Chưa đăng nhập -> Trả về thông báo yêu cầu đăng nhập
+        if (!$idKhachHang) {
+            echo json_encode(array(
+                'status' => false,
+                'requireLogin' => true,
+                'message' => 'Bạn cần đăng nhập tài khoản để thực hiện thêm sản phẩm vào giỏ hàng!'
+            ));
+            exit;
         }
 
-        //====================================
-        // 2. Lấy ID khách hàng
-        //====================================
+        $idThuoc = isset($_POST['idThuoc']) ? intval($_POST['idThuoc']) : 0;
+        $soLuong = isset($_POST['soLuong']) ? intval($_POST['soLuong']) : 1;
 
-        $idKhachHang = $_SESSION["user"]["idNguoiDung"];
-
-        //====================================
-        // 3. Lấy thông tin thuốc
-        //====================================
-
-        $thuoc = $this->thuocModel->getById($idThuoc);
-
-        if(!$thuoc)
-        {
-            die("Không tìm thấy thuốc.");
+        if ($idThuoc <= 0 || $soLuong <= 0) {
+            echo json_encode(array('status' => false, 'message' => 'Dữ liệu sản phẩm không hợp lệ.'));
+            exit;
         }
 
-        //====================================
-        // 4. Lấy giỏ hàng
-        //====================================
+        $chiTietModel = $this->model("chiTietThuocModel");
+        $thuoc = $chiTietModel->getChiTietThuocTheoID($idThuoc);
 
-        $gioHang = $this->gioHangModel->getByKhachHang($idKhachHang);
-
-        //====================================
-        // 5. Nếu chưa có thì tạo
-        //====================================
-
-        if(!$gioHang)
-        {
-            $this->gioHangModel->taoGioHang($idKhachHang);
-
-            $gioHang = $this->gioHangModel->getByKhachHang($idKhachHang);
+        if (!$thuoc) {
+            echo json_encode(array('status' => false, 'message' => 'Sản phẩm không tồn tại trong hệ thống.'));
+            exit;
         }
 
-        //====================================
-        // 6. Kiểm tra thuốc đã tồn tại chưa
-        //====================================
-
-        $chiTiet = $this->gioHangModel->getChiTiet(
-            $gioHang["idGioHang"],
-            $idThuoc
-        );
-
-        //====================================
-        // 7. Nếu có thì tăng số lượng
-        //====================================
-
-        if($chiTiet)
-        {
-            $this->gioHangModel->tangSoLuong($chiTiet["id"]);
-        }
-        else
-        {
-            $this->gioHangModel->themThuoc(
-                $gioHang["idGioHang"],
-                $idThuoc,
-                1,
-                $thuoc["giaBan"]
-            );
+        if ($thuoc['yeuCauKeDon'] === 'Kê đơn') {
+            echo json_encode(array(
+                'status' => false,
+                'message' => 'Đây là thuốc kê đơn! Bạn cần gửi đơn thuốc để dược sĩ tư vấn.',
+                'isRx' => true
+            ));
+            exit;
         }
 
-        //====================================
-        // 8. Chuyển sang giỏ hàng
-        //====================================
+        $idGioHang = $this->gioHangModel->layHoacTaoGioHang($idKhachHang);
+        $ok = $this->gioHangModel->themItemVaoGio($idGioHang, $idThuoc, $soLuong, $thuoc['giaBan'], 'CHO_PHEP', null);
 
-        header("Location: " . URLROOT . "/khachHang/GioHang");
-
-        exit();
+        echo json_encode(array('status' => (bool)$ok, 'message' => 'Đã thêm sản phẩm vào giỏ hàng thành công!'));
+        exit;
     }
 
-    public function tang($id)
+    // API: Cập nhật số lượng
+    public function capNhatSoLuong()
     {
-        $chiTiet = $this->gioHangModel->getChiTietById($id);
+        header('Content-Type: application/json');
+        $idKhachHang = $this->checkLogin();
+        $idChiTiet = isset($_POST['id']) ? intval($_POST['id']) : 0;
+        $soLuong = isset($_POST['soLuong']) ? intval($_POST['soLuong']) : 1;
 
-        if(!$chiTiet)
-        {
-            header("Location: ".URLROOT."/khachHang/GioHang");
-            exit();
+        if (!$idKhachHang || $idChiTiet <= 0 || $soLuong <= 0) {
+            echo json_encode(array('status' => false));
+            exit;
         }
 
-        $thuoc = $this->thuocModel->getById($chiTiet["idThuoc"]);
-
-        if(!$thuoc)
-        {
-            header("Location: ".URLROOT."/khachHang/GioHang");
-            exit();
-        }
-
-        /*
-        * -1 = Không giới hạn
-        */
-
-        if(
-            $thuoc["gioiHanMua"] != -1
-            &&
-            $chiTiet["soLuong"] >= $thuoc["gioiHanMua"]
-        )
-        {
-            $_SESSION["error"] =
-                "Bạn chỉ được mua tối đa "
-                .$thuoc["gioiHanMua"].
-                " sản phẩm này.";
-
-            header("Location: ".URLROOT."/khachHang/GioHang");
-            exit();
-        }
-
-        $this->gioHangModel->tangSoLuong($id);
-
-        header("Location: ".URLROOT."/khachHang/GioHang");
-        exit();
+        $idGioHang = $this->gioHangModel->layHoacTaoGioHang($idKhachHang);
+        $ok = $this->gioHangModel->capNhatSoLuongItem($idChiTiet, $idGioHang, $soLuong);
+        echo json_encode(array('status' => (bool)$ok));
+        exit;
     }
 
-    public function giam($id)
+    // API: Xóa item khỏi giỏ hàng
+    public function xoaItem()
     {
-        $chiTiet = $this->gioHangModel->getChiTietById($id);
+        header('Content-Type: application/json');
+        $idKhachHang = $this->checkLogin();
+        $idChiTiet = isset($_POST['id']) ? intval($_POST['id']) : 0;
 
-        if(!$chiTiet)
-        {
-            header("Location: " . URLROOT . "/khachHang/GioHang");
-            exit();
+        if (!$idKhachHang || $idChiTiet <= 0) {
+            echo json_encode(array('status' => false));
+            exit;
         }
 
-        if($chiTiet["soLuong"] <= 1)
-        {
-            $this->gioHangModel->xoa($id);
-        }
-        else
-        {
-            $this->gioHangModel->giamSoLuong($id);
-        }
-
-        header("Location: " . URLROOT . "/khachHang/GioHang");
-
-        exit();
-    }
-
-    public function xoa($id)
-    {
-        $this->gioHangModel->xoaThuoc($id);
-
-        header("Location: " . URLROOT . "/khachHang/GioHang");
-
-        exit();
+        $idGioHang = $this->gioHangModel->layHoacTaoGioHang($idKhachHang);
+        $ok = $this->gioHangModel->xoaItemKhoiGio($idChiTiet, $idGioHang);
+        echo json_encode(array('status' => (bool)$ok));
+        exit;
     }
 }

@@ -78,8 +78,9 @@ if (isset($data) && is_array($data)) {
                     </div>
                 <?php else: ?>
                     <!-- GIAO DIỆN CHO THUỐC BẮT BUỘC KÊ ĐƠN (RX) -->
+                    <!-- GIAO DIỆN CHO THUỐC BẮT BUỘC KÊ ĐƠN (RX) -->
                     <div class="action-row">
-                        <a href="<?php echo URLROOT; ?>/khachHang/taiDonThuoc" class="btn btn-rx-consult">
+                        <a href="<?php echo URLROOT; ?>/khachHang/dangKeToaThuoc?idThuoc=<?php echo $thuoc['idThuoc']; ?>" class="btn btn-rx-consult">
                             <i class="fa-solid fa-file-prescription"></i> Gửi đơn thuốc để tư vấn
                         </a>
                     </div>
@@ -136,7 +137,41 @@ if (isset($data) && is_array($data)) {
     }
 
     function xuLyThemGioHang(idThuoc) {
-        hienThiThongBao(`Đã thêm ${soLuongHienTai} sản phẩm vào giỏ hàng thành công!`);
+        const qty = parseInt(document.getElementById('qtyVal').textContent) || 1;
+
+        fetch(`<?php echo URLROOT; ?>/khachHang/gioHang/themVaoGio`, {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/x-www-form-urlencoded'
+                },
+                body: `idThuoc=${idThuoc}&soLuong=${qty}`
+            })
+            .then(res => res.text()) // Đọc dữ liệu dạng text trước để tránh lỗi JSON parse
+            .then(text => {
+                try {
+                    const res = JSON.parse(text);
+                    if (res.status) {
+                        hienThiThongBao(res.message);
+                        const badge = document.getElementById('cartCountBadge');
+                        if (badge) {
+                            badge.textContent = parseInt(badge.textContent || 0) + qty;
+                        }
+                    } else if (res.requireLogin) {
+                        // Chưa đăng nhập -> Thông báo và tự nhảy sang trang Đăng nhập
+                        alert(res.message);
+                        window.location.href = `<?php echo URLROOT; ?>/khachHang/xacThuc/dangNhap`;
+                    } else {
+                        alert(res.message || "Thêm giỏ hàng thất bại.");
+                    }
+                } catch (e) {
+                    console.error("Lỗi dữ liệu từ Server:", text);
+                    alert("Có lỗi phản hồi từ máy chủ. Vui lòng thử lại!");
+                }
+            })
+            .catch(err => {
+                console.error("Fetch error:", err);
+                alert("Không thể kết nối đến máy chủ.");
+            });
     }
 
     const thumbRow = document.getElementById('thumbRow');
