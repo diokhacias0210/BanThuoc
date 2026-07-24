@@ -302,3 +302,635 @@ BanThuoc
    └─ thu.html
 
 ```
+```
+BanThuoc
+├─ app
+│  ├─ config
+│  │  ├─ config.php
+│  │  └─ database.php
+│  ├─ controllers
+│  │  ├─ admin
+│  │  │  ├─ BaoCaoThongKeController.php
+│  │  │  ├─ QuanLyDanhMucController.php
+│  │  │  ├─ QuanLyTaiKhoanController.php
+│  │  │  └─ QuanLyThuocController.php
+│  │  ├─ duocSi
+│  │  │  ├─ DongGoiController.php
+│  │  │  ├─ DuyetDonController.php
+│  │  │  ├─ QuanLyLoController.php
+│  │  │  └─ ThongTinDuocSiController.php
+│  │  └─ khachHang
+│  │     ├─ dangKeToaThuocController.php
+│  │     ├─ DonHangController.php
+│  │     ├─ GioHangController.php
+│  │     ├─ QuanLyDonHangController.php
+│  │     ├─ ThongTinCaNhanController.php
+│  │     ├─ ThuocController.php
+│  │     ├─ trangChu.php
+│  │     ├─ TrangChuController.php
+│  │     └─ XacThucController.php
+│  ├─ core
+│  │  ├─ App.php
+│  │  ├─ Controller.php
+│  │  ├─ Database.php
+│  │  └─ Model.php
+│  ├─ models
+│  │  ├─ admin
+│  │  │  ├─ DanhMucModel.php
+│  │  │  ├─ DonHangModel.php
+│  │  │  ├─ DonThuocModel.php
+│  │  │  ├─ GioHangModel.php
+│  │  │  ├─ LoThuocModel.php
+│  │  │  ├─ TaiKhoanModel.php
+│  │  │  ├─ ThongKeModel.php
+│  │  │  └─ ThuocModel.php
+│  │  ├─ duocSi
+│  │  │  └─ thongTinDuocSiModel.php
+│  │  └─ khachHang
+│  │     ├─ chiTietThuocModel.php
+│  │     ├─ dangKeToaThuocModel.php
+│  │     ├─ danhSachThuocModel.php
+│  │     ├─ gioHangModel.php
+│  │     ├─ quanLyDonHangModel.php
+│  │     ├─ thongTinCaNhanModel.php
+│  │     └─ trangchuModel.php
+│  └─ views
+│     ├─ admin
+│     │  ├─ baoCaoThongKe.php
+│     │  ├─ chiTietThuoc.php
+│     │  ├─ quanLyDanhMuc.php
+│     │  ├─ quanLyTaiKhoan.php
+│     │  └─ quanLyThuoc.php
+│     ├─ duocSi
+│     │  ├─ dongGoi.php
+│     │  ├─ duyetDon.php
+│     │  ├─ quanLyLo.php
+│     │  └─ thongTinDuocSi.php
+│     ├─ khachHang
+│     │  ├─ chiTietDonHang.php
+│     │  ├─ chiTietThuoc.php
+│     │  ├─ dangKeToaThuoc.php
+│     │  ├─ danhSachThuoc.php
+│     │  ├─ donHang.php
+│     │  ├─ gioHang.php
+│     │  ├─ index.php
+│     │  ├─ quanLyDonHang.php
+│     │  ├─ thongTinCaNhan.php
+│     │  └─ xacThuc
+│     │     ├─ dangKy.php
+│     │     └─ dangNhap.php
+│     └─ layouts
+│        ├─ adminLayout.php
+│        ├─ adminPartials
+│        │  ├─ adminFooter.php
+│        │  ├─ adminHeader.php
+│        │  └─ adminNavbar.php
+│        ├─ duocSiLayout.php
+│        ├─ duocSiPartials
+│        │  ├─ duocSiHeader.php
+│        │  ├─ duocSiNavbar.php
+│        │  └─ duoiSiFooter.php
+│        ├─ khachHangLayout.php
+│        └─ partials
+│           ├─ footer.php
+│           ├─ header.php
+│           └─ navbar.php
+├─ cautruc.txt
+├─ LinhTinh
+│  ├─ CD bán thuốc v4.mdj
+│  ├─ UC bán thuốc v3.mdj
+│  ├─ web_ban_thuoc.sql
+│  └─ web_ban_thuoc_cau_truc.sql
+├─ public
+│  ├─ .htaccess
+│  ├─ assets
+│  │  ├─ css
+│  │  │  ├─ admin
+│  │  │  │  ├─ baoCaoThongKe.css
+│  │  │  │  ├─ quanLyDanhMuc.css
+│  │  │  │  ├─ quanLyTaiKhoan.css
+│  │  │  │  └─ quanLyThuoc.css
+│  │  │  ├─ duocSi
+│  │  │  │  ├─ dongGoiDonHang.css
+│  │  │  │  ├─ duocSi.css
+│  │  │  │  ├─ duyetDon.css
+│  │  │  │  ├─ quanLyLoThuoc.css
+│  │  │  │  └─ thongTinDuocSi.css
+│  │  │  ├─ khachHang
+│  │  │  │  ├─ chiTietThuoc.css
+│  │  │  │  ├─ dangKeToaThuoc.css
+│  │  │  │  ├─ danhSachThuoc.css
+│  │  │  │  ├─ gioHang.css
+│  │  │  │  ├─ quanLyDonHang.css
+│  │  │  │  ├─ thanhToanDatHang.css
+│  │  │  │  ├─ thongTinCaNhan.css
+│  │  │  │  ├─ trangChu.css
+│  │  │  │  └─ xacThuc.css
+│  │  │  └─ Layout
+│  │  │     ├─ adminLayout.css
+│  │  │     ├─ duocSiLayout.css
+│  │  │     └─ khachHangLayout.css
+│  │  ├─ images
+│  │  │  └─ uploads
+│  │  │     ├─ 1
+│  │  │     │  ├─ 1-1.jpg
+│  │  │     │  ├─ 1-2.jpg
+│  │  │     │  └─ 1-3.jpg
+│  │  │     ├─ 10
+│  │  │     │  └─ 10-1.jpg
+│  │  │     ├─ 11
+│  │  │     │  ├─ 11-1.jpg
+│  │  │     │  ├─ 11-2.jpg
+│  │  │     │  ├─ 11-3.jpg
+│  │  │     │  └─ 11-4.jpg
+│  │  │     ├─ 12
+│  │  │     │  ├─ 12-1.jpg
+│  │  │     │  └─ 12-2.jpg
+│  │  │     ├─ 13
+│  │  │     │  ├─ 13-1.jpg
+│  │  │     │  ├─ 13-2.jpg
+│  │  │     │  ├─ 13-3.jpg
+│  │  │     │  └─ 13-4.jpg
+│  │  │     ├─ 14
+│  │  │     │  ├─ 14-1.jpg
+│  │  │     │  ├─ 14-2.jpg
+│  │  │     │  └─ 14-3.jpg
+│  │  │     ├─ 15
+│  │  │     │  ├─ 15-1.jpg
+│  │  │     │  ├─ 15-2.jpg
+│  │  │     │  └─ 15-3.jpg
+│  │  │     ├─ 16
+│  │  │     │  ├─ 16-1.jpg
+│  │  │     │  ├─ 16-2.jpg
+│  │  │     │  └─ 16-3.jpg
+│  │  │     ├─ 17
+│  │  │     │  ├─ 17-1.jpg
+│  │  │     │  └─ 17-2.jpg
+│  │  │     ├─ 18
+│  │  │     │  └─ 18-2.jpg
+│  │  │     ├─ 19
+│  │  │     │  ├─ 19-1.jpg
+│  │  │     │  ├─ 19-2.jpg
+│  │  │     │  └─ 19-3.jpg
+│  │  │     ├─ 2
+│  │  │     │  ├─ 2-1.jpg
+│  │  │     │  ├─ 2-2.jpg
+│  │  │     │  └─ 2-3.jpg
+│  │  │     ├─ 20
+│  │  │     │  ├─ 20-1.jpg
+│  │  │     │  ├─ 20-2.jpg
+│  │  │     │  └─ 20-3.jpg
+│  │  │     ├─ 21
+│  │  │     │  ├─ 21-1.jpg
+│  │  │     │  ├─ 21-2.jpg
+│  │  │     │  └─ 21-3.jpg
+│  │  │     ├─ 22
+│  │  │     │  ├─ 22-1.jpg
+│  │  │     │  ├─ 22-2.jpg
+│  │  │     │  └─ 22-3.jpg
+│  │  │     ├─ 23
+│  │  │     │  ├─ 23-1.jpg
+│  │  │     │  ├─ 23-2.jpg
+│  │  │     │  └─ 23-3.jpg
+│  │  │     ├─ 24
+│  │  │     │  ├─ 24-1.jpg
+│  │  │     │  └─ 24-2.jpg
+│  │  │     ├─ 25
+│  │  │     │  └─ 25-1.jpg
+│  │  │     ├─ 26
+│  │  │     │  ├─ 26-1.jpg
+│  │  │     │  ├─ 26-2.jpg
+│  │  │     │  └─ 26-3.jpg
+│  │  │     ├─ 27
+│  │  │     │  ├─ 27-1.jpg
+│  │  │     │  └─ 27-2.jpg
+│  │  │     ├─ 28
+│  │  │     │  ├─ 28-1.jpg
+│  │  │     │  ├─ 28-2.jpg
+│  │  │     │  └─ 28-3.jpg
+│  │  │     ├─ 29
+│  │  │     │  ├─ 29-1.jpg
+│  │  │     │  └─ 29-2.jpg
+│  │  │     ├─ 3
+│  │  │     │  ├─ 3-1.jpg
+│  │  │     │  ├─ 3-2.jpg
+│  │  │     │  ├─ 3-3.jpg
+│  │  │     │  ├─ 3-4.jpg
+│  │  │     │  └─ 3-5.jpg
+│  │  │     ├─ 30
+│  │  │     │  └─ 30-1.jpg
+│  │  │     ├─ 31
+│  │  │     │  ├─ 31-1.jpg
+│  │  │     │  └─ 31-2.jpg
+│  │  │     ├─ 32
+│  │  │     │  ├─ 32-1.jpg
+│  │  │     │  └─ 32-2.jpg
+│  │  │     ├─ 33
+│  │  │     │  └─ 33-1.jpg
+│  │  │     ├─ 34
+│  │  │     │  └─ 34-1.jpg
+│  │  │     ├─ 35
+│  │  │     │  └─ 35-1.jpg
+│  │  │     ├─ 36
+│  │  │     │  ├─ 36-1.jpg
+│  │  │     │  ├─ 36-2.jpg
+│  │  │     │  └─ 36-3.jpg
+│  │  │     ├─ 37
+│  │  │     │  └─ 37-1.jpg
+│  │  │     ├─ 38
+│  │  │     │  └─ 38-1.jpg
+│  │  │     ├─ 39
+│  │  │     │  └─ 39-1.jpg
+│  │  │     ├─ 4
+│  │  │     │  ├─ 4-1.jpg
+│  │  │     │  ├─ 4-2.jpg
+│  │  │     │  └─ 4-3.jpg
+│  │  │     ├─ 40
+│  │  │     │  └─ 40-1.jpg
+│  │  │     ├─ 41
+│  │  │     │  ├─ 41-1.jpg
+│  │  │     │  ├─ 41-2.jpg
+│  │  │     │  └─ 41-3.jpg
+│  │  │     ├─ 42
+│  │  │     │  ├─ 42-1.jpg
+│  │  │     │  ├─ 42-2.jpg
+│  │  │     │  ├─ 42-3.jpg
+│  │  │     │  ├─ 42-4.jpg
+│  │  │     │  └─ 42-5.jpg
+│  │  │     ├─ 43
+│  │  │     │  ├─ 43-1.jpg
+│  │  │     │  ├─ 43-2.jpg
+│  │  │     │  └─ 43-3.jpg
+│  │  │     ├─ 44
+│  │  │     │  ├─ 44-1.jpg
+│  │  │     │  └─ 44-2.jpg
+│  │  │     ├─ 45
+│  │  │     │  ├─ 45-1.jpg
+│  │  │     │  ├─ 45-2.jpg
+│  │  │     │  └─ 45-3.jpg
+│  │  │     ├─ 46
+│  │  │     │  ├─ 46-1.jpg
+│  │  │     │  ├─ 46-2.jpg
+│  │  │     │  ├─ 46-3.jpg
+│  │  │     │  └─ 46-4.jpg
+│  │  │     ├─ 47
+│  │  │     │  ├─ 47-1.jpg
+│  │  │     │  ├─ 47-2.jpg
+│  │  │     │  ├─ 47-3.jpg
+│  │  │     │  ├─ 47-4.jpg
+│  │  │     │  └─ 47-5.jpg
+│  │  │     ├─ 48
+│  │  │     │  ├─ 48-1.jpg
+│  │  │     │  ├─ 48-2.jpg
+│  │  │     │  └─ 48-3.jpg
+│  │  │     ├─ 49
+│  │  │     │  ├─ 49-1.jpg
+│  │  │     │  └─ 49-2.jpg
+│  │  │     ├─ 5
+│  │  │     │  ├─ 5-1.jpg
+│  │  │     │  ├─ 5-2.jpg
+│  │  │     │  └─ 5-3.jpg
+│  │  │     ├─ 50
+│  │  │     │  ├─ 50-1.jpg
+│  │  │     │  └─ 50-2.jpg
+│  │  │     ├─ 6
+│  │  │     │  ├─ 6-1.jpg
+│  │  │     │  ├─ 6-2.jpg
+│  │  │     │  └─ 6-3.jpg
+│  │  │     ├─ 7
+│  │  │     │  ├─ 7-1.jpg
+│  │  │     │  ├─ 7-2.jpg
+│  │  │     │  └─ 7-3.jpg
+│  │  │     ├─ 8
+│  │  │     │  └─ 8-1.jpg
+│  │  │     └─ 9
+│  │  │        ├─ 9-1.jpg
+│  │  │        ├─ 9-2.jpg
+│  │  │        ├─ 9-3.jpg
+│  │  │        └─ 9-4.jpg
+│  │  └─ js
+│  │     ├─ admin.js
+│  │     ├─ app.js
+│  │     └─ home.js
+│  ├─ index.php
+│  ├─ test_ketnoi_db.php
+│  └─ thu.html
+└─ README.md
+
+```
+```
+BanThuoc
+├─ app
+│  ├─ config
+│  │  ├─ config.php
+│  │  └─ database.php
+│  ├─ controllers
+│  │  ├─ admin
+│  │  │  ├─ BaoCaoThongKeController.php
+│  │  │  ├─ QuanLyDanhMucController.php
+│  │  │  ├─ QuanLyTaiKhoanController.php
+│  │  │  └─ QuanLyThuocController.php
+│  │  ├─ duocSi
+│  │  │  ├─ DongGoiController.php
+│  │  │  ├─ DuyetDonController.php
+│  │  │  ├─ QuanLyLoController.php
+│  │  │  └─ ThongTinDuocSiController.php
+│  │  └─ khachHang
+│  │     ├─ dangKeToaThuocController.php
+│  │     ├─ DonHangController.php
+│  │     ├─ GioHangController.php
+│  │     ├─ QuanLyDonHangController.php
+│  │     ├─ ThongTinCaNhanController.php
+│  │     ├─ ThuocController.php
+│  │     ├─ trangChu.php
+│  │     ├─ TrangChuController.php
+│  │     └─ XacThucController.php
+│  ├─ core
+│  │  ├─ App.php
+│  │  ├─ Controller.php
+│  │  ├─ Database.php
+│  │  └─ Model.php
+│  ├─ models
+│  │  ├─ admin
+│  │  │  ├─ DanhMucModel.php
+│  │  │  ├─ DonHangModel.php
+│  │  │  ├─ DonThuocModel.php
+│  │  │  ├─ GioHangModel.php
+│  │  │  ├─ LoThuocModel.php
+│  │  │  ├─ TaiKhoanModel.php
+│  │  │  ├─ ThongKeModel.php
+│  │  │  └─ ThuocModel.php
+│  │  ├─ duocSi
+│  │  │  └─ thongTinDuocSiModel.php
+│  │  └─ khachHang
+│  │     ├─ chiTietThuocModel.php
+│  │     ├─ dangKeToaThuocModel.php
+│  │     ├─ danhSachThuocModel.php
+│  │     ├─ gioHangModel.php
+│  │     ├─ quanLyDonHangModel.php
+│  │     ├─ thongTinCaNhanModel.php
+│  │     └─ trangchuModel.php
+│  └─ views
+│     ├─ admin
+│     │  ├─ baoCaoThongKe.php
+│     │  ├─ chiTietThuoc.php
+│     │  ├─ quanLyDanhMuc.php
+│     │  ├─ quanLyTaiKhoan.php
+│     │  └─ quanLyThuoc.php
+│     ├─ duocSi
+│     │  ├─ dongGoi.php
+│     │  ├─ duyetDon.php
+│     │  ├─ quanLyLo.php
+│     │  └─ thongTinDuocSi.php
+│     ├─ khachHang
+│     │  ├─ chiTietDonHang.php
+│     │  ├─ chiTietThuoc.php
+│     │  ├─ dangKeToaThuoc.php
+│     │  ├─ danhSachThuoc.php
+│     │  ├─ donHang.php
+│     │  ├─ gioHang.php
+│     │  ├─ index.php
+│     │  ├─ quanLyDonHang.php
+│     │  ├─ thongTinCaNhan.php
+│     │  └─ xacThuc
+│     │     ├─ dangKy.php
+│     │     └─ dangNhap.php
+│     └─ layouts
+│        ├─ adminLayout.php
+│        ├─ adminPartials
+│        │  ├─ adminFooter.php
+│        │  ├─ adminHeader.php
+│        │  └─ adminNavbar.php
+│        ├─ duocSiLayout.php
+│        ├─ duocSiPartials
+│        │  ├─ duocSiHeader.php
+│        │  ├─ duocSiNavbar.php
+│        │  └─ duoiSiFooter.php
+│        ├─ khachHangLayout.php
+│        └─ partials
+│           ├─ footer.php
+│           ├─ header.php
+│           └─ navbar.php
+├─ cautruc.txt
+├─ LinhTinh
+│  ├─ CD bán thuốc v4.mdj
+│  ├─ UC bán thuốc v3.mdj
+│  ├─ web_ban_thuoc.sql
+│  └─ web_ban_thuoc_cau_truc.sql
+├─ public
+│  ├─ .htaccess
+│  ├─ assets
+│  │  ├─ css
+│  │  │  ├─ admin
+│  │  │  │  ├─ baoCaoThongKe.css
+│  │  │  │  ├─ quanLyDanhMuc.css
+│  │  │  │  ├─ quanLyTaiKhoan.css
+│  │  │  │  └─ quanLyThuoc.css
+│  │  │  ├─ duocSi
+│  │  │  │  ├─ dongGoiDonHang.css
+│  │  │  │  ├─ duocSi.css
+│  │  │  │  ├─ duyetDon.css
+│  │  │  │  ├─ quanLyLoThuoc.css
+│  │  │  │  └─ thongTinDuocSi.css
+│  │  │  ├─ khachHang
+│  │  │  │  ├─ chiTietThuoc.css
+│  │  │  │  ├─ dangKeToaThuoc.css
+│  │  │  │  ├─ danhSachThuoc.css
+│  │  │  │  ├─ gioHang.css
+│  │  │  │  ├─ quanLyDonHang.css
+│  │  │  │  ├─ thanhToanDatHang.css
+│  │  │  │  ├─ thongTinCaNhan.css
+│  │  │  │  ├─ trangChu.css
+│  │  │  │  └─ xacThuc.css
+│  │  │  └─ Layout
+│  │  │     ├─ adminLayout.css
+│  │  │     ├─ duocSiLayout.css
+│  │  │     └─ khachHangLayout.css
+│  │  ├─ images
+│  │  │  └─ uploads
+│  │  │     ├─ 1
+│  │  │     │  ├─ 1-1.jpg
+│  │  │     │  ├─ 1-2.jpg
+│  │  │     │  └─ 1-3.jpg
+│  │  │     ├─ 10
+│  │  │     │  └─ 10-1.jpg
+│  │  │     ├─ 11
+│  │  │     │  ├─ 11-1.jpg
+│  │  │     │  ├─ 11-2.jpg
+│  │  │     │  ├─ 11-3.jpg
+│  │  │     │  └─ 11-4.jpg
+│  │  │     ├─ 12
+│  │  │     │  ├─ 12-1.jpg
+│  │  │     │  └─ 12-2.jpg
+│  │  │     ├─ 13
+│  │  │     │  ├─ 13-1.jpg
+│  │  │     │  ├─ 13-2.jpg
+│  │  │     │  ├─ 13-3.jpg
+│  │  │     │  └─ 13-4.jpg
+│  │  │     ├─ 14
+│  │  │     │  ├─ 14-1.jpg
+│  │  │     │  ├─ 14-2.jpg
+│  │  │     │  └─ 14-3.jpg
+│  │  │     ├─ 15
+│  │  │     │  ├─ 15-1.jpg
+│  │  │     │  ├─ 15-2.jpg
+│  │  │     │  └─ 15-3.jpg
+│  │  │     ├─ 16
+│  │  │     │  ├─ 16-1.jpg
+│  │  │     │  ├─ 16-2.jpg
+│  │  │     │  └─ 16-3.jpg
+│  │  │     ├─ 17
+│  │  │     │  ├─ 17-1.jpg
+│  │  │     │  └─ 17-2.jpg
+│  │  │     ├─ 18
+│  │  │     │  └─ 18-2.jpg
+│  │  │     ├─ 19
+│  │  │     │  ├─ 19-1.jpg
+│  │  │     │  ├─ 19-2.jpg
+│  │  │     │  └─ 19-3.jpg
+│  │  │     ├─ 2
+│  │  │     │  ├─ 2-1.jpg
+│  │  │     │  ├─ 2-2.jpg
+│  │  │     │  └─ 2-3.jpg
+│  │  │     ├─ 20
+│  │  │     │  ├─ 20-1.jpg
+│  │  │     │  ├─ 20-2.jpg
+│  │  │     │  └─ 20-3.jpg
+│  │  │     ├─ 21
+│  │  │     │  ├─ 21-1.jpg
+│  │  │     │  ├─ 21-2.jpg
+│  │  │     │  └─ 21-3.jpg
+│  │  │     ├─ 22
+│  │  │     │  ├─ 22-1.jpg
+│  │  │     │  ├─ 22-2.jpg
+│  │  │     │  └─ 22-3.jpg
+│  │  │     ├─ 23
+│  │  │     │  ├─ 23-1.jpg
+│  │  │     │  ├─ 23-2.jpg
+│  │  │     │  └─ 23-3.jpg
+│  │  │     ├─ 24
+│  │  │     │  ├─ 24-1.jpg
+│  │  │     │  └─ 24-2.jpg
+│  │  │     ├─ 25
+│  │  │     │  └─ 25-1.jpg
+│  │  │     ├─ 26
+│  │  │     │  ├─ 26-1.jpg
+│  │  │     │  ├─ 26-2.jpg
+│  │  │     │  └─ 26-3.jpg
+│  │  │     ├─ 27
+│  │  │     │  ├─ 27-1.jpg
+│  │  │     │  └─ 27-2.jpg
+│  │  │     ├─ 28
+│  │  │     │  ├─ 28-1.jpg
+│  │  │     │  ├─ 28-2.jpg
+│  │  │     │  └─ 28-3.jpg
+│  │  │     ├─ 29
+│  │  │     │  ├─ 29-1.jpg
+│  │  │     │  └─ 29-2.jpg
+│  │  │     ├─ 3
+│  │  │     │  ├─ 3-1.jpg
+│  │  │     │  ├─ 3-2.jpg
+│  │  │     │  ├─ 3-3.jpg
+│  │  │     │  ├─ 3-4.jpg
+│  │  │     │  └─ 3-5.jpg
+│  │  │     ├─ 30
+│  │  │     │  └─ 30-1.jpg
+│  │  │     ├─ 31
+│  │  │     │  ├─ 31-1.jpg
+│  │  │     │  └─ 31-2.jpg
+│  │  │     ├─ 32
+│  │  │     │  ├─ 32-1.jpg
+│  │  │     │  └─ 32-2.jpg
+│  │  │     ├─ 33
+│  │  │     │  └─ 33-1.jpg
+│  │  │     ├─ 34
+│  │  │     │  └─ 34-1.jpg
+│  │  │     ├─ 35
+│  │  │     │  └─ 35-1.jpg
+│  │  │     ├─ 36
+│  │  │     │  ├─ 36-1.jpg
+│  │  │     │  ├─ 36-2.jpg
+│  │  │     │  └─ 36-3.jpg
+│  │  │     ├─ 37
+│  │  │     │  └─ 37-1.jpg
+│  │  │     ├─ 38
+│  │  │     │  └─ 38-1.jpg
+│  │  │     ├─ 39
+│  │  │     │  └─ 39-1.jpg
+│  │  │     ├─ 4
+│  │  │     │  ├─ 4-1.jpg
+│  │  │     │  ├─ 4-2.jpg
+│  │  │     │  └─ 4-3.jpg
+│  │  │     ├─ 40
+│  │  │     │  └─ 40-1.jpg
+│  │  │     ├─ 41
+│  │  │     │  ├─ 41-1.jpg
+│  │  │     │  ├─ 41-2.jpg
+│  │  │     │  └─ 41-3.jpg
+│  │  │     ├─ 42
+│  │  │     │  ├─ 42-1.jpg
+│  │  │     │  ├─ 42-2.jpg
+│  │  │     │  ├─ 42-3.jpg
+│  │  │     │  ├─ 42-4.jpg
+│  │  │     │  └─ 42-5.jpg
+│  │  │     ├─ 43
+│  │  │     │  ├─ 43-1.jpg
+│  │  │     │  ├─ 43-2.jpg
+│  │  │     │  └─ 43-3.jpg
+│  │  │     ├─ 44
+│  │  │     │  ├─ 44-1.jpg
+│  │  │     │  └─ 44-2.jpg
+│  │  │     ├─ 45
+│  │  │     │  ├─ 45-1.jpg
+│  │  │     │  ├─ 45-2.jpg
+│  │  │     │  └─ 45-3.jpg
+│  │  │     ├─ 46
+│  │  │     │  ├─ 46-1.jpg
+│  │  │     │  ├─ 46-2.jpg
+│  │  │     │  ├─ 46-3.jpg
+│  │  │     │  └─ 46-4.jpg
+│  │  │     ├─ 47
+│  │  │     │  ├─ 47-1.jpg
+│  │  │     │  ├─ 47-2.jpg
+│  │  │     │  ├─ 47-3.jpg
+│  │  │     │  ├─ 47-4.jpg
+│  │  │     │  └─ 47-5.jpg
+│  │  │     ├─ 48
+│  │  │     │  ├─ 48-1.jpg
+│  │  │     │  ├─ 48-2.jpg
+│  │  │     │  └─ 48-3.jpg
+│  │  │     ├─ 49
+│  │  │     │  ├─ 49-1.jpg
+│  │  │     │  └─ 49-2.jpg
+│  │  │     ├─ 5
+│  │  │     │  ├─ 5-1.jpg
+│  │  │     │  ├─ 5-2.jpg
+│  │  │     │  └─ 5-3.jpg
+│  │  │     ├─ 50
+│  │  │     │  ├─ 50-1.jpg
+│  │  │     │  └─ 50-2.jpg
+│  │  │     ├─ 6
+│  │  │     │  ├─ 6-1.jpg
+│  │  │     │  ├─ 6-2.jpg
+│  │  │     │  └─ 6-3.jpg
+│  │  │     ├─ 7
+│  │  │     │  ├─ 7-1.jpg
+│  │  │     │  ├─ 7-2.jpg
+│  │  │     │  └─ 7-3.jpg
+│  │  │     ├─ 8
+│  │  │     │  └─ 8-1.jpg
+│  │  │     └─ 9
+│  │  │        ├─ 9-1.jpg
+│  │  │        ├─ 9-2.jpg
+│  │  │        ├─ 9-3.jpg
+│  │  │        └─ 9-4.jpg
+│  │  └─ js
+│  │     ├─ admin.js
+│  │     ├─ app.js
+│  │     └─ home.js
+│  ├─ index.php
+│  ├─ test_ketnoi_db.php
+│  └─ thu.html
+└─ README.md
+
+```
