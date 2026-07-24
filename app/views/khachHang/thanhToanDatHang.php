@@ -1,12 +1,9 @@
 <!--
-  VIEW trang Thanh toán & Đặt hàng — chỉ phần main content
-  (topbar/drawer/footer dùng chung khachHangLayout, không lặp lại ở đây).
-  $cartItems và $tongTien do ThanhToanDatHangController::index() truyền xuống.
-  ĐÃ SỬA: ảnh dùng $item['hinhAnhUrl'] (xử lý chuẩn từ Controller) thay vì tự ghép
-  đường dẫn thủ công gây sai ảnh. Thêm hidden field selectedIds để giữ đúng danh sách
-  sản phẩm đã chọn khi submit sang bước xacNhan().
+  VIEW trang Thanh toán & Đặt hàng
+  Hỗ trợ: Chọn địa chỉ có sẵn, Thêm địa chỉ mới qua Modal, Chọn phương thức thanh toán.
 -->
 <style>
+    /* CSS Chọn địa chỉ */
     .addr-select-option {
         display: flex;
         align-items: flex-start;
@@ -49,7 +46,145 @@
         font-size: 13px;
         color: var(--muted, #6b7280);
     }
+
+    /* CSS Modal Thêm địa chỉ */
+    .modal-overlay {
+        display: none;
+        position: fixed;
+        inset: 0;
+        background: rgba(0, 0, 0, 0.45);
+        z-index: 300;
+        align-items: center;
+        justify-content: center;
+        padding: 20px;
+    }
+
+    .modal-overlay.open {
+        display: flex;
+    }
+
+    .modal-box {
+        background: #fff;
+        border-radius: 14px;
+        width: 100%;
+        max-width: 520px;
+        box-shadow: 0 10px 30px rgba(0, 0, 0, 0.2);
+        overflow: hidden;
+    }
+
+    .modal-head {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        padding: 16px 20px;
+        border-bottom: 1px solid var(--border, #e5e7eb);
+    }
+
+    .modal-head h3 {
+        font-size: 16px;
+        font-weight: 700;
+        color: var(--green-dark, #15803d);
+        margin: 0;
+    }
+
+    .modal-close {
+        border: none;
+        background: none;
+        font-size: 18px;
+        cursor: pointer;
+        color: var(--muted, #6b7280);
+    }
+
+    .modal-body {
+        padding: 20px;
+        max-height: calc(80vh - 120px);
+        overflow-y: auto;
+    }
+
+    .mf-grid {
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+        gap: 12px;
+        margin-bottom: 12px;
+    }
+
+    .mf-grid.full {
+        grid-template-columns: 1fr;
+    }
+
+    .mfield label {
+        display: block;
+        font-size: 12.5px;
+        font-weight: 600;
+        margin-bottom: 4px;
+        color: var(--text, #1f2937);
+    }
+
+    .mfield label .req {
+        color: var(--red, #dc2626);
+    }
+
+    .mfield input,
+    .mfield textarea {
+        width: 100%;
+        padding: 9px 12px;
+        border: 1px solid var(--border, #e5e7eb);
+        border-radius: 8px;
+        font-size: 13px;
+        outline: none;
+        font-family: inherit;
+    }
+
+    .mfield input:focus,
+    .mfield textarea:focus {
+        border-color: var(--green, #16a34a);
+    }
+
+    .mfield .hint {
+        font-size: 11px;
+        color: var(--muted, #6b7280);
+        margin-top: 3px;
+    }
+
+    .check-row {
+        display: flex;
+        align-items: center;
+        gap: 8px;
+        font-size: 13px;
+        margin-top: 10px;
+        cursor: pointer;
+    }
+
+    .modal-foot {
+        display: flex;
+        justify-content: flex-end;
+        gap: 10px;
+        padding: 14px 20px;
+        background: #f9fafb;
+        border-top: 1px solid var(--border, #e5e7eb);
+    }
+
+    .btn-add-addr-modal {
+        display: inline-flex;
+        align-items: center;
+        gap: 6px;
+        font-size: 12.5px;
+        font-weight: 600;
+        color: var(--green, #16a34a);
+        background: var(--green-light, #f0fdf4);
+        border: 1px solid #bcded0;
+        padding: 6px 12px;
+        border-radius: 8px;
+        cursor: pointer;
+        transition: all 0.15s;
+    }
+
+    .btn-add-addr-modal:hover {
+        background: var(--green, #16a34a);
+        color: #fff;
+    }
 </style>
+
 <div class="page">
 
     <div class="stepper">
@@ -71,39 +206,46 @@
 
     <form id="checkoutForm" method="POST" action="<?php echo URLROOT; ?>/khachHang/thanhToanDatHang/xacNhan">
 
-        <!-- Giữ lại đúng danh sách sản phẩm đã chọn từ giỏ hàng để bước xacNhan() xử lý đúng -->
-        <input type="hidden" name="selectedIds" value="<?php echo htmlspecialchars(isset($selectedIdsStr) ? $selectedIdsStr : ''); ?>">
+        <!-- Giữ lại đúng danh sách sản phẩm đã chọn từ giỏ hàng -->
+        <input type="hidden" name="selectedIds" value="<?php echo htmlspecialchars($selectedIdsStr ?? ''); ?>">
 
         <div class="checkout-grid">
             <!-- CỘT TRÁI -->
             <div>
                 <div class="card">
-                    <div class="sec-head">
-                        <div class="sec-num">1</div>
-                        <div class="sec-title">Địa chỉ nhận hàng</div>
+                    <div class="sec-head" style="display:flex; justify-content:space-between; align-items:center;">
+                        <div style="display:flex; align-items:center; gap:10px;">
+                            <div class="sec-num">1</div>
+                            <div class="sec-title">Địa chỉ nhận hàng</div>
+                        </div>
+                        <!-- NÚT MỞ MODAL THÊM ĐỊA CHỈ MỚI -->
+                        <button type="button" class="btn-add-addr-modal" onclick="openAddressModal()">
+                            <i class="fa-solid fa-plus"></i> Thêm địa chỉ mới
+                        </button>
                     </div>
 
                     <?php
-                    // Xác định địa chỉ mặc định (nếu có) để chọn sẵn khi vào trang
                     $diaChiMacDinh = null;
-                    foreach ($diaChiList as $dc) {
-                        if ($dc['laMacDinh']) {
-                            $diaChiMacDinh = $dc;
-                            break;
+                    if (!empty($diaChiList)) {
+                        foreach ($diaChiList as $dc) {
+                            if ($dc['laMacDinh']) {
+                                $diaChiMacDinh = $dc;
+                                break;
+                            }
                         }
-                    }
-                    if (!$diaChiMacDinh && !empty($diaChiList)) {
-                        $diaChiMacDinh = $diaChiList[0];
+                        if (!$diaChiMacDinh) {
+                            $diaChiMacDinh = $diaChiList[0];
+                        }
                     }
                     ?>
 
                     <?php if (!empty($diaChiList)): ?>
-                        <!-- Danh sách địa chỉ đã lưu (bảng DiaChiGiaoHang) để chọn nhanh -->
+                        <!-- Danh sách địa chỉ đã lưu -->
                         <div id="savedAddrList" style="display:grid; gap:10px; margin-bottom:16px;">
                             <?php foreach ($diaChiList as $dc): ?>
-                                <label class="addr-select-option<?php echo $dc['laMacDinh'] ? ' selected' : ''; ?>">
+                                <label class="addr-select-option<?php echo ($diaChiMacDinh && $diaChiMacDinh['idDiaChi'] == $dc['idDiaChi']) ? ' selected' : ''; ?>">
                                     <input type="radio" name="diaChiChon" value="<?php echo $dc['idDiaChi']; ?>"
-                                        <?php echo $dc['laMacDinh'] ? 'checked' : ''; ?>
+                                        <?php echo ($diaChiMacDinh && $diaChiMacDinh['idDiaChi'] == $dc['idDiaChi']) ? 'checked' : ''; ?>
                                         data-ten="<?php echo htmlspecialchars($dc['tenNguoiNhan']); ?>"
                                         data-sdt="<?php echo htmlspecialchars($dc['soDienThoaiNhan']); ?>"
                                         data-diachi="<?php echo htmlspecialchars($dc['diaChiChiTiet']); ?>">
@@ -121,9 +263,9 @@
 
                             <label class="addr-select-option" id="optNewAddr">
                                 <input type="radio" name="diaChiChon" value="new">
-                                <div class="addr-icon"><i class="fa-solid fa-plus"></i></div>
+                                <div class="addr-icon"><i class="fa-solid fa-pen-to-square"></i></div>
                                 <div class="addr-body">
-                                    <div class="addr-title-row"><span class="addr-name">Nhập địa chỉ khác</span></div>
+                                    <div class="addr-title-row"><span class="addr-name">Nhập địa chỉ tạm thời khác</span></div>
                                 </div>
                             </label>
                         </div>
@@ -133,23 +275,24 @@
                         <div class="addr-icon"><i class="fa-solid fa-location-dot"></i></div>
                         <div class="addr-body">
                             <div class="addr-title-row">
-                                <span class="addr-name">Người nhận</span>
+                                <span class="addr-name">Thông tin người nhận</span>
                             </div>
                             <div class="addr-grid">
                                 <input class="addr-input" type="text" name="hoTenNguoiNhan" id="f_hoTenNguoiNhan"
                                     placeholder="Họ và tên người nhận"
-                                    value="<?php echo htmlspecialchars(isset($diaChiMacDinh['tenNguoiNhan']) ? $diaChiMacDinh['tenNguoiNhan'] : (isset($_SESSION['user']['hoTen']) ? $_SESSION['user']['hoTen'] : '')); ?>" required>
+                                    value="<?php echo htmlspecialchars($diaChiMacDinh['tenNguoiNhan'] ?? ($_SESSION['user_name'] ?? '')); ?>" required>
                                 <input class="addr-input" type="text" name="soDienThoaiNhan" id="f_soDienThoaiNhan"
                                     placeholder="Số điện thoại"
-                                    value="<?php echo htmlspecialchars(isset($diaChiMacDinh['soDienThoaiNhan']) ? $diaChiMacDinh['soDienThoaiNhan'] : (isset($_SESSION['user']['soDienThoai']) ? $_SESSION['user']['soDienThoai'] : '')); ?>" required>
+                                    value="<?php echo htmlspecialchars($diaChiMacDinh['soDienThoaiNhan'] ?? ''); ?>" required>
                                 <input class="addr-input span-2" type="text" name="diaChiGiaoHang" id="f_diaChiGiaoHang"
                                     placeholder="Địa chỉ giao hàng cụ thể (số nhà, đường, phường/xã, tỉnh/thành)"
-                                    value="<?php echo htmlspecialchars(isset($diaChiMacDinh['diaChiChiTiet']) ? $diaChiMacDinh['diaChiChiTiet'] : ''); ?>" required>
+                                    value="<?php echo htmlspecialchars($diaChiMacDinh['diaChiChiTiet'] ?? ''); ?>" required>
                             </div>
                         </div>
                     </div>
                 </div>
 
+                <!-- DỊCH VỤ / SẢN PHẨM TRONG ĐƠN -->
                 <div class="card">
                     <div class="sec-head">
                         <div class="sec-num">2</div>
@@ -230,9 +373,52 @@
 
 </div>
 
+<!-- ══ MODAL THÊM ĐỊA CHỈ MỚI ══ -->
+<div class="modal-overlay" id="addrModalOverlay">
+    <div class="modal-box">
+        <div class="modal-head">
+            <h3>Thêm địa chỉ giao hàng mới</h3>
+            <button type="button" class="modal-close" onclick="closeAddressModal()">
+                <i class="fa-solid fa-xmark"></i>
+            </button>
+        </div>
+        <div class="modal-body">
+            <form id="addrForm" onsubmit="return false;">
+                <div class="mf-grid">
+                    <div class="mfield">
+                        <label>Tên người nhận <span class="req">*</span></label>
+                        <input type="text" id="mRecipient" placeholder="Ví dụ: Nguyễn Văn A" required>
+                    </div>
+                    <div class="mfield">
+                        <label>Số điện thoại <span class="req">*</span></label>
+                        <input type="tel" id="mPhone" placeholder="0912 345 678" required>
+                    </div>
+                </div>
+
+                <div class="mf-grid full">
+                    <div class="mfield">
+                        <label>Địa chỉ giao hàng đầy đủ <span class="req">*</span></label>
+                        <input type="text" id="mDetail" placeholder="Số nhà, tên đường, phường/xã, quận/huyện, tỉnh/thành..." required>
+                        <div class="hint">VD: 123 Đường Nguyễn Trãi, P. An Bình, Q. Ninh Kiều, TP. Cần Thơ</div>
+                    </div>
+                </div>
+
+                <div class="check-row">
+                    <input type="checkbox" id="mDefault" checked>
+                    <label for="mDefault">Đặt làm địa chỉ mặc định</label>
+                </div>
+            </form>
+        </div>
+        <div class="modal-foot">
+            <button type="button" class="btn btn-ghost" style="padding: 8px 16px; border: 1px solid var(--border); border-radius: 8px; cursor: pointer;" onclick="closeAddressModal()">Hủy</button>
+            <button type="button" class="btn btn-primary" style="padding: 8px 16px; background: var(--green); color: #fff; border: none; border-radius: 8px; font-weight: 600; cursor: pointer;" onclick="submitAddress()">
+                <i class="fa-solid fa-check"></i> Lưu & Chọn địa chỉ này
+            </button>
+        </div>
+    </div>
+</div>
+
 <script>
-    // Chọn địa chỉ có sẵn -> tự điền vào các ô input (vẫn giữ name để form submit đúng)
-    // Chọn "Nhập địa chỉ khác" -> xoá trắng để người dùng tự nhập
     const savedAddrList = document.getElementById('savedAddrList');
     const manualAddrBox = document.getElementById('manualAddrBox');
     const fHoTen = document.getElementById('f_hoTenNguoiNhan');
@@ -261,7 +447,59 @@
         });
     }
 
-    // Đổi trạng thái "selected" khi chọn phương thức thanh toán khác
+    // Modal địa chỉ
+    const addrModalOverlay = document.getElementById('addrModalOverlay');
+
+    function openAddressModal() {
+        document.getElementById('addrForm').reset();
+        document.getElementById('mRecipient').value = fHoTen.value || '';
+        document.getElementById('mPhone').value = fSdt.value || '';
+        addrModalOverlay.classList.add('open');
+        document.body.style.overflow = 'hidden';
+    }
+
+    function closeAddressModal() {
+        addrModalOverlay.classList.remove('open');
+        document.body.style.overflow = '';
+    }
+
+    addrModalOverlay.addEventListener('click', (e) => {
+        if (e.target === addrModalOverlay) closeAddressModal();
+    });
+
+    // Thêm địa chỉ mới qua AJAX tới API thongTinCaNhan/themDiaChi
+    function submitAddress() {
+        const recipient = document.getElementById('mRecipient').value.trim();
+        const phone = document.getElementById('mPhone').value.trim();
+        const detail = document.getElementById('mDetail').value.trim();
+        const isDefault = document.getElementById('mDefault').checked;
+
+        if (!recipient || !phone || !detail) {
+            alert('Vui lòng điền đầy đủ các trường thông tin địa chỉ (*)');
+            return;
+        }
+
+        fetch(`<?php echo URLROOT; ?>/khachHang/thongTinCaNhan/themDiaChi`, {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/x-www-form-urlencoded'
+                },
+                body: `tenNguoiNhan=${encodeURIComponent(recipient)}&soDienThoaiNhan=${encodeURIComponent(phone)}&diaChiChiTiet=${encodeURIComponent(detail)}&laMacDinh=${isDefault ? 1 : 0}`
+            })
+            .then(res => res.json())
+            .then(res => {
+                if (res.status) {
+                    closeAddressModal();
+                    // Tải lại trang để tự động cập nhật danh sách địa chỉ mới được thêm vào CSDL
+                    window.location.reload();
+                } else {
+                    alert(res.message || 'Thêm địa chỉ thất bại, vui lòng thử lại.');
+                }
+            })
+            .catch(() => alert('Không thể kết nối đến máy chủ.'));
+    }
+
+    // Đổi trạng thái khi chọn phương thức thanh toán
     document.querySelectorAll('.pay-option').forEach(opt => {
         opt.addEventListener('click', () => {
             document.querySelectorAll('.pay-option').forEach(o => o.classList.remove('selected'));
@@ -270,7 +508,7 @@
         });
     });
 
-    // Xác nhận trước khi đặt hàng
+    // Xác nhận đặt hàng
     document.getElementById('checkoutForm').addEventListener('submit', (e) => {
         if (!confirm('Xác nhận đặt hàng với các sản phẩm và địa chỉ trên?')) {
             e.preventDefault();
