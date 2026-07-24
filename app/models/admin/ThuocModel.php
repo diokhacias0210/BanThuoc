@@ -19,7 +19,7 @@ class ThuocModel extends Model
 
         if ($trangThai !== 'all') {
             if ($trangThai === 'active') {
-                $sql .= " AND (t.trangThai = 1 OR t.trangThai = 'true' OR t.trangThai = '1')";
+                $sql .= " AND t.trangThai = 1";
             } else {
                 $sql .= " AND (t.trangThai = 0 OR t.trangThai = 'false' OR t.trangThai = '0' OR t.trangThai IS NULL)";
             }

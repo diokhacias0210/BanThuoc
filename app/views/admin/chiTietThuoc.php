@@ -8,6 +8,16 @@
         return Number(n || 0).toLocaleString('vi-VN') + 'đ';
     }
 
+    // Chuẩn hóa đường dẫn ảnh từ CSDL (xử lý cả đường dẫn tương đối và tuyệt đối)
+    function normalizeImgPath(path) {
+        if (!path) return PLACEHOLDER_IMG;
+        if (path.indexOf('http') === 0) return path;
+        if (path.indexOf('assets/') === 0) return '<?php echo URLROOT; ?>/' + path;
+        if (path.indexOf('/assets/') === 0) return '<?php echo URLROOT; ?>' + path;
+        if (path.indexOf('/') === 0) return '<?php echo URLROOT; ?>' + path;
+        return '<?php echo URLROOT; ?>/' + path;
+    }
+
     function fmtDateVN(str) {
         if (!str) return '—';
         return new Date(str).toLocaleDateString('vi-VN');
@@ -64,10 +74,10 @@
                 var imageList = [];
                 if (images.length > 0) {
                     for (var i = 0; i < images.length; i++) {
-                        imageList.push(images[i].duongDan);
+                        imageList.push(normalizeImgPath(images[i].duongDan));
                     }
                 } else if (thuoc.hinhAnh) {
-                    imageList.push(thuoc.hinhAnh);
+                    imageList.push(normalizeImgPath(thuoc.hinhAnh));
                 }
 
                 var mainImg = imageList.length > 0 ? imageList[0] : PLACEHOLDER_IMG;
