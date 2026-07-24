@@ -20,7 +20,7 @@ class ThongTinDuocSiController extends Controller
     // Trang hồ sơ thông tin dược sĩ đang đăng nhập
     public function index()
     {
-        $idNguoiDung = $_SESSION['user_id'] ?? null;
+        $idNguoiDung = isset($_SESSION['user_id']) ? $_SESSION['user_id'] : null;
 
         $data['title'] = "PharmaCare – Hồ sơ dược sĩ";
         $data['page_title'] = "Thông tin dược sĩ";
@@ -44,7 +44,7 @@ class ThongTinDuocSiController extends Controller
     public function capNhatThongTin()
     {
         header('Content-Type: application/json');
-        $idNguoiDung = $_SESSION['user_id'] ?? null;
+        $idNguoiDung = isset($_SESSION['user_id']) ? $_SESSION['user_id'] : null;
 
         $hoTen = isset($_POST['hoTen']) ? trim($_POST['hoTen']) : '';
         $email = isset($_POST['email']) ? trim($_POST['email']) : '';

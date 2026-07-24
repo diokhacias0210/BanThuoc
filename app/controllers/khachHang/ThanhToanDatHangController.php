@@ -51,7 +51,7 @@ class ThanhToanDatHangController extends Controller
     // Đọc danh sách ID sản phẩm đã chọn từ query string (?ids=1,2,3) hoặc từ POST (hidden field)
     private function layDanhSachIdDaChon()
     {
-        $raw = $_POST['selectedIds'] ?? ($_GET['ids'] ?? null);
+        $raw = isset($_POST['selectedIds']) ? $_POST['selectedIds'] : (isset($_GET['ids']) ? $_GET['ids'] : null);
         if ($raw === null || $raw === '') return null;
 
         return array_filter(array_map('trim', explode(',', $raw)), function ($v) {
@@ -62,8 +62,7 @@ class ThanhToanDatHangController extends Controller
     // GET /khachHang/thanhToanDatHang -> Hiển thị trang thanh toán
     public function index()
     {
-        if (!isset($_SESSION["user"]))
-        {
+        if (!isset($_SESSION["user"])) {
             header("Location: " . URLROOT . "/khachHang/xacThuc/dangNhap");
             exit();
         }
@@ -73,15 +72,13 @@ class ThanhToanDatHangController extends Controller
 
         list($idGioHang, $danhSachMua) = $this->layDanhSachMua($idKhachHang, $selectedIds);
 
-        if (empty($danhSachMua))
-        {
+        if (empty($danhSachMua)) {
             header("Location: " . URLROOT . "/khachHang/gioHang");
             exit();
         }
 
         $tongTien = 0;
-        foreach ($danhSachMua as $thuoc)
-        {
+        foreach ($danhSachMua as $thuoc) {
             $tongTien += $thuoc["soLuong"] * $thuoc["donGia"];
         }
 
@@ -109,14 +106,12 @@ class ThanhToanDatHangController extends Controller
     // (Chạy khi bấm nút "Xác nhận đặt hàng" trên trang thanh toán)
     public function xacNhan()
     {
-        if (!isset($_SESSION["user"]))
-        {
+        if (!isset($_SESSION["user"])) {
             header("Location: " . URLROOT . "/khachHang/xacThuc/dangNhap");
             exit();
         }
 
-        if ($_SERVER['REQUEST_METHOD'] !== 'POST')
-        {
+        if ($_SERVER['REQUEST_METHOD'] !== 'POST') {
             header("Location: " . URLROOT . "/khachHang/thanhToanDatHang");
             exit();
         }
@@ -126,22 +121,20 @@ class ThanhToanDatHangController extends Controller
 
         list($idGioHang, $danhSachMua) = $this->layDanhSachMua($idKhachHang, $selectedIds);
 
-        if (empty($danhSachMua))
-        {
+        if (empty($danhSachMua)) {
             header("Location: " . URLROOT . "/khachHang/gioHang");
             exit();
         }
 
         // Dữ liệu form gửi từ trang thanh toán
-        $hoTenNguoiNhan  = trim($_POST['hoTenNguoiNhan'] ?? '');
-        $soDienThoaiNhan = trim($_POST['soDienThoaiNhan'] ?? '');
-        $diaChiGiaoHang  = trim($_POST['diaChiGiaoHang'] ?? '');
-        $phuongThucTT    = trim($_POST['phuongThucThanhToan'] ?? 'COD');
-        $ghiChu          = trim($_POST['ghiChu'] ?? '');
+        $hoTenNguoiNhan  = trim(isset($_POST['hoTenNguoiNhan']) ? $_POST['hoTenNguoiNhan'] : '');
+        $soDienThoaiNhan = trim(isset($_POST['soDienThoaiNhan']) ? $_POST['soDienThoaiNhan'] : '');
+        $diaChiGiaoHang  = trim(isset($_POST['diaChiGiaoHang']) ? $_POST['diaChiGiaoHang'] : '');
+        $phuongThucTT    = trim(isset($_POST['phuongThucThanhToan']) ? $_POST['phuongThucThanhToan'] : 'COD');
+        $ghiChu          = trim(isset($_POST['ghiChu']) ? $_POST['ghiChu'] : '');
 
         $tongTien = 0;
-        foreach ($danhSachMua as $thuoc)
-        {
+        foreach ($danhSachMua as $thuoc) {
             $tongTien += $thuoc["soLuong"] * $thuoc["donGia"];
         }
 
@@ -157,8 +150,7 @@ class ThanhToanDatHangController extends Controller
 
         $idDonHang = $this->donHangModel->getLastId();
 
-        foreach ($danhSachMua as $thuoc)
-        {
+        foreach ($danhSachMua as $thuoc) {
             $this->donHangModel->themChiTiet(
                 $idDonHang,
                 $thuoc["idThuoc"],
@@ -168,8 +160,7 @@ class ThanhToanDatHangController extends Controller
         }
 
         // Xóa từng item đã mua khỏi giỏ hàng (chỉ những item đã chọn, không đụng phần còn lại trong giỏ)
-        foreach ($danhSachMua as $thuoc)
-        {
+        foreach ($danhSachMua as $thuoc) {
             $this->gioHangModel->xoaItemKhoiGio($thuoc['id'], $idGioHang);
         }
 

@@ -62,9 +62,6 @@ class Controller
         exit;
     }
 
-    /**
-     * Chuẩn hóa đường dẫn hình ảnh (Đã chuyển sang dùng isset() không bị lỗi ??)
-     */
     protected function xuLyDuongDanAnh($path)
     {
         if (empty($path)) {

@@ -11,9 +11,9 @@ class QuanLyDonHangController extends Controller
     // Trang danh sách đơn hàng của khách hàng đang đăng nhập
     public function index()
     {
-        
-        
-        $idKhachHang = $_SESSION['user_id'] ?? null;
+
+
+        $idKhachHang = isset($_SESSION['user_id']) ? $_SESSION['user_id'] : null;
 
         $data['title'] = "PharmaCare – Quản lý đơn hàng";
         $data['page_title'] = "Quản lý đơn hàng";
@@ -35,7 +35,8 @@ class QuanLyDonHangController extends Controller
     public function huyDonHang($idDonHang = null)
     {
         header('Content-Type: application/json');
-        $idKhachHang = $_SESSION['user_id'] ?? null;
+        $idKhachHang = isset($_SESSION['user_id']) ? $_SESSION['user_id'] : null;
+
         $lyDoHuy = isset($_POST['lyDoHuy']) ? trim($_POST['lyDoHuy']) : '';
 
         if (!$idKhachHang || !$idDonHang || empty($lyDoHuy)) {

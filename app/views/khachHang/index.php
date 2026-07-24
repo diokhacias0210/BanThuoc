@@ -9,7 +9,6 @@
                 <a class="hero-btn-main" href="<?php echo URLROOT; ?>/khachHang/thuoc">
                     <i class="fa-solid fa-magnifying-glass"></i> Tìm thuốc ngay
                 </a>
-                <!-- ĐÃ SỬA: Đổi /khachHang/taiDonThuoc thành /khachHang/dangKeToaThuoc -->
                 <a class="hero-btn-sec" href="<?php echo URLROOT; ?>/khachHang/dangKeToaThuoc">
                     <i class="fa-solid fa-file-arrow-up"></i> Gửi đơn thuốc
                 </a>
@@ -24,7 +23,6 @@
             <div class="qa-label">Tìm thuốc</div>
             <div class="qa-sub">Hàng nghìn sản phẩm</div>
         </a>
-        <!-- ĐÃ SỬA: Đổi /khachHang/taiDonThuoc thành /khachHang/dangKeToaThuoc -->
         <a class="qa" href="<?php echo URLROOT; ?>/khachHang/dangKeToaThuoc">
             <div class="qa-icon" style="background:#fff3e0"><i class="fa-solid fa-file-medical" style="color:#e65100"></i></div>
             <div class="qa-label">Gửi đơn thuốc</div>
@@ -37,7 +35,7 @@
         </a>
     </div>
 
-    <!-- PHÂN HỆ THUỐC PHỔ BIẾN -->
+    <!-- PHÂN HỆ 1: THUỐC PHỔ BIẾN (BÁN CHẠY NHẤT) -->
     <div class="sec-head">
         <div class="sec-title">Thuốc phổ biến</div>
         <a class="sec-more" href="<?php echo URLROOT; ?>/khachHang/thuoc">Xem tất cả <i class="fa-solid fa-angle-right"></i></a>
@@ -65,41 +63,12 @@
                     </div>
                 </a>
             <?php endforeach; ?>
+        <?php else: ?>
+            <div style="grid-column: 1/-1; text-align:center; padding: 20px; color: var(--muted2);">Chưa có dữ liệu thuốc phổ biến.</div>
         <?php endif; ?>
     </div>
 
-    <!-- PHÂN HỆ CÓ THỂ BẠN CẦN -->
-    <div class="sec-head">
-        <div class="sec-title">Có thể bạn cần</div>
-        <a class="sec-more" href="<?php echo URLROOT; ?>/khachHang/thuoc">Xem tất cả <i class="fa-solid fa-angle-right"></i></a>
-    </div>
-
-    <div class="popular-grid" style="margin-bottom: 28px;">
-        <?php if (!empty($thuocGoiY)): ?>
-            <?php foreach ($thuocGoiY as $item): ?>
-                <?php $isRx = ($item['yeuCauKeDon'] === 'Kê đơn'); ?>
-                <a class="pcard" href="<?php echo URLROOT; ?>/khachHang/thuoc/chiTiet/<?php echo $item['idThuoc']; ?>">
-                    <div class="pcard-img">
-                        <?php if ($isRx): ?><span class="pcard-tag tag-rx">RX</span><?php endif; ?>
-                        <img src="<?php echo $item['hinhAnhUrl']; ?>" alt="<?php echo htmlspecialchars($item['tenThuoc']); ?>">
-                    </div>
-                    <div class="pcard-body">
-                        <div class="pcard-name"><?php echo htmlspecialchars($item['tenThuoc']); ?></div>
-                        <div class="pcard-foot">
-                            <div class="pcard-price"><?php echo number_format($item['giaBan'], 0, ',', '.'); ?>đ</div>
-                            <?php if ($isRx): ?>
-                                <span class="btn-view-detail">Xem chi tiết</span>
-                            <?php else: ?>
-                                <button type="button" class="add-btn" onclick="themNhanhGioHang(event, <?php echo $item['idThuoc']; ?>)"><i class="fa-solid fa-plus"></i></button>
-                            <?php endif; ?>
-                        </div>
-                    </div>
-                </a>
-            <?php endforeach; ?>
-        <?php endif; ?>
-    </div>
-
-    <!-- PHÂN HỆ TẤT CẢ SẢN PHẨM (3 CỘT LỚN) -->
+    <!-- PHÂN HỆ 2: SẢN PHẨM NỔI BẬT (MỚI THÊM GẦN ĐÂY) -->
     <div class="sec-head">
         <div class="sec-title">Sản phẩm nổi bật</div>
         <a class="sec-more" href="<?php echo URLROOT; ?>/khachHang/thuoc">Xem tất cả <i class="fa-solid fa-angle-right"></i></a>
@@ -121,15 +90,16 @@
                     </div>
                 </a>
             <?php endforeach; ?>
+        <?php else: ?>
+            <div style="grid-column: 1/-1; text-align:center; padding: 20px; color: var(--muted2);">Chưa có sản phẩm nào.</div>
         <?php endif; ?>
     </div>
 
     <div class="divider"></div>
 
-    <!-- TIN TỨC SỨC KHỎE -->
+    <!-- TIN TỨC SỨC KHỎE (ĐÃ BỎ NÚT XEM TẤT CẢ) -->
     <div class="sec-head">
         <div class="sec-title">Tin tức sức khoẻ</div>
-        <span class="sec-more">Xem tất cả <i class="fa-solid fa-angle-right"></i></span>
     </div>
     <div class="blog-grid">
         <div class="blog-card">
@@ -161,7 +131,6 @@
 </div>
 
 <script>
-    // ĐÃ BỔ SUNG: Kết nối API thật, bắt buộc đăng nhập trước khi thêm giỏ hàng
     function themNhanhGioHang(event, idThuoc) {
         event.preventDefault();
         event.stopPropagation();
@@ -190,13 +159,9 @@
                         alert(res.message || "Thêm giỏ hàng thất bại.");
                     }
                 } catch (e) {
-                    console.error("Server response:", text);
                     alert("Có lỗi phản hồi từ máy chủ.");
                 }
             })
-            .catch(err => {
-                console.error("Fetch error:", err);
-                alert("Không thể kết nối đến máy chủ.");
-            });
+            .catch(() => alert("Không thể kết nối đến máy chủ."));
     }
 </script>

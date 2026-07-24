@@ -11,8 +11,8 @@ class ThongTinCaNhanController extends Controller
     // Trang hiển thị thông tin cá nhân + địa chỉ giao hàng
     public function index()
     {
-        
-        $idNguoiDung = $_SESSION['user_id'] ?? null;
+
+        $idNguoiDung = isset($_SESSION['user_id']) ? $_SESSION['user_id'] : null;
 
         $data['title'] = "PharmaCare – Thông tin cá nhân";
         $data['page_title'] = "Thông tin cá nhân";
@@ -35,7 +35,7 @@ class ThongTinCaNhanController extends Controller
     public function capNhatThongTin()
     {
         header('Content-Type: application/json');
-        $idNguoiDung = $_SESSION['user_id'] ?? null;
+        $idNguoiDung = isset($_SESSION['user_id']) ? $_SESSION['user_id'] : null;
         $hoTen = isset($_POST['hoTen']) ? trim($_POST['hoTen']) : '';
         $email = isset($_POST['email']) ? trim($_POST['email']) : '';
 
@@ -53,7 +53,7 @@ class ThongTinCaNhanController extends Controller
     public function themDiaChi()
     {
         header('Content-Type: application/json');
-        $idNguoiDung = $_SESSION['user_id'] ?? null;
+        $idNguoiDung = isset($_SESSION['user_id']) ? $_SESSION['user_id'] : null;
         $tenNguoiNhan = isset($_POST['tenNguoiNhan']) ? trim($_POST['tenNguoiNhan']) : '';
         $soDienThoaiNhan = isset($_POST['soDienThoaiNhan']) ? trim($_POST['soDienThoaiNhan']) : '';
         $diaChiChiTiet = isset($_POST['diaChiChiTiet']) ? trim($_POST['diaChiChiTiet']) : '';
@@ -73,7 +73,7 @@ class ThongTinCaNhanController extends Controller
     public function xoaDiaChi($idDiaChi = null)
     {
         header('Content-Type: application/json');
-        $idNguoiDung = $_SESSION['user_id'] ?? null;
+        $idNguoiDung = isset($_SESSION['user_id']) ? $_SESSION['user_id'] : null;
 
         if (!$idNguoiDung || !$idDiaChi) {
             echo json_encode(['status' => false, 'message' => 'Thiếu dữ liệu hoặc chưa đăng nhập']);
@@ -89,7 +89,7 @@ class ThongTinCaNhanController extends Controller
     public function datMacDinh($idDiaChi = null)
     {
         header('Content-Type: application/json');
-        $idNguoiDung = $_SESSION['user_id'] ?? null;
+        $idNguoiDung = isset($_SESSION['user_id']) ? $_SESSION['user_id'] : null;
 
         if (!$idNguoiDung || !$idDiaChi) {
             echo json_encode(['status' => false, 'message' => 'Thiếu dữ liệu hoặc chưa đăng nhập']);

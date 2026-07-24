@@ -17,13 +17,16 @@
         cursor: pointer;
         transition: all .15s;
     }
+
     .addr-select-option.selected {
         border-color: var(--green, #16a34a);
         background: var(--green-light, #f0fdf4);
     }
+
     .addr-select-option input[type="radio"] {
         margin-top: 3px;
     }
+
     .addr-select-option .addr-title-row {
         display: flex;
         align-items: center;
@@ -31,6 +34,7 @@
         font-weight: 600;
         margin-bottom: 2px;
     }
+
     .addr-select-option .badge-default {
         font-size: 11px;
         font-weight: 600;
@@ -39,6 +43,7 @@
         padding: 2px 8px;
         border-radius: 20px;
     }
+
     .addr-select-option .addr-recipient,
     .addr-select-option .addr-detail {
         font-size: 13px;
@@ -67,7 +72,7 @@
     <form id="checkoutForm" method="POST" action="<?php echo URLROOT; ?>/khachHang/thanhToanDatHang/xacNhan">
 
         <!-- Giữ lại đúng danh sách sản phẩm đã chọn từ giỏ hàng để bước xacNhan() xử lý đúng -->
-        <input type="hidden" name="selectedIds" value="<?php echo htmlspecialchars($selectedIdsStr ?? ''); ?>">
+        <input type="hidden" name="selectedIds" value="<?php echo htmlspecialchars(isset($selectedIdsStr) ? $selectedIdsStr : ''); ?>">
 
         <div class="checkout-grid">
             <!-- CỘT TRÁI -->
@@ -79,14 +84,17 @@
                     </div>
 
                     <?php
-                        // Xác định địa chỉ mặc định (nếu có) để chọn sẵn khi vào trang
-                        $diaChiMacDinh = null;
-                        foreach ($diaChiList as $dc) {
-                            if ($dc['laMacDinh']) { $diaChiMacDinh = $dc; break; }
+                    // Xác định địa chỉ mặc định (nếu có) để chọn sẵn khi vào trang
+                    $diaChiMacDinh = null;
+                    foreach ($diaChiList as $dc) {
+                        if ($dc['laMacDinh']) {
+                            $diaChiMacDinh = $dc;
+                            break;
                         }
-                        if (!$diaChiMacDinh && !empty($diaChiList)) {
-                            $diaChiMacDinh = $diaChiList[0];
-                        }
+                    }
+                    if (!$diaChiMacDinh && !empty($diaChiList)) {
+                        $diaChiMacDinh = $diaChiList[0];
+                    }
                     ?>
 
                     <?php if (!empty($diaChiList)): ?>
@@ -130,13 +138,13 @@
                             <div class="addr-grid">
                                 <input class="addr-input" type="text" name="hoTenNguoiNhan" id="f_hoTenNguoiNhan"
                                     placeholder="Họ và tên người nhận"
-                                    value="<?php echo htmlspecialchars($diaChiMacDinh['tenNguoiNhan'] ?? ($_SESSION['user']['hoTen'] ?? '')); ?>" required>
+                                    value="<?php echo htmlspecialchars(isset($diaChiMacDinh['tenNguoiNhan']) ? $diaChiMacDinh['tenNguoiNhan'] : (isset($_SESSION['user']['hoTen']) ? $_SESSION['user']['hoTen'] : '')); ?>" required>
                                 <input class="addr-input" type="text" name="soDienThoaiNhan" id="f_soDienThoaiNhan"
                                     placeholder="Số điện thoại"
-                                    value="<?php echo htmlspecialchars($diaChiMacDinh['soDienThoaiNhan'] ?? ($_SESSION['user']['soDienThoai'] ?? '')); ?>" required>
+                                    value="<?php echo htmlspecialchars(isset($diaChiMacDinh['soDienThoaiNhan']) ? $diaChiMacDinh['soDienThoaiNhan'] : (isset($_SESSION['user']['soDienThoai']) ? $_SESSION['user']['soDienThoai'] : '')); ?>" required>
                                 <input class="addr-input span-2" type="text" name="diaChiGiaoHang" id="f_diaChiGiaoHang"
                                     placeholder="Địa chỉ giao hàng cụ thể (số nhà, đường, phường/xã, tỉnh/thành)"
-                                    value="<?php echo htmlspecialchars($diaChiMacDinh['diaChiChiTiet'] ?? ''); ?>" required>
+                                    value="<?php echo htmlspecialchars(isset($diaChiMacDinh['diaChiChiTiet']) ? $diaChiMacDinh['diaChiChiTiet'] : ''); ?>" required>
                             </div>
                         </div>
                     </div>
