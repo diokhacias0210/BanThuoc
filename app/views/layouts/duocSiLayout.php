@@ -1,9 +1,8 @@
 <?php
 // Khởi tạo các partials
-require_once APPROOT . '/app/views/layouts/duocSiPartials/duocSiHeader.php';
-require_once APPROOT . '/app/views/layouts/duocSiPartials/duocSiNavbar.php';
+require_once APPROOT . '/views/layouts/duocSiPartials/duocSiHeader.php';
+require_once APPROOT . '/views/layouts/duocSiPartials/duocSiNavbar.php';
 ?>
-
 <main class="main">
     <header class="topbar">
         <div>
@@ -17,5 +16,5 @@ require_once APPROOT . '/app/views/layouts/duocSiPartials/duocSiNavbar.php';
 </main>
 
 <?php
-require_once 'duocSiPartials/duocSiFooter.php';
+require_once APPROOT . '/views/layouts/duocSiPartials/duoiSiFooter.php';
 ?>

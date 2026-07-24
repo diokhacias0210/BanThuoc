@@ -1,3 +1,10 @@
+<!--
+  VIEW trang Thông tin dược sĩ — chỉ phần main content (không navbar/topbar/drawer/footer,
+  bạn tự làm phần đó cho khu vực Dược sĩ).
+  Nhúng CSDL đầy đủ cho bảng NguoiDung (hoTen, email, soDienThoai, trangThai, vaiTro)
+  và DuocSi (chungChiHanhNghe, trinhDo, noiCap).
+  Nhãn vai trò ("Dược sĩ trưởng"...) không có trong DB nên map tĩnh ở Controller, không đúng 100% ý nghĩa gốc.
+-->
 <div class="profile-card">
     <div class="profile-header">
         <div class="profile-avatar-large" id="view_avatar">—</div>
@@ -145,11 +152,11 @@
     function displayPharmacistProfile(pharmacistData) {
         if (!pharmacistData) return;
         document.getElementById('view_hoTen').textContent = "DS. " + pharmacistData.hoTen;
-        document.getElementById('view_vaiTro').textContent = pharmacistData.vaiTro;
+        document.getElementById('view_vaiTro').textContent = pharmacistData.vaiTroLabel;
         document.getElementById('view_avatar').textContent = generateInitials(pharmacistData.hoTen);
 
         document.getElementById('db_idNguoiDung').textContent = "USR-" + String(pharmacistData.idNguoiDung).padStart(6, '0');
-        document.getElementById('db_trangThai').textContent = pharmacistData.trangThai ? 'Đang hoạt động' : 'Đã khóa';
+        document.getElementById('db_trangThai').textContent = pharmacistData.trangThai == 1 ? 'Đang hoạt động' : 'Đã khóa';
         document.getElementById('db_email').textContent = pharmacistData.email;
         document.getElementById('db_soDienThoai').textContent = pharmacistData.soDienThoai || '—';
         document.getElementById('db_chungChiHanhNghe').textContent = pharmacistData.chungChiHanhNghe || '—';
@@ -157,6 +164,7 @@
         document.getElementById('db_noiCap').textContent = pharmacistData.noiCap || '—';
     }
 
+    // Lưu thông tin thật xuống CSDL (bảng NguoiDung + DuocSi) qua Controller
     document.getElementById('btnSaveProfile').addEventListener('click', () => {
         const updatedData = {
             hoTen: document.getElementById('f_hoTen').value.trim(),
@@ -167,34 +175,46 @@
             noiCap: document.getElementById('f_noiCap').value.trim()
         };
 
-        // TODO: Thực hiện gọi hàm AJAX / Fetch API gửi dữ liệu lên Server Backend để lưu Database tại đây
+        fetch(`<?php echo URLROOT; ?>/duocSi/thongTinDuocSi/capNhatThongTin`, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
+            body: new URLSearchParams(updatedData).toString()
+        })
+            .then(res => res.json())
+            .then(res => {
+                if (res.status) {
+                    document.getElementById('view_hoTen').textContent = "DS. " + updatedData.hoTen;
+                    document.getElementById('view_avatar').textContent = generateInitials(updatedData.hoTen);
+                    document.getElementById('db_email').textContent = updatedData.email;
+                    document.getElementById('db_soDienThoai').textContent = updatedData.soDienThoai;
+                    document.getElementById('db_chungChiHanhNghe').textContent = updatedData.chungChiHanhNghe;
+                    document.getElementById('db_trinhDo').textContent = updatedData.trinhDo;
+                    document.getElementById('db_noiCap').textContent = updatedData.noiCap;
 
-        // Cập nhật tạm thời lên UI sau khi lưu thành công
-        document.getElementById('view_hoTen').textContent = "DS. " + updatedData.hoTen;
-        document.getElementById('view_avatar').textContent = generateInitials(updatedData.hoTen);
-        document.getElementById('db_email').textContent = updatedData.email;
-        document.getElementById('db_soDienThoai').textContent = updatedData.soDienThoai;
-        document.getElementById('db_chungChiHanhNghe').textContent = updatedData.chungChiHanhNghe;
-        document.getElementById('db_trinhDo').textContent = updatedData.trinhDo;
-        document.getElementById('db_noiCap').textContent = updatedData.noiCap;
-
-        hideModal();
-        if (typeof showToast === 'function') {
-            showToast('Cập nhật thông tin hồ sơ thành công!');
-        }
+                    hideModal();
+                    if (typeof showToast === 'function') {
+                        showToast('Cập nhật thông tin hồ sơ thành công!');
+                    } else {
+                        alert('Cập nhật thông tin hồ sơ thành công!');
+                    }
+                } else {
+                    alert(res.message || 'Cập nhật thất bại, vui lòng thử lại.');
+                }
+            })
+            .catch(() => alert('Lỗi kết nối máy chủ.'));
     });
 
-    // Giả lập nạp dữ liệu ban đầu (Khi tích hợp thật, biến này sẽ do dữ liệu từ Controller PHP gửi xuống)
-    const initialData = {
-        idNguoiDung: 12,
-        hoTen: "Nguyễn Văn A",
-        vaiTro: "Dược sĩ trưởng",
-        trangThai: true,
-        email: "nguyenvana@pharmacare.vn",
-        soDienThoai: "0901234567",
-        chungChiHanhNghe: "CCHN-2026/CT",
-        trinhDo: "Đại học Dược",
-        noiCap: "Sở Y tế Thành phố Cần Thơ"
-    };
+    // Dữ liệu thật lấy từ CSDL, do Controller PHP truyền xuống (thay cho initialData giả lập)
+    const initialData = <?php echo $thongTin ? json_encode([
+        'idNguoiDung' => $thongTin['idNguoiDung'],
+        'hoTen' => $thongTin['hoTen'],
+        'vaiTroLabel' => $nhanVaiTro[$thongTin['vaiTro']] ?? $thongTin['vaiTro'],
+        'trangThai' => $thongTin['trangThai'],
+        'email' => $thongTin['email'],
+        'soDienThoai' => $thongTin['soDienThoai'],
+        'chungChiHanhNghe' => $thongTin['chungChiHanhNghe'],
+        'trinhDo' => $thongTin['trinhDo'],
+        'noiCap' => $thongTin['noiCap']
+    ], JSON_UNESCAPED_UNICODE) : 'null'; ?>;
     displayPharmacistProfile(initialData);
 </script>
