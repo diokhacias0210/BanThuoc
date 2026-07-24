@@ -52,6 +52,35 @@
 </div>
 
 <!-- Modal Form Thêm/Sửa thuốc -->
+
+<div class="modal-overlay hidden" id="modalDetail">
+
+    <div class="modal-box">
+
+        <div class="modal-head">
+
+            <h2>Thông tin thuốc</h2>
+
+            <button
+                class="modal-close"
+                data-close="modalDetail">
+
+                &times;
+
+            </button>
+
+        </div>
+
+        <div
+            class="modal-body"
+            id="detailContent">
+
+        </div>
+
+    </div>
+
+</div>
+
 <div class="modal-overlay hidden" id="modalForm">
     <div class="modal-box">
         <div class="modal-head">
@@ -93,17 +122,15 @@
                         <label>Giá bán niêm yết (đ) <span class="req">*</span></label>
                         <input type="number" id="f_giaBan" name="giaBan" required>
                     </div>
-                    <div class="form-field">
-                        <label>Hình ảnh sản phẩm</label>
-                        <div class="img-preview-row">
-                            <img id="f_hinhAnhPreview" class="img-preview" src="" alt="preview">
-                            <div class="file-input-wrapper" style="flex:1;">
-                                <button type="button" class="btn-upload-trigger">
-                                    <i class="fa-solid fa-cloud-arrow-up"></i> Chọn ảnh từ máy
-                                </button>
-                                <input type="file" id="f_hinhAnh" name="hinhAnhFile" accept="image/*">
-                            </div>
+                    <div class="form-field span-2">
+                        <label>Hình ảnh sản phẩm (có thể chọn nhiều)</label>
+                        <div class="file-input-wrapper" style="margin-bottom:8px;">
+                            <button type="button" class="btn-upload-trigger">
+                                <i class="fa-solid fa-cloud-arrow-up"></i> Chọn ảnh từ máy
+                            </button>
+                            <input type="file" id="f_hinhAnh" name="hinhAnhFiles[]" accept="image/*" multiple>
                         </div>
+                        <div id="f_hinhAnhPreviews" class="image-previews"></div>
                     </div>
                     <div class="form-field span-2">
                         <label>Phân loại quản lý dược</label>
@@ -147,6 +174,7 @@
 </div>
 
 <script>
+    const PLACEHOLDER_IMG = 'https://placehold.co/80x80/e2e8f0/64748b?text=No+Image';
     let searchTimeout;
     const modalForm = document.getElementById('modalForm');
 
@@ -188,13 +216,26 @@
         document.getElementById('trangThaiLabel').textContent = e.target.checked ? 'Đang bán' : 'Tạm ngưng';
     });
 
-    // Preview File ảnh nội bộ nhanh
+    // Preview nhiều ảnh khi chọn file
     document.getElementById('f_hinhAnh').addEventListener('change', (e) => {
-        const file = e.target.files[0];
-        if (file) {
-            const reader = new FileReader();
-            reader.onload = (event) => document.getElementById('f_hinhAnhPreview').src = event.target.result;
-            reader.readAsDataURL(file);
+        const previewsContainer = document.getElementById('f_hinhAnhPreviews');
+        // Chỉ xóa previews cũ (không xóa ảnh đang có từ edit)
+        const newPreviews = previewsContainer.querySelectorAll('.preview-new');
+        newPreviews.forEach(el => el.remove());
+
+        const files = e.target.files;
+        for (let i = 0; i < files.length; i++) {
+            const file = files[i];
+            if (file) {
+                const reader = new FileReader();
+                reader.onload = (event) => {
+                    const div = document.createElement('div');
+                    div.className = 'preview-item preview-new';
+                    div.innerHTML = `<img class="preview-thumb" src="${event.target.result}" alt="preview"><span class="preview-label">Mới</span>`;
+                    previewsContainer.appendChild(div);
+                };
+                reader.readAsDataURL(file);
+            }
         }
     });
 
@@ -205,7 +246,7 @@
         const phanLoai = document.getElementById('filterPhanLoai').value;
         const trangThai = document.getElementById('filterTrangThai').value;
 
-        fetch(`<?php echo URLROOT; ?>/admin/quanLyThuoc/getList?search=${encodeURIComponent(search)}&idDanhMuc=${idDanhMuc}&phanLoai=${phanLoai}&trangThai=${trangThai}`)
+        fetch(`<?php echo URLROOT; ?>/admin/quanLyThuoc/getList?search=${encodeURIComponent(search)}&idDanhMuc=${idDanhMuc}&phanLoai=${phanLoai}&trangThai=${trangThai}&_=${Date.now()}`)
             .then(res => res.json())
             .then(res => {
                 if (res.status) {
@@ -240,12 +281,13 @@
 
         tbody.innerHTML = list.map(item => {
             const badgeClass = item.yeuCauKeDon === 'Kê đơn' ? 'badge-rx' : 'badge-otc';
-            const statusClass = item.trangThai ? 'badge-active' : 'badge-inactive';
-            const statusLabel = item.trangThai ? 'Còn bán' : 'Tạm ngưng';
+            const trangThai = item.trangThai == 1 || item.trangThai === '1' || item.trangThai === true;
+            const statusClass = trangThai ? 'badge-active' : 'badge-inactive';
+            const statusLabel = trangThai ? 'Còn bán' : 'Tạm ngưng';
             const lowStockHTML = item.tongTon <= 10 ? `<br><span class="badge badge-lowstock" style="margin-top:4px;">Sắp hết hàng</span>` : '';
 
             return `
-                <tr class="${item.trangThai ? '' : 'row-inactive'}">
+                <tr class="${trangThai ? '' : 'row-inactive'}">
                     <td style="text-align:center;"><img class="thumb" src="${item.hinhAnh || PLACEHOLDER_IMG}" alt=""></td>
                     <td>
                         <div class="cell-strong">${item.tenThuoc}</div>
@@ -258,9 +300,13 @@
                     <td><span class="badge ${statusClass}">${statusLabel}</span></td>
                     <td>
                         <div class="actions-cell">
-                            <a class="action-btn view" href="<?php echo URLROOT; ?>/admin/quanLyThuoc/chitiet/${item.idThuoc}" title="Xem chi tiết & Lô hàng">
+                            <button
+                                class="action-btn view"
+                                onclick="openDetail(${item.idThuoc})"
+                                title="Chi tiết">
                                 <i class="fa-solid fa-eye"></i>
-                            </a>
+                            </button>
+                            
                             <button class="action-btn edit" onclick="openEditForm(${item.idThuoc})" title="Sửa thông tin">
                                 <i class="fa-solid fa-pen-to-square"></i>
                             </button>
@@ -274,6 +320,19 @@
         }).join('');
     }
 
+    function openAddForm() {
+        document.getElementById('formModalTitle').textContent = 'Thêm ';
+        document.getElementById('thuocForm').reset();
+        document.getElementById('f_idThuoc').value = '';
+        // Xóa toàn bộ previews
+        document.getElementById('f_hinhAnhPreviews').innerHTML = '';
+        document.getElementById('f_gioiHanMua').disabled = true;
+        document.getElementById('f_trangThai').checked = true;
+        document.getElementById('trangThaiLabel').textContent = 'Đang bán';
+        setKedonToggle('Không kê đơn');
+        openModal(modalForm);
+    }
+
     function openEditForm(id) {
         fetch(`<?php echo URLROOT; ?>/admin/quanLyThuoc/getDetailData/${id}`)
             .then(res => res.json())
@@ -282,8 +341,6 @@
                     const t = res.thuoc;
                     document.getElementById('formModalTitle').textContent = 'Chỉnh sửa thông tin thuốc';
                     document.getElementById('f_idThuoc').value = t.idThuoc;
-                    document.getElementById('f_hinhAnhUrlHienTai').value = t.hinhAnh || '';
-                    document.getElementById('f_hinhAnhPreview').src = t.hinhAnh || PLACEHOLDER_IMG;
                     document.getElementById('f_tenThuoc').value = t.tenThuoc;
                     document.getElementById('f_idDanhMuc').value = t.idDanhMuc || '';
                     document.getElementById('f_donViTinh').value = t.donViTinh;
@@ -302,41 +359,128 @@
                     document.getElementById('f_trangThai').checked = t.trangThai == 1;
                     document.getElementById('trangThaiLabel').textContent = t.trangThai == 1 ? 'Đang bán' : 'Tạm ngưng';
 
+                    // Hiển thị danh sách ảnh hiện có kèm nút xóa
+                    const previewsContainer = document.getElementById('f_hinhAnhPreviews');
+                    previewsContainer.innerHTML = '';
+                    if (res.images && res.images.length > 0) {
+                        res.images.forEach(img => {
+                            const div = document.createElement('div');
+                            div.className = 'preview-item preview-existing';
+                            div.innerHTML = `
+                                <img class="preview-thumb" src="${img.duongDan}" alt="">
+                                <button class="preview-delete-btn" type="button" title="Xóa ảnh" data-img="${img.duongDan}">&times;</button>
+                            `;
+                            previewsContainer.appendChild(div);
+                        });
+
+                        // Gắn sự kiện xóa cho từng nút
+                        previewsContainer.querySelectorAll('.preview-delete-btn').forEach(btn => {
+                            btn.addEventListener('click', function() {
+                                // Thêm đường dẫn ảnh cần xóa vào hidden input
+                                const imgPath = this.dataset.img;
+                                let deleteInput = document.getElementById('f_deleteImages');
+                                if (!deleteInput) {
+                                    deleteInput = document.createElement('div');
+                                    deleteInput.id = 'f_deleteImages';
+                                    document.getElementById('thuocForm').appendChild(deleteInput);
+                                }
+                                // Tạo hidden input cho mỗi ảnh cần xóa
+                                const hidden = document.createElement('input');
+                                hidden.type = 'hidden';
+                                hidden.name = 'deleteImages[]';
+                                hidden.value = imgPath;
+                                deleteInput.appendChild(hidden);
+                                // Ẩn item preview
+                                this.closest('.preview-item').style.display = 'none';
+                            });
+                        });
+                    }
+
                     openModal(modalForm);
                 }
             });
     }
 
-    document.getElementById('btnSaveThuoc').addEventListener('click', () => {
-        const form = document.getElementById('thuocForm');
-        const formData = new FormData(form);
+    document.getElementById('btnSaveThuoc').addEventListener('click', function () {
+        var form = document.getElementById('thuocForm');
 
-        fetch(`<?php echo URLROOT; ?>/admin/quanLyThuoc/save`, {
-                method: 'POST',
-                body: formData
-            })
-            .then(res => res.json())
-            .then(res => {
-                if (res.status) {
-                    closeModal(modalForm);
-                    showToast(res.message);
-                    fetchThuocList();
-                } else alert(res.message);
-            });
+        if (!form.checkValidity()) {
+            form.reportValidity();
+            return;
+        }
+
+        var formData = new FormData(form);
+
+        fetch('<?php echo URLROOT; ?>/admin/quanLyThuoc/save', {
+            method: 'POST',
+            body: formData
+        })
+        .then(function (res) {
+            return res.text(); // Lấy dạng chuỗi thô để tránh crash khi PHP có Warning
+        })
+        .then(function (text) {
+            var res;
+            try {
+                res = JSON.parse(text);
+            } catch (e) {
+                console.error("Server Response Error:", text);
+                alert("Lỗi phản hồi từ máy chủ! Chi tiết: " + text.substring(0, 200));
+                return;
+            }
+
+            if (res.status) {
+                // Đóng Modal ngay lập tức
+                var modal = document.getElementById('modalForm');
+                if (modal) {
+                    modal.classList.add('hidden');
+                    document.body.style.overflow = '';
+                }
+                alert(res.message);
+                
+                // Cập nhật lại danh sách trực tiếp không cần reload toàn bộ trang
+                fetchThuocList();
+            } else {
+                alert(res.message || 'Có lỗi xảy ra, không thể lưu dữ liệu!');
+            }
+        })
+        .catch(function (err) {
+            console.error(err);
+            alert('Lỗi kết nối máy chủ!');
+        });
     });
 
     function toggleStatus(id) {
         if (confirm('Xác nhận thay đổi trạng thái mở bán / tạm ngưng của mặt hàng thuốc này?')) {
             fetch(`<?php echo URLROOT; ?>/admin/quanLyThuoc/toggleStatus/${id}`, {
-                    method: 'POST'
-                })
-                .then(res => res.json())
-                .then(res => {
-                    if (res.status) {
+                method: 'POST',
+                headers: {
+                    'Cache-Control': 'no-cache'
+                }
+            })
+            .then(function (res) {
+                return res.json();
+            })
+            .then(function (res) {
+                if (res.status) {
+                    if (typeof showToast === 'function') {
                         showToast(res.message);
-                        fetchThuocList();
+                    } else {
+                        alert(res.message);
                     }
-                });
+                    
+                    // Chuyển bộ lọc về "Tất cả trạng thái" để thấy thay đổi ngay trên màn hình
+                    document.getElementById('filterTrangThai').value = 'all';
+                    
+                    // Cập nhật lại danh sách
+                    fetchThuocList();
+                } else {
+                    alert(res.message || 'Thay đổi trạng thái thất bại!');
+                }
+            })
+            .catch(function (err) {
+                console.error('Lỗi khi đổi trạng thái:', err);
+                alert('Có lỗi kết nối khi đổi trạng thái!');
+            });
         }
     }
 
@@ -355,5 +499,90 @@
         fetchThuocList();
     });
 
+    document.getElementById('btnAddThuoc').addEventListener('click', openAddForm);
+
     fetchThuocList();
+
+    function openDetail(id) {
+        fetch(`<?php echo URLROOT; ?>/admin/quanLyThuoc/getDetailData/${id}`)
+            .then(res => res.json())
+            .then(res => {
+
+                if (!res.status) {
+                    alert(res.message);
+                    return;
+                }
+
+                //đổ dữ liệu vào popup
+                document.getElementById("detailContent").innerHTML = `
+
+                <p><b>Tên thuốc:</b> ${res.thuoc.tenThuoc}</p>
+
+                <p><b>Danh mục:</b> ${res.thuoc.tenDanhMuc}</p>
+
+                <p><b>Hoạt chất:</b> ${res.thuoc.thanhPhan}</p>
+
+                <p><b>Hàm lượng:</b> ${res.thuoc.hamLuong}</p>
+
+                <p><b>Công dụng:</b> ${res.thuoc.congDung}</p>
+
+                <p><b>Đơn vị:</b> ${res.thuoc.donViTinh}</p>
+
+                <p><b>Giá:</b> ${fmtMoney(res.thuoc.giaBan)}</p>
+
+                <p><b>Yêu cầu kê đơn:</b> ${res.thuoc.yeuCauKeDon}</p>
+
+                <p><b>Giới hạn mua:</b> ${res.thuoc.gioiHanMua}</p>
+
+                <hr>
+
+                <h4>Danh sách lô thuốc</h4>
+
+                <table class="table">
+
+                <thead>
+
+                <tr>
+
+                <th>Mã lô</th>
+
+                <th>HSD</th>
+
+                <th>Tồn</th>
+
+                <th>Giá nhập</th>
+
+                </tr>
+
+                </thead>
+
+                <tbody>
+
+                ${
+                res.lots.map(l=>`
+
+                <tr>
+
+                <td>${l.maLo}</td>
+
+                <td>${l.hanSuDung}</td>
+
+                <td>${l.soLuongTon}</td>
+
+                <td>${fmtMoney(l.giaNhap)}</td>
+
+                </tr>
+
+                `).join("")
+                }
+
+                </tbody>
+
+                </table>
+
+                `;
+
+                openModal(document.getElementById("modalDetail"));
+            });
+    }
 </script>

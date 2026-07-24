@@ -58,11 +58,12 @@ class ThuocModel extends Model
     // Lấy danh sách lô thuốc của sản phẩm
     public function getLotsByThuocId($idThuoc)
     {
-        $sql = "SELECT l.*, n.hoTen, n.email FROM LoThuoc l 
-                LEFT JOIN NguoiDung n ON l.idDuocSi = n.idNguoiDung 
-                WHERE l.idThuoc = :idThuoc ORDER BY l.hanSuDung ASC";
+        $sql = "SELECT *
+                FROM LoThuoc
+                WHERE idThuoc=:id
+                ORDER BY hanSuDung ASC";
         $this->db->query($sql);
-        $this->db->bind(':idThuoc', $idThuoc);
+        $this->db->bind(':id', $idThuoc);
         return $this->db->resultSet();
     }
 
@@ -83,11 +84,7 @@ class ThuocModel extends Model
         $this->db->bind(':trangThai', $data['trangThai']);
 
         if ($this->db->execute()) {
-            $idThuoc = $this->db->lastInsertId();
-            if (!empty($data['hinhAnh'])) {
-                $this->saveImage($idThuoc, $data['hinhAnh']);
-            }
-            return true;
+            return $this->db->lastInsertId();
         }
         return false;
     }
@@ -111,17 +108,41 @@ class ThuocModel extends Model
         $this->db->bind(':trangThai', $data['trangThai']);
 
         $res = $this->db->execute();
-        if (!empty($data['hinhAnh'])) {
-            $this->saveImage($id, $data['hinhAnh']);
-        }
+
         return $res;
     }
 
-    // Thêm hình ảnh mới vào bảng HinhAnhThuoc
+    // Xóa 1 hình ảnh theo đường dẫn
+    public function deleteImageByPath($duongDan)
+    {
+        $this->db->query("DELETE FROM HinhAnhThuoc WHERE duongDan = :duongDan");
+        $this->db->bind(':duongDan', $duongDan);
+        return $this->db->execute();
+    }
+
+    // Thêm 1 hình ảnh mới vào bảng HinhAnhThuoc
+    public function addImage($idThuoc, $duongDan)
+    {
+        $this->db->query("
+            INSERT INTO HinhAnhThuoc (idThuoc, duongDan)
+            VALUES (:idThuoc, :duongDan)
+        ");
+        $this->db->bind(':idThuoc', $idThuoc);
+        $this->db->bind(':duongDan', $duongDan);
+        return $this->db->execute();
+    }
+
+    // Giữ lại saveImage cho tương thích ngược (xóa hết rồi thêm 1 ảnh)
     public function saveImage($idThuoc, $duongDan)
     {
-        $sql = "INSERT INTO HinhAnhThuoc (idThuoc, duongDan) VALUES (:idThuoc, :duongDan)";
-        $this->db->query($sql);
+        $this->db->query("DELETE FROM HinhAnhThuoc WHERE idThuoc=:idThuoc");
+        $this->db->bind(':idThuoc', $idThuoc);
+        $this->db->execute();
+
+        $this->db->query("
+            INSERT INTO HinhAnhThuoc (idThuoc, duongDan)
+            VALUES (:idThuoc, :duongDan)
+        ");
         $this->db->bind(':idThuoc', $idThuoc);
         $this->db->bind(':duongDan', $duongDan);
         return $this->db->execute();
