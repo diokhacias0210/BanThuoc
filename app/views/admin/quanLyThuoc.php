@@ -23,7 +23,7 @@
         </button>
     </div>
     <div class="toolbar-row2">
-        <div class="result-count">Tìm thấy <b id="resultCount">0</b> sản phẩm phù hợp</div>
+        <div class="result-count">Tìm thấy <b id="resultCount">0</b> thuốc phù hợp</div>
     </div>
 </div>
 
@@ -33,11 +33,11 @@
             <thead>
                 <tr>
                     <th style="width: 80px; text-align:center;">Hình ảnh</th>
-                    <th>Tên thương mại</th>
-                    <th>Danh mục thuốc</th>
+                    <th>Tên thuốc</th>
+                    <th>Danh mục</th>
                     <th>Phân loại</th>
-                    <th>Giá niêm yết</th>
-                    <th>Tồn kho khả dụng</th>
+                    <th>Giá bán</th>
+                    <th>Tồn kho</th>
                     <th>Trạng thái</th>
                     <th style="text-align:right; width: 140px;">Thao tác</th>
                 </tr>
@@ -47,7 +47,11 @@
     </div>
     <div id="emptyState" class="empty-state" style="display:none;">
         <i class="fa-solid fa-box-open" style="font-size:40px; color:var(--gray-300); margin-bottom:14px; display:block;"></i>
-        <div class="t1">Không tìm thấy sản phẩm thuốc phù hợp</div>
+        <div class="t1">Không tìm thấy thuốc</div>
+        <div>Thử thay đổi từ khóa tìm kiếm hoặc bộ lọc.</div>
+    </div>
+    <div class="pagination-bar" id="paginationBar">
+        <div class="pagination" id="pagination"></div>
     </div>
 </div>
 
@@ -86,6 +90,7 @@
         <div class="modal-head">
             <div>
                 <h2 id="formModalTitle">Thêm thuốc mới</h2>
+                <div class="desc">Nhập đầy đủ thông tin thuốc theo dữ liệu hệ thống</div>
             </div>
             <button class="modal-close" data-close="modalForm">&times;</button>
         </div>
@@ -173,8 +178,16 @@
     </div>
 </div>
 
+<div class="toast" id="toast">
+    <i class="fa-solid fa-circle-check"></i>
+    <span id="toastMsg">Đã lưu thành công</span>
+</div>
+
 <script>
     const PLACEHOLDER_IMG = 'https://placehold.co/80x80/e2e8f0/64748b?text=No+Image';
+    const PAGE_SIZE = 8;
+    let currentPage = 1;
+    let currentData = [];
     let searchTimeout;
     const modalForm = document.getElementById('modalForm');
 
@@ -194,6 +207,97 @@
 
     function fmtMoney(n) {
         return Number(n || 0).toLocaleString('vi-VN') + 'đ';
+    }
+
+    // ===== TOAST NOTIFICATION =====
+    function showToast(msg) {
+        const toast = document.getElementById('toast');
+        const toastMsg = document.getElementById('toastMsg');
+        toastMsg.textContent = msg;
+        toast.classList.add('show');
+        clearTimeout(toast._hideTimer);
+        toast._hideTimer = setTimeout(() => {
+            toast.classList.remove('show');
+        }, 3500);
+    }
+
+    // ===== FORM VALIDATION =====
+    function clearFormErrors() {
+        document.querySelectorAll('.form-field.has-error').forEach(el => el.classList.remove('has-error'));
+    }
+
+    function setFieldError(fieldId, message) {
+        const field = document.getElementById(fieldId);
+        if (!field) return;
+        const formField = field.closest('.form-field');
+        if (!formField) return;
+        formField.classList.add('has-error');
+        let errorEl = formField.querySelector('.error-msg');
+        if (!errorEl) {
+            errorEl = document.createElement('div');
+            errorEl.className = 'error-msg';
+            formField.appendChild(errorEl);
+        }
+        errorEl.textContent = message;
+    }
+
+    function validateForm() {
+        clearFormErrors();
+        let isValid = true;
+
+        // Tên thuốc
+        const tenThuoc = document.getElementById('f_tenThuoc').value.trim();
+        if (!tenThuoc) {
+            setFieldError('f_tenThuoc', 'Vui lòng nhập tên thương mại thuốc');
+            isValid = false;
+        }
+
+        // Danh mục
+        const idDanhMuc = document.getElementById('f_idDanhMuc').value;
+        if (!idDanhMuc) {
+            setFieldError('f_idDanhMuc', 'Vui lòng chọn danh mục phân nhóm');
+            isValid = false;
+        }
+
+        // Đơn vị tính
+        const donViTinh = document.getElementById('f_donViTinh').value.trim();
+        if (!donViTinh) {
+            setFieldError('f_donViTinh', 'Vui lòng nhập đơn vị tính');
+            isValid = false;
+        }
+
+        // Hoạt chất
+        const thanhPhan = document.getElementById('f_thanhPhan').value.trim();
+        if (!thanhPhan) {
+            setFieldError('f_thanhPhan', 'Vui lòng nhập hoạt chất chính');
+            isValid = false;
+        }
+
+        // Công dụng
+        const congDung = document.getElementById('f_congDung').value.trim();
+        if (!congDung) {
+            setFieldError('f_congDung', 'Vui lòng nhập mô tả công dụng thuốc');
+            isValid = false;
+        }
+
+        // Giá bán
+        const giaBan = document.getElementById('f_giaBan').value;
+        if (!giaBan || Number(giaBan) <= 0) {
+            setFieldError('f_giaBan', 'Giá bán phải lớn hơn 0');
+            isValid = false;
+        }
+
+        // Giới hạn mua nếu không check "Không giới hạn"
+        const khongGioiHan = document.getElementById('f_khongGioiHan').checked;
+        if (!khongGioiHan) {
+            const gioiHanMua = document.getElementById('f_gioiHanMua').value;
+            if (!gioiHanMua || Number(gioiHanMua) <= 0) {
+                setFieldError('f_gioiHanMua', 'Giới hạn mua phải lớn hơn 0');
+                isValid = false;
+            }
+        }
+
+        return isValid;
     }
 
     // Logic toggle phân loại dược
@@ -267,19 +371,58 @@
         select.value = currentFilterVal;
     }
 
-    function renderTable(list) {
-        const tbody = document.getElementById('tableBody');
-        const emptyState = document.getElementById('emptyState');
-        document.getElementById('resultCount').textContent = list.length;
-
-        if (list.length === 0) {
-            tbody.innerHTML = '';
-            emptyState.style.display = 'block';
+    function renderPagination() {
+        const paginationEl = document.getElementById('pagination');
+        const totalPages = Math.ceil(currentData.length / PAGE_SIZE);
+        if (totalPages <= 1) {
+            paginationEl.innerHTML = '';
             return;
         }
-        emptyState.style.display = 'none';
 
-        tbody.innerHTML = list.map(item => {
+        let html = '';
+        // Prev button
+        html += `<button class="page-btn" onclick="goToPage(${currentPage - 1})" ${currentPage <= 1 ? 'disabled' : ''}><i class="fa-solid fa-chevron-left"></i></button>`;
+
+        // Page numbers
+        const range = 2;
+        const startPage = Math.max(1, currentPage - range);
+        const endPage = Math.min(totalPages, currentPage + range);
+
+        if (startPage > 1) {
+            html += `<button class="page-btn" onclick="goToPage(1)">1</button>`;
+            if (startPage > 2) html += `<span class="page-dots">...</span>`;
+        }
+
+        for (let i = startPage; i <= endPage; i++) {
+            html += `<button class="page-btn ${i === currentPage ? 'active' : ''}" onclick="goToPage(${i})">${i}</button>`;
+        }
+
+        if (endPage < totalPages) {
+            if (endPage < totalPages - 1) html += `<span class="page-dots">...</span>`;
+            html += `<button class="page-btn" onclick="goToPage(${totalPages})">${totalPages}</button>`;
+        }
+
+        // Next button
+        html += `<button class="page-btn" onclick="goToPage(${currentPage + 1})" ${currentPage >= totalPages ? 'disabled' : ''}><i class="fa-solid fa-chevron-right"></i></button>`;
+
+        paginationEl.innerHTML = html;
+    }
+
+    function goToPage(page) {
+        const totalPages = Math.ceil(currentData.length / PAGE_SIZE);
+        if (page < 1 || page > totalPages) return;
+        currentPage = page;
+        renderCurrentPage();
+    }
+
+    function renderCurrentPage() {
+        const tbody = document.getElementById('tableBody');
+        const emptyState = document.getElementById('emptyState');
+        const start = (currentPage - 1) * PAGE_SIZE;
+        const end = start + PAGE_SIZE;
+        const pageData = currentData.slice(start, end);
+
+        tbody.innerHTML = pageData.map(item => {
             const badgeClass = item.yeuCauKeDon === 'Kê đơn' ? 'badge-rx' : 'badge-otc';
             const trangThai = item.trangThai == 1 || item.trangThai === '1' || item.trangThai === true;
             const statusClass = trangThai ? 'badge-active' : 'badge-inactive';
@@ -291,7 +434,6 @@
                     <td style="text-align:center;"><img class="thumb" src="${item.hinhAnh || PLACEHOLDER_IMG}" alt=""></td>
                     <td>
                         <div class="cell-strong">${item.tenThuoc}</div>
-                        <div class="cell-sub">HC: ${item.thanhPhan} ${item.hamLuong ? '- ' + item.hamLuong : ''}</div>
                     </td>
                     <td class="cell-strong">${item.tenDanhMuc || 'Chưa phân loại'}</td>
                     <td><span class="badge ${badgeClass}">${item.yeuCauKeDon}</span></td>
@@ -300,24 +442,34 @@
                     <td><span class="badge ${statusClass}">${statusLabel}</span></td>
                     <td>
                         <div class="actions-cell">
-                            <button
-                                class="action-btn view"
-                                onclick="openDetail(${item.idThuoc})"
-                                title="Chi tiết">
-                                <i class="fa-solid fa-eye"></i>
-                            </button>
-                            
-                            <button class="action-btn edit" onclick="openEditForm(${item.idThuoc})" title="Sửa thông tin">
-                                <i class="fa-solid fa-pen-to-square"></i>
-                            </button>
-                            <button class="action-btn delete" onclick="toggleStatus(${item.idThuoc})" title="Đổi trạng thái kinh doanh">
-                                <i class="fa-solid fa-toggle-on"></i>
-                            </button>
+                            <button class="action-btn view" onclick="openDetail(${item.idThuoc})" title="Chi tiết"><i class="fa-solid fa-eye"></i></button>
+                            <button class="action-btn edit" onclick="openEditForm(${item.idThuoc})" title="Sửa thông tin"><i class="fa-solid fa-pen-to-square"></i></button>
+                            <button class="action-btn delete" onclick="toggleStatus(${item.idThuoc})" title="Đổi trạng thái kinh doanh"><i class="fa-solid fa-toggle-on"></i></button>
                         </div>
                     </td>
                 </tr>
             `;
         }).join('');
+
+        renderPagination();
+    }
+
+    function renderTable(list) {
+        currentData = list;
+        currentPage = 1;
+        const tbody = document.getElementById('tableBody');
+        const emptyState = document.getElementById('emptyState');
+        document.getElementById('resultCount').textContent = list.length;
+
+        if (list.length === 0) {
+            tbody.innerHTML = '';
+            emptyState.style.display = 'block';
+            document.getElementById('pagination').innerHTML = '';
+            return;
+        }
+        emptyState.style.display = 'none';
+
+        renderCurrentPage();
     }
 
     function openAddForm() {
@@ -504,85 +656,6 @@
     fetchThuocList();
 
     function openDetail(id) {
-        fetch(`<?php echo URLROOT; ?>/admin/quanLyThuoc/getDetailData/${id}`)
-            .then(res => res.json())
-            .then(res => {
-
-                if (!res.status) {
-                    alert(res.message);
-                    return;
-                }
-
-                //đổ dữ liệu vào popup
-                document.getElementById("detailContent").innerHTML = `
-
-                <p><b>Tên thuốc:</b> ${res.thuoc.tenThuoc}</p>
-
-                <p><b>Danh mục:</b> ${res.thuoc.tenDanhMuc}</p>
-
-                <p><b>Hoạt chất:</b> ${res.thuoc.thanhPhan}</p>
-
-                <p><b>Hàm lượng:</b> ${res.thuoc.hamLuong}</p>
-
-                <p><b>Công dụng:</b> ${res.thuoc.congDung}</p>
-
-                <p><b>Đơn vị:</b> ${res.thuoc.donViTinh}</p>
-
-                <p><b>Giá:</b> ${fmtMoney(res.thuoc.giaBan)}</p>
-
-                <p><b>Yêu cầu kê đơn:</b> ${res.thuoc.yeuCauKeDon}</p>
-
-                <p><b>Giới hạn mua:</b> ${res.thuoc.gioiHanMua}</p>
-
-                <hr>
-
-                <h4>Danh sách lô thuốc</h4>
-
-                <table class="table">
-
-                <thead>
-
-                <tr>
-
-                <th>Mã lô</th>
-
-                <th>HSD</th>
-
-                <th>Tồn</th>
-
-                <th>Giá nhập</th>
-
-                </tr>
-
-                </thead>
-
-                <tbody>
-
-                ${
-                res.lots.map(l=>`
-
-                <tr>
-
-                <td>${l.maLo}</td>
-
-                <td>${l.hanSuDung}</td>
-
-                <td>${l.soLuongTon}</td>
-
-                <td>${fmtMoney(l.giaNhap)}</td>
-
-                </tr>
-
-                `).join("")
-                }
-
-                </tbody>
-
-                </table>
-
-                `;
-
-                openModal(document.getElementById("modalDetail"));
-            });
+        window.location.href = '<?php echo URLROOT; ?>/admin/quanLyThuoc/chitiet/' + id;
     }
 </script>

@@ -33,7 +33,7 @@ class QuanLyThuocController extends Controller
         $data['page_title'] = "Thông tin chi tiết thuốc";
         $data['page_icon'] = "fa-solid fa-circle-info";
         $data['active_tab'] = "thuoc";
-        $data['page_css'] = "quanLyThuoc";
+        $data['page_css'] = "chiTietThuoc";
         $data['idThuoc'] = $id;
 
         $data['topbar_action'] = '
@@ -41,6 +41,7 @@ class QuanLyThuocController extends Controller
               <i class="fa-solid fa-arrow-left-long"></i> Trở lại danh sách
             </a>';
 
+        extract($data);
         ob_start();
         require_once APPROOT . '/views/admin/chiTietThuoc.php';
         $data['content'] = ob_get_clean();
@@ -85,7 +86,6 @@ class QuanLyThuocController extends Controller
         exit;
     }
 
-    // API: Thêm mới hoặc Cập nhật thông tin thuốc
     // API: Thêm mới hoặc Cập nhật thông tin thuốc
     public function save()
     {
