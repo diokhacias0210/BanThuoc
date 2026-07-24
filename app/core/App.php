@@ -16,7 +16,7 @@ class App
 
     private static $module = "khachHang";
 
-    private $controller = "TrangChuController";
+    private $controller = "trangChuController";
 
     private $method = "index";
 

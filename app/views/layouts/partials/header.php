@@ -6,7 +6,6 @@ if (session_status() == PHP_SESSION_NONE) {
 $isLoggedIn = isset($_SESSION['user_id']);
 $userName = isset($_SESSION['user_name']) ? $_SESSION['user_name'] : '';
 
-// TÍNH TỔNG SỐ LƯỢNG SẢN PHẨM TRONG GIỎ HÀNG TỪ CSDL
 $cartCount = 0;
 if ($isLoggedIn) {
     $idKhachHang = $_SESSION['user_id'];
@@ -59,6 +58,8 @@ if ($isLoggedIn) {
             z-index: 999;
             display: none;
             overflow: hidden;
+            max-height: 380px;
+            overflow-y: auto;
         }
 
         .search-dropdown.show {
@@ -91,6 +92,7 @@ if ($isLoggedIn) {
             border-radius: 6px;
             border: 1px solid var(--border);
             background: #fcfdfc;
+            flex-shrink: 0;
         }
 
         .search-item-info {
@@ -142,7 +144,6 @@ if ($isLoggedIn) {
                 <a class="tb-icon" href="<?php echo URLROOT; ?>/khachHang/gioHang" title="Giỏ hàng">
                     <span class="tb-icon-wrap">
                         <i class="fa-solid fa-cart-shopping"></i>
-                        <!-- SỐ LƯỢNG GIỎ HÀNG HIỂN THỊ ĐỘNG TỪ CSDL -->
                         <span class="tb-badge" id="cartCountBadge"><?php echo $cartCount; ?></span>
                     </span>
                 </a>
@@ -188,7 +189,7 @@ if ($isLoggedIn) {
                                         <img src="${item.hinhAnh}" alt="${item.tenThuoc}">
                                         <div class="search-item-info">
                                             <div class="search-item-title">${item.tenThuoc}</div>
-                                            <div class="search-item-price">${item.giaBan}</div>
+                                            <div class="search-item-price">${item.giaBanFormatted || item.giaBan}</div>
                                         </div>
                                     </a>
                                 `;

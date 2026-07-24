@@ -7,8 +7,19 @@
 
         <div class="filter-group">
             <div class="fg-title">Danh mục thuốc hệ thống</div>
-            <div class="category-scroll-area" id="categoryBox">
-                <!-- Danh mục sẽ được render động từ CSDL -->
+            <div class="category-scroll-area">
+                <div class="fg-item">
+                    <input type="checkbox" id="c0" data-catid="all" checked>
+                    <label for="c0">Tất cả sản phẩm</label>
+                </div>
+                <?php if (!empty($danhMucList)): ?>
+                    <?php foreach ($danhMucList as $dm): ?>
+                        <div class="fg-item">
+                            <input type="checkbox" id="c_<?php echo $dm['idDanhMuc']; ?>" data-catid="<?php echo $dm['idDanhMuc']; ?>">
+                            <label for="c_<?php echo $dm['idDanhMuc']; ?>"><?php echo htmlspecialchars($dm['tenDanhMuc']); ?></label>
+                        </div>
+                    <?php endforeach; ?>
+                <?php endif; ?>
             </div>
         </div>
 
@@ -16,14 +27,8 @@
 
         <div class="filter-group">
             <div class="fg-title">Phân loại đơn thuốc</div>
-            <div class="fg-item">
-                <input type="checkbox" id="t1" class="rx-filter" value="Không kê đơn">
-                <label for="t1">Không kê đơn (OTC)</label>
-            </div>
-            <div class="fg-item">
-                <input type="checkbox" id="t2" class="rx-filter" value="Kê đơn">
-                <label for="t2">Bắt buộc kê đơn (Rx)</label>
-            </div>
+            <div class="fg-item"><input type="checkbox" id="t1" data-rxtype="OTC"><label for="t1">Không kê đơn (OTC)</label></div>
+            <div class="fg-item"><input type="checkbox" id="t2" data-rxtype="Kê đơn"><label for="t2">Thuốc kê đơn (RX)</label></div>
         </div>
 
         <div class="divider-h"></div>
@@ -38,8 +43,8 @@
             <div class="price-slider-wrap">
                 <div class="price-slider-track"></div>
                 <div class="price-slider-range" id="priceRangeFill"></div>
-                <input type="range" id="priceMin" min="0" max="200000" step="2000" value="0">
-                <input type="range" id="priceMax" min="0" max="200000" step="2000" value="200000">
+                <input type="range" class="price-slider" id="priceMin" min="0" max="200000" step="2000" value="0">
+                <input type="range" class="price-slider" id="priceMax" min="0" max="200000" step="2000" value="200000">
             </div>
             <div class="price-presets">
                 <div class="price-tag active" data-min="0" data-max="200000">Tất cả mức giá</div>
@@ -48,7 +53,7 @@
             </div>
         </div>
 
-        <button class="filter-apply" id="btnApplyFilter">Lọc sản phẩm</button>
+        <button class="filter-apply" onclick="applyFilters()">Lọc sản phẩm</button>
     </aside>
 
     <!-- ══ MAIN CONTENT ══ -->
@@ -62,7 +67,7 @@
 
         <div class="content-search-bar">
             <i class="fa-solid fa-magnifying-glass"></i>
-            <input type="text" id="localSearchInput" placeholder="Tìm kiếm nhanh tên thuốc hoặc hoạt chất...">
+            <input type="text" id="localSearchInput" placeholder="Tìm kiếm nhanh tên thuốc..." oninput="handleLocalSearch()">
         </div>
 
         <div class="pgrid" id="productGrid"></div>
@@ -71,211 +76,229 @@
 </div>
 
 <script>
-    let globalMedicineList = [];
+    // Nhận dữ liệu động từ Server PHP
+    const rawProducts = <?php echo json_encode(isset($thuocList) ? $thuocList : []); ?>;
+    const urlRoot = '<?php echo URLROOT; ?>';
+
     let currentPage = 1;
-    const itemsPerPage = 12; // Phân trang 12 sản phẩm / trang
-    let selectedCatId = 'all';
+    const itemsPerPage = 12;
+    let currentFilteredList = [];
 
-    function fmtMoney(n) {
-        return Number(n || 0).toLocaleString('vi-VN') + 'đ';
-    }
+    const grid = document.getElementById('productGrid');
+    const contentTitle = document.getElementById('contentTitle');
+    const contentCount = document.getElementById('contentCount');
+    const categoryCheckboxes = document.querySelectorAll('.fg-item input[data-catid]');
+    const paginationElement = document.getElementById('pagination');
 
-    // Xử lý sửa đường dẫn ảnh chuẩn từ CSDL
-    function resolveImageUrl(path) {
-        if (!path || path.trim() === '') return 'https://placehold.co/300x360/e8f5ee/2d7a4f?text=💊';
-        if (path.startsWith('http')) return path;
-        let clean = path.replace(/\\/g, '/');
-        if (clean.startsWith('images/')) clean = 'assets/' + clean;
-        if (clean.startsWith('/')) clean = clean.substring(1);
-        if (clean.startsWith('public/')) clean = clean.substring(7);
-        return `<?php echo URLROOT; ?>/` + clean;
-    }
-
-    // Nạp dữ liệu từ API Backend
-    function fetchMedicines() {
-        const search = document.getElementById('localSearchInput').value.trim();
-        const minP = document.getElementById('priceMin').value;
-        const maxP = document.getElementById('priceMax').value;
-
-        // Lấy phân loại Rx
-        const rxChecked = Array.from(document.querySelectorAll('.rx-filter:checked')).map(c => c.value);
-        let keDonVal = 'all';
-        if (rxChecked.length === 1) keDonVal = rxChecked[0];
-
-        const url = `<?php echo URLROOT; ?>/khachHang/thuoc/getList?search=${encodeURIComponent(search)}&idDanhMuc=${selectedCatId}&keDon=${encodeURIComponent(keDonVal)}&minPrice=${minP}&maxPrice=${maxP}`;
-
-        fetch(url)
-            .then(res => res.json())
-            .then(res => {
-                if (res.status) {
-                    globalMedicineList = res.data;
-                    document.getElementById('contentCount').textContent = `${globalMedicineList.length} sản phẩm`;
-                    renderCategories(res.categories);
-                    renderPageData();
-                }
-            })
-            .catch(err => console.error("Lỗi lấy sản phẩm:", err));
-    }
-
-    function renderCategories(categories) {
-        const box = document.getElementById('categoryBox');
-        if (box.children.length > 0) return; // Đã render rồi thì giữ nguyên
-
-        let html = `<div class="fg-item"><input type="radio" name="cat" id="cat_all" value="all" checked><label for="cat_all">Tất cả sản phẩm</label></div>`;
-        html += categories.map(c => `
-            <div class="fg-item">
-                <input type="radio" name="cat" id="cat_${c.idDanhMuc}" value="${c.idDanhMuc}">
-                <label for="cat_${c.idDanhMuc}">${c.tenDanhMuc}</label>
-            </div>
-        `).join('');
-
-        box.innerHTML = html;
-
-        // Bắt sự kiện chọn danh mục
-        box.querySelectorAll('input[name="cat"]').forEach(radio => {
-            radio.addEventListener('change', (e) => {
-                selectedCatId = e.target.value;
-                const labelText = e.target.nextElementSibling.textContent;
-                document.getElementById('contentTitle').textContent = labelText;
-                currentPage = 1;
-                fetchMedicines();
-            });
-        });
-    }
-
-    function renderPageData() {
-        const grid = document.getElementById('productGrid');
-        const totalPages = Math.ceil(globalMedicineList.length / itemsPerPage);
-
-        if (globalMedicineList.length === 0) {
-            grid.innerHTML = `<div style="grid-column: 1/-1; text-align:center; padding:60px 0; color:var(--muted2);"><i class="fa-solid fa-box-open" style="font-size:36px; margin-bottom:10px; display:block;"></i>Không tìm thấy sản phẩm thuốc nào phù hợp.</div>`;
-            document.getElementById('pagination').innerHTML = '';
+    function renderProducts(items) {
+        if (!items || items.length === 0) {
+            grid.innerHTML = `<div style="grid-column: 1/-1; text-align:center; padding:40px 0; color:var(--muted2);">Không tìm thấy sản phẩm thuốc nào phù hợp.</div>`;
             return;
         }
 
-        const start = (currentPage - 1) * itemsPerPage;
-        const pageItems = globalMedicineList.slice(start, start + itemsPerPage);
-
-        grid.innerHTML = pageItems.map(p => {
+        grid.innerHTML = items.map(p => {
             const isRx = p.yeuCauKeDon === 'Kê đơn';
+            const hetHang = parseInt(p.tongTon) <= 0;
+            const priceFormatted = parseInt(p.giaBan).toLocaleString('vi-VN') + 'đ';
+
             return `
-                <a class="pcard" href="<?php echo URLROOT; ?>/khachHang/thuoc/chiTiet/${p.idThuoc}">
+                <div class="pcard" onclick="window.location.href='${urlRoot}/khachHang/thuoc/chiTiet/${p.idThuoc}'">
                     <div class="pcard-img">
-                        ${isRx ? `<span class="pcard-tag">Kê đơn</span>` : ''}
-                        <img src="${resolveImageUrl(p.hinhAnh)}" alt="${p.tenThuoc}">
+                        ${isRx ? `<span class="pcard-tag">Kê đơn</span>` : (hetHang ? `<span class="pcard-tag" style="background:#fdecea; color:#c0392b; border:1px solid #f9d6d2;">Hết hàng</span>` : '')}
+                        <img src="${p.hinhAnhUrl}" alt="${p.tenThuoc}" style="width:100%; height:100%; object-fit:cover;">
                     </div>
                     <div class="pcard-body">
-                        <div class="pcard-name">${p.tenThuoc}</div>
+                        <div class="pcard-name" title="${p.tenThuoc}">${p.tenThuoc}</div>
                         <div class="pcard-foot">
-                            <span class="pcard-price">${fmtMoney(p.giaBan)}</span>
-                            ${isRx ? `<span class="btn-view-detail">Xem chi tiết</span>` : `<button type="button" class="add-btn" onclick="themNhanhGioHang(event, ${p.idThuoc})"><i class="fa-solid fa-plus"></i></button>`}
+                            <span class="pcard-price">${priceFormatted}</span>
+                            ${isRx ? 
+                                `<button type="button" class="btn-view-detail">Xem chi tiết</button>` : 
+                                (hetHang ? 
+                                    `<button type="button" class="add-btn" disabled style="opacity: 0.4; cursor: not-allowed; background: #888780;" title="Sản phẩm tạm hết hàng"><i class="fa-solid fa-ban"></i></button>` : 
+                                    `<button type="button" class="add-btn" onclick="event.stopPropagation(); xuLyThemNhanh(${p.idThuoc})" title="Thêm vào giỏ"><i class="fa-solid fa-plus"></i></button>`
+                                )
+                            }
                         </div>
                     </div>
-                </a>
+                </div>
             `;
         }).join('');
-
-        renderPaginationControls(totalPages);
     }
 
-    // Xử lý nút cộng thêm nhanh giỏ hàng
-    function themNhanhGioHang(event, idThuoc) {
-        event.preventDefault();
-        event.stopPropagation();
+    function executeFiltering() {
+        const query = document.getElementById('localSearchInput').value.trim().toLowerCase();
 
-        // Thông báo thử nghiệm
-        if (typeof hienThiThongBao === 'function') {
-            hienThiThongBao("Đã thêm sản phẩm vào giỏ hàng!");
-        } else {
-            alert("Đã thêm sản phẩm vào giỏ hàng thành công!");
+        // 1. Lọc theo danh mục
+        const activeCat = document.querySelector('.fg-item input[data-catid]:checked');
+        let base = (activeCat && activeCat.dataset.catid !== 'all') ?
+            rawProducts.filter(p => p.idDanhMuc == activeCat.dataset.catid) :
+            [...rawProducts];
+
+        // 2. Lọc theo loại kê đơn (OTC / RX)
+        const checkedRxTypes = Array.from(document.querySelectorAll('.fg-item input[data-rxtype]:checked')).map(cb => cb.dataset.rxtype);
+        if (checkedRxTypes.length > 0) {
+            base = base.filter(p => {
+                if (checkedRxTypes.includes('Kê đơn') && p.yeuCauKeDon === 'Kê đơn') return true;
+                if (checkedRxTypes.includes('OTC') && p.yeuCauKeDon !== 'Kê đơn') return true;
+                return false;
+            });
         }
+
+        // 3. Lọc theo giá
+        const min = parseInt(priceMin.value, 10);
+        const max = parseInt(priceMax.value, 10);
+        base = base.filter(p => parseInt(p.giaBan) >= min && parseInt(p.giaBan) <= max);
+
+        // 4. Lọc theo tìm kiếm từ khóa
+        if (query) {
+            base = base.filter(p => p.tenThuoc.toLowerCase().includes(query));
+        }
+
+        currentFilteredList = base;
+        contentCount.textContent = `${currentFilteredList.length} sản phẩm`;
+
+        const totalPages = Math.ceil(currentFilteredList.length / itemsPerPage);
+        if (currentPage > totalPages && totalPages > 0) currentPage = totalPages;
+
+        const startIndex = (currentPage - 1) * itemsPerPage;
+        const paginatedItems = currentFilteredList.slice(startIndex, startIndex + itemsPerPage);
+
+        renderProducts(paginatedItems);
+        renderPagination(totalPages);
     }
 
-    function renderPaginationControls(totalPages) {
-        const container = document.getElementById('pagination');
+    function handleLocalSearch() {
+        currentPage = 1;
+        executeFiltering();
+    }
+
+    function applyFilters() {
+        currentPage = 1;
+        executeFiltering();
+    }
+
+    function renderPagination(totalPages) {
         if (totalPages <= 1) {
-            container.innerHTML = '';
+            paginationElement.innerHTML = '';
             return;
         }
 
-        let html = `<button class="page-btn" ${currentPage === 1 ? 'disabled' : ''} onclick="goToPage(${currentPage - 1})"><i class="fa-solid fa-angle-left"></i></button>`;
+        let html = `<button class="page-btn" ${currentPage === 1 ? 'disabled' : ''} onclick="changePage(${currentPage - 1})"><i class="fa-solid fa-angle-left"></i></button>`;
         for (let i = 1; i <= totalPages; i++) {
-            html += `<button class="page-btn ${i === currentPage ? 'active' : ''}" onclick="goToPage(${i})">${i}</button>`;
+            html += `<button class="page-btn ${i === currentPage ? 'active' : ''}" onclick="changePage(${i})">${i}</button>`;
         }
-        html += `<button class="page-btn" ${currentPage === totalPages ? 'disabled' : ''} onclick="goToPage(${currentPage + 1})"><i class="fa-solid fa-angle-right"></i></button>`;
-
-        container.innerHTML = html;
+        html += `<button class="page-btn" ${currentPage === totalPages ? 'disabled' : ''} onclick="changePage(${currentPage + 1})"><i class="fa-solid fa-angle-right"></i></button>`;
+        paginationElement.innerHTML = html;
     }
 
-    function goToPage(p) {
+    function changePage(p) {
         currentPage = p;
-        renderPageData();
+        executeFiltering();
         window.scrollTo({
             top: 0,
             behavior: 'smooth'
         });
     }
 
-    // Xử lý thanh trượt giá
+    categoryCheckboxes.forEach(cb => {
+        cb.addEventListener('change', () => {
+            if (cb.checked) {
+                categoryCheckboxes.forEach(other => {
+                    if (other !== cb) other.checked = false;
+                });
+            } else {
+                document.getElementById('c0').checked = true;
+            }
+            currentPage = 1;
+            executeFiltering();
+        });
+    });
+
+    document.querySelectorAll('.fg-item input[data-rxtype]').forEach(cb => {
+        cb.addEventListener('change', () => {
+            currentPage = 1;
+            executeFiltering();
+        });
+    });
+
+    /* ══ THANH TRƯỢT GIÁ ══ */
     const priceMin = document.getElementById('priceMin');
     const priceMax = document.getElementById('priceMax');
     const priceInputMin = document.getElementById('priceInputMin');
     const priceInputMax = document.getElementById('priceInputMax');
     const priceRangeFill = document.getElementById('priceRangeFill');
+    const PRICE_SLIDER_MAX = 200000;
+    const PRICE_GAP = 2000;
 
-    function updatePriceFill() {
-        const minPct = (parseInt(priceMin.value) / 200000) * 100;
-        const maxPct = (parseInt(priceMax.value) / 200000) * 100;
+    function updatePriceRangeFill() {
+        const minPct = (parseInt(priceMin.value) / PRICE_SLIDER_MAX) * 100;
+        const maxPct = (parseInt(priceMax.value) / PRICE_SLIDER_MAX) * 100;
         priceRangeFill.style.left = minPct + '%';
         priceRangeFill.style.right = (100 - maxPct) + '%';
     }
 
     priceMin.addEventListener('input', () => {
-        if (parseInt(priceMin.value) > parseInt(priceMax.value) - 2000) priceMin.value = parseInt(priceMax.value) - 2000;
-        priceInputMin.value = fmtMoney(priceMin.value);
-        updatePriceFill();
+        if (parseInt(priceMin.value) > parseInt(priceMax.value) - PRICE_GAP) {
+            priceMin.value = parseInt(priceMax.value) - PRICE_GAP;
+        }
+        priceInputMin.value = parseInt(priceMin.value).toLocaleString('vi-VN') + 'đ';
+        updatePriceRangeFill();
     });
 
     priceMax.addEventListener('input', () => {
-        if (parseInt(priceMax.value) < parseInt(priceMin.value) + 2000) priceMax.value = parseInt(priceMin.value) + 2000;
-        priceInputMax.value = fmtMoney(priceMax.value);
-        updatePriceFill();
+        if (parseInt(priceMax.value) < parseInt(priceMin.value) + PRICE_GAP) {
+            priceMax.value = parseInt(priceMin.value) + PRICE_GAP;
+        }
+        priceInputMax.value = parseInt(priceMax.value).toLocaleString('vi-VN') + 'đ';
+        updatePriceRangeFill();
     });
 
     document.querySelectorAll('.price-tag').forEach(tag => {
         tag.addEventListener('click', () => {
             document.querySelectorAll('.price-tag').forEach(t => t.classList.remove('active'));
             tag.classList.add('active');
-            priceMin.value = tag.dataset.min;
-            priceMax.value = tag.dataset.max;
-            priceInputMin.value = fmtMoney(priceMin.value);
-            priceInputMax.value = fmtMoney(priceMax.value);
-            updatePriceFill();
+            const min = parseInt(tag.dataset.min);
+            const max = parseInt(tag.dataset.max);
+            priceMin.value = min;
+            priceMax.value = max;
+            priceInputMin.value = min.toLocaleString('vi-VN') + 'đ';
+            priceInputMax.value = max.toLocaleString('vi-VN') + 'đ';
+            updatePriceRangeFill();
             currentPage = 1;
-            fetchMedicines();
+            executeFiltering();
         });
     });
 
-    // Lắng nghe tìm kiếm và sự kiện lọc
-    let searchTimer;
-    document.getElementById('localSearchInput').addEventListener('input', () => {
-        clearTimeout(searchTimer);
-        searchTimer = setTimeout(() => {
-            currentPage = 1;
-            fetchMedicines();
-        }, 300);
-    });
+    function xuLyThemNhanh(idThuoc) {
+        fetch(`${urlRoot}/khachHang/gioHang/themVaoGio`, {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/x-www-form-urlencoded'
+                },
+                body: `idThuoc=${idThuoc}&soLuong=1`
+            })
+            .then(res => res.json())
+            .then(res => {
+                if (res.status) {
+                    alert(res.message || "Đã thêm sản phẩm vào giỏ!");
+                    const badge = document.getElementById('cartCountBadge');
+                    if (badge) {
+                        badge.textContent = parseInt(badge.textContent || 0) + 1;
+                    }
+                } else if (res.requireLogin) {
+                    alert(res.message);
+                    window.location.href = `${urlRoot}/khachHang/xacThuc/dangNhap`;
+                } else {
+                    alert(res.message || "Thao tác thất bại");
+                }
+            })
+            .catch(err => {
+                console.error(err);
+                alert("Lỗi kết nối máy chủ");
+            });
+    }
 
-    document.querySelectorAll('.rx-filter').forEach(cb => cb.addEventListener('change', () => {
-        currentPage = 1;
-        fetchMedicines();
-    }));
-    document.getElementById('btnApplyFilter').addEventListener('click', () => {
-        currentPage = 1;
-        fetchMedicines();
-    });
-
-    // Khởi chạy
-    updatePriceFill();
-    fetchMedicines();
+    // Chạy đồng bộ hóa dữ liệu ban đầu
+    updatePriceRangeFill();
+    executeFiltering();
 </script>
