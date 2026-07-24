@@ -74,7 +74,14 @@ class QuanLyThuocController extends Controller
             exit;
         }
         $lots = $this->thuocModel->getLotsByThuocId($id);
-        echo json_encode(array('status' => true, 'thuoc' => $thuoc, 'lots' => $lots));
+        $images = $this->thuocModel->getImagesByThuocId($id);
+
+        echo json_encode(array(
+            'status' => true,
+            'thuoc' => $thuoc,
+            'lots' => $lots,
+            'images' => $images
+        ));
         exit;
     }
 
@@ -96,32 +103,45 @@ class QuanLyThuocController extends Controller
                 'yeuCauKeDon' => isset($_POST['yeuCauKeDon']) ? $_POST['yeuCauKeDon'] : 'Không kê đơn',
                 'gioiHanMua' => isset($_POST['khongGioiHan']) ? -1 : intval(isset($_POST['gioiHanMua']) ? $_POST['gioiHanMua'] : 5),
                 'trangThai' => isset($_POST['trangThai']) ? 1 : 0,
-                'hinhAnh' => isset($_POST['hinhAnhUrlHienTai']) ? $_POST['hinhAnhUrlHienTai'] : ''
             );
 
-            // Xử lý Upload hình ảnh an toàn tương thích PHP bản cũ
+            // Xử lý Upload hình ảnh
             if (isset($_FILES['hinhAnhFile']) && $_FILES['hinhAnhFile']['error'] === UPLOAD_ERR_OK) {
                 $ext = pathinfo($_FILES['hinhAnhFile']['name'], PATHINFO_EXTENSION);
                 $fileName = time() . '_' . uniqid() . '.' . $ext;
-                $uploadDir = 'public/assets/images/uploads/';
+                // Thư mục lưu ảnh trên server (từ thư mục gốc web public/)
+                $uploadDir = 'assets/images/uploads/thuoc/';
+                // Đường dẫn tuyệt đối vật lý trên ổ đĩa dùng DIRECTORY_SEPARATOR cho Windows
+                $fullPath = dirname(__DIR__, 2) . DIRECTORY_SEPARATOR . 'public' . DIRECTORY_SEPARATOR . str_replace('/', DIRECTORY_SEPARATOR, $uploadDir);
 
-                if (!is_dir($uploadDir)) {
-                    mkdir($uploadDir, 0777, true);
+                if (!is_dir($fullPath)) {
+                    mkdir($fullPath, 0777, true);
                 }
 
-                // ĐÃ SỬA: Thay thế toán tử ?? thành cấu trúc toán tử ba ngôi truyền thống
-                $tmp_name = isset($_FILES['hinhAnhFile']['tmp_tmp_name']) ? $_FILES['hinhAnhFile']['tmp_tmp_name'] : $_FILES['hinhAnhFile']['tmp_name'];
+                $tmp_name = $_FILES['hinhAnhFile']['tmp_name'];
+                $imagePath = '';
 
-                if (move_uploaded_file($tmp_name, $uploadDir . $fileName)) {
-                    $payload['hinhAnh'] = '/' . $uploadDir . $fileName;
+                if (move_uploaded_file($tmp_name, $fullPath . $fileName)) {
+                    // Lưu URL để hiển thị ảnh: http://localhost/BanThuoc/public/assets/images/uploads/thuoc/ten-file.jpg
+                    $imagePath = URLROOT . '/' . $uploadDir . $fileName;
                 }
             }
 
             if (!empty($id)) {
                 $result = $this->thuocModel->update($id, $payload);
+
+                if ($result && !empty($imagePath)) {
+                    $this->thuocModel->saveImage($id, $imagePath);
+                }
                 $msg = "Đã cập nhật thông tin thuốc thành công!";
             } else {
-                $result = $this->thuocModel->create($payload);
+                $idThuoc = $this->thuocModel->create($payload);
+
+                if ($idThuoc && !empty($imagePath)) {
+                    $this->thuocModel->saveImage($idThuoc, $imagePath);
+                }
+
+                $result = $idThuoc;
                 $msg = "Đã thêm thuốc mới vào hệ thống thành công!";
             }
 

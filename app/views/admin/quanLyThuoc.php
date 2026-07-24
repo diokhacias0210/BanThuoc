@@ -52,6 +52,35 @@
 </div>
 
 <!-- Modal Form Thêm/Sửa thuốc -->
+
+<div class="modal-overlay hidden" id="modalDetail">
+
+    <div class="modal-box">
+
+        <div class="modal-head">
+
+            <h2>Thông tin thuốc</h2>
+
+            <button
+                class="modal-close"
+                data-close="modalDetail">
+
+                &times;
+
+            </button>
+
+        </div>
+
+        <div
+            class="modal-body"
+            id="detailContent">
+
+        </div>
+
+    </div>
+
+</div>
+
 <div class="modal-overlay hidden" id="modalForm">
     <div class="modal-box">
         <div class="modal-head">
@@ -147,6 +176,7 @@
 </div>
 
 <script>
+    const PLACEHOLDER_IMG = 'https://placehold.co/80x80/e2e8f0/64748b?text=No+Image';
     let searchTimeout;
     const modalForm = document.getElementById('modalForm');
 
@@ -258,9 +288,13 @@
                     <td><span class="badge ${statusClass}">${statusLabel}</span></td>
                     <td>
                         <div class="actions-cell">
-                            <a class="action-btn view" href="<?php echo URLROOT; ?>/admin/quanLyThuoc/chitiet/${item.idThuoc}" title="Xem chi tiết & Lô hàng">
+                            <button
+                                class="action-btn view"
+                                onclick="openDetail(${item.idThuoc})"
+                                title="Chi tiết">
                                 <i class="fa-solid fa-eye"></i>
-                            </a>
+                            </button>
+                            
                             <button class="action-btn edit" onclick="openEditForm(${item.idThuoc})" title="Sửa thông tin">
                                 <i class="fa-solid fa-pen-to-square"></i>
                             </button>
@@ -272,6 +306,27 @@
                 </tr>
             `;
         }).join('');
+    }
+
+    function openAddForm() {
+
+        document.getElementById('formModalTitle').textContent = 'Thêm ';
+
+        document.getElementById('thuocForm').reset();
+
+        document.getElementById('f_idThuoc').value = '';
+        document.getElementById('f_hinhAnhUrlHienTai').value = '';
+
+        document.getElementById('f_hinhAnhPreview').src = PLACEHOLDER_IMG;
+
+        document.getElementById('f_gioiHanMua').disabled = true;
+
+        document.getElementById('f_trangThai').checked = true;
+        document.getElementById('trangThaiLabel').textContent = 'Đang bán';
+
+        setKedonToggle('Không kê đơn');
+
+        openModal(modalForm);
     }
 
     function openEditForm(id) {
@@ -355,5 +410,90 @@
         fetchThuocList();
     });
 
+    document.getElementById('btnAddThuoc').addEventListener('click', openAddForm);
+
     fetchThuocList();
+
+    function openDetail(id) {
+        fetch(`<?php echo URLROOT; ?>/admin/quanLyThuoc/getDetailData/${id}`)
+            .then(res => res.json())
+            .then(res => {
+
+                if (!res.status) {
+                    alert(res.message);
+                    return;
+                }
+
+                //đổ dữ liệu vào popup
+                document.getElementById("detailContent").innerHTML = `
+
+                <p><b>Tên thuốc:</b> ${res.thuoc.tenThuoc}</p>
+
+                <p><b>Danh mục:</b> ${res.thuoc.tenDanhMuc}</p>
+
+                <p><b>Hoạt chất:</b> ${res.thuoc.thanhPhan}</p>
+
+                <p><b>Hàm lượng:</b> ${res.thuoc.hamLuong}</p>
+
+                <p><b>Công dụng:</b> ${res.thuoc.congDung}</p>
+
+                <p><b>Đơn vị:</b> ${res.thuoc.donViTinh}</p>
+
+                <p><b>Giá:</b> ${fmtMoney(res.thuoc.giaBan)}</p>
+
+                <p><b>Yêu cầu kê đơn:</b> ${res.thuoc.yeuCauKeDon}</p>
+
+                <p><b>Giới hạn mua:</b> ${res.thuoc.gioiHanMua}</p>
+
+                <hr>
+
+                <h4>Danh sách lô thuốc</h4>
+
+                <table class="table">
+
+                <thead>
+
+                <tr>
+
+                <th>Mã lô</th>
+
+                <th>HSD</th>
+
+                <th>Tồn</th>
+
+                <th>Giá nhập</th>
+
+                </tr>
+
+                </thead>
+
+                <tbody>
+
+                ${
+                res.lots.map(l=>`
+
+                <tr>
+
+                <td>${l.maLo}</td>
+
+                <td>${l.hanSuDung}</td>
+
+                <td>${l.soLuongTon}</td>
+
+                <td>${fmtMoney(l.giaNhap)}</td>
+
+                </tr>
+
+                `).join("")
+                }
+
+                </tbody>
+
+                </table>
+
+                `;
+
+                openModal(document.getElementById("modalDetail"));
+            });
+    }
 </script>
