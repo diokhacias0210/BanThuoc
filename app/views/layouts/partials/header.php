@@ -6,12 +6,13 @@ if (session_status() == PHP_SESSION_NONE) {
 $isLoggedIn = isset($_SESSION['user_id']);
 $userName = isset($_SESSION['user_name']) ? $_SESSION['user_name'] : '';
 
+// ĐẾM SỐ LƯỢNG CHỦNG LOẠI THUỐC CÓ TRONG GIỎ HÀNG (DISTINCT ID THUỐC)
 $cartCount = 0;
 if ($isLoggedIn) {
     $idKhachHang = $_SESSION['user_id'];
     if (class_exists('Database')) {
         $db = new Database();
-        $sqlCart = "SELECT COALESCE(SUM(ct.soLuong), 0) AS total 
+        $sqlCart = "SELECT COUNT(DISTINCT ct.idThuoc) AS total 
                     FROM ChiTietGioHang ct 
                     INNER JOIN GioHang g ON ct.idGioHang = g.idGioHang 
                     WHERE g.idKhachHang = :idKhachHang";
@@ -184,15 +185,18 @@ if ($isLoggedIn) {
                             if (data && data.length > 0) {
                                 let html = '';
                                 data.forEach(item => {
+                                    const targetUrl = item.yeuCauKeDon === 'Kê đơn' ?
+                                        `<?php echo URLROOT; ?>/khachHang/dangKeToaThuoc?idThuoc=${item.idThuoc}` :
+                                        `<?php echo URLROOT; ?>/khachHang/chiTietThuoc/chiTiet/${item.idThuoc}`;
                                     html += `
-                                    <a class="search-item" href="<?php echo URLROOT; ?>/khachHang/thuoc/chiTiet/${item.idThuoc}">
-                                        <img src="${item.hinhAnh}" alt="${item.tenThuoc}">
-                                        <div class="search-item-info">
-                                            <div class="search-item-title">${item.tenThuoc}</div>
-                                            <div class="search-item-price">${item.giaBanFormatted || item.giaBan}</div>
-                                        </div>
-                                    </a>
-                                `;
+                                        <a class="search-item" href="${targetUrl}">
+                                            <img src="${item.hinhAnh}" alt="${item.tenThuoc}">
+                                            <div class="search-item-info">
+                                                <div class="search-item-title">${item.tenThuoc}</div>
+                                                <div class="search-item-price">${item.giaBanFormatted || item.giaBan}</div>
+                                            </div>
+                                        </a>
+                                    `;
                                 });
                                 searchDropdown.innerHTML = html;
                             } else {

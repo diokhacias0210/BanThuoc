@@ -6,7 +6,7 @@
             <div class="hero-desc">Hàng nghìn loại thuốc từ các nhà sản xuất uy tín, được dược sĩ kiểm duyệt và tư vấn miễn phí.</div>
             <div class="hero-btns">
                 <a href="<?php echo URLROOT; ?>/khachHang/thuoc" class="hero-btn-main"><i class="fa-solid fa-magnifying-glass"></i> Tìm thuốc ngay</a>
-                <a href="<?php echo URLROOT; ?>/khachHang/taiDonThuoc" class="hero-btn-sec"><i class="fa-solid fa-file-arrow-up"></i> Gửi đơn thuốc</a>
+                <a href="<?php echo URLROOT; ?>/khachHang/dangKeToaThuoc" class="hero-btn-sec"><i class="fa-solid fa-file-arrow-up"></i> Gửi đơn thuốc</a>
             </div>
         </div>
     </div>
@@ -18,7 +18,7 @@
             <div class="qa-label">Tìm thuốc</div>
             <div class="qa-sub">100.000+ sản phẩm</div>
         </a>
-        <a class="qa" href="<?php echo URLROOT; ?>/khachHang/taiDonThuoc">
+        <a class="qa" href="<?php echo URLROOT; ?>/khachHang/dangKeToaThuoc">
             <div class="qa-icon" style="background:#fff3e0"><i class="fa-solid fa-file-medical" style="color:#e65100"></i></div>
             <div class="qa-label">Gửi đơn thuốc</div>
             <div class="qa-sub">Kê đơn RX nhanh chóng</div>

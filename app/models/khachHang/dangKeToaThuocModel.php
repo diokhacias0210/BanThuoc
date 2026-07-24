@@ -1,7 +1,6 @@
 <?php
 class dangKeToaThuocModel extends Model
 {
-    // CHỈ LẤY DANH SÁCH THUỐC BẮT BUỘC KÊ ĐƠN ('Kê đơn')
     public function layDanhSachThuocSystem()
     {
         $sql = "SELECT idThuoc, tenThuoc, giaBan, yeuCauKeDon, donViTinh 
@@ -13,7 +12,6 @@ class dangKeToaThuocModel extends Model
         return $this->db->resultSet();
     }
 
-    // 1. Tạo đơn thuốc
     public function taoDonThuoc($idKhachHang, $ghiChu)
     {
         $sql = "INSERT INTO DonThuoc (idKhachHang, ghiChu, trangThai, ngayGui) 
@@ -28,7 +26,6 @@ class dangKeToaThuocModel extends Model
         return false;
     }
 
-    // 2. Thêm đường dẫn ảnh vào HinhAnhDonThuoc
     public function themHinhAnhDonThuoc($idDonThuoc, $duongDan)
     {
         $sql = "INSERT INTO HinhAnhDonThuoc (idDonThuoc, duongDan) VALUES (:idDonThuoc, :duongDan)";
@@ -38,7 +35,6 @@ class dangKeToaThuocModel extends Model
         return $this->db->execute();
     }
 
-    // 3. Thêm chi tiết thuốc kê đơn
     public function themChiTietDonThuoc($idDonThuoc, $tenThuoc, $soLuong = 1)
     {
         $sql = "INSERT INTO ChiTietDonThuoc (idDonThuoc, tenThuoc, soLuong) VALUES (:idDonThuoc, :tenThuoc, :soLuong)";

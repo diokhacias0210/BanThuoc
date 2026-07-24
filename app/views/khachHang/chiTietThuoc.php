@@ -1,8 +1,8 @@
 <?php
-// Giải nén mảng $data từ Controller thành các biến đơn ($thuoc, $isKeDon, $maLoTxt, $anhChinhUrl,...)
 if (isset($data) && is_array($data)) {
     extract($data);
 }
+$maxAllowedVal = isset($maxAllowed) ? intval($maxAllowed) : 0;
 ?>
 
 <div class="wrap">
@@ -12,7 +12,6 @@ if (isset($data) && is_array($data)) {
         </a>
     </div>
 
-    <!-- PHẦN 1: THẺ THÔNG TIN CHÍNH SẢN PHẨM -->
     <div class="detail-card">
         <div>
             <div class="detail-stage">
@@ -40,12 +39,6 @@ if (isset($data) && is_array($data)) {
             <div class="cat-line"><?php echo htmlspecialchars(isset($thuoc['tenDanhMuc']) && $thuoc['tenDanhMuc'] ? $thuoc['tenDanhMuc'] : 'Chưa phân loại'); ?></div>
             <h1><?php echo htmlspecialchars(isset($thuoc['tenThuoc']) ? $thuoc['tenThuoc'] : ''); ?></h1>
 
-            <?php if (isset($isKeDon) && $isKeDon): ?>
-                <div class="rx-alert-banner">
-                    <i class="fa-solid fa-file-waveform"></i> Thuốc bán theo đơn - Chỉ mua khi có chỉ định của bác sĩ
-                </div>
-            <?php endif; ?>
-
             <div class="price-block">
                 <span class="price-now"><?php echo number_format(isset($thuoc['giaBan']) ? $thuoc['giaBan'] : 0, 0, ',', '.'); ?>đ</span>
                 <span style="font-size:13px; color:var(--muted);"> / <?php echo htmlspecialchars(isset($thuoc['donViTinh']) ? $thuoc['donViTinh'] : ''); ?></span>
@@ -60,15 +53,14 @@ if (isset($data) && is_array($data)) {
             </div>
 
             <div class="sticky-actions">
-                <?php if (isset($isKeDon) && !$isKeDon): ?>
-                    <!-- GIAO DIỆN CHO THUỐC KHÔNG KÊ ĐƠN (OTC) -->
+                <?php if ($maxAllowedVal > 0): ?>
                     <div class="qty-row">
                         <div class="qty-box">
                             <button type="button" onclick="xuLyThayDoiSoLuong(-1)"><i class="fa-solid fa-minus"></i></button>
                             <span class="qty-val" id="qtyVal">1</span>
                             <button type="button" onclick="xuLyThayDoiSoLuong(1)"><i class="fa-solid fa-plus"></i></button>
                         </div>
-                        <span style="font-size:13px; color:var(--muted);">Đơn vị: <?php echo htmlspecialchars(isset($thuoc['donViTinh']) ? $thuoc['donViTinh'] : ''); ?></span>
+                        <span style="font-size:13px; color:var(--muted);">Đơn vị: <?php echo htmlspecialchars(isset($thuoc['donViTinh']) ? $thuoc['donViTinh'] : ''); ?> (Tối đa <?php echo $maxAllowedVal; ?>)</span>
                     </div>
 
                     <div class="action-row">
@@ -77,24 +69,19 @@ if (isset($data) && is_array($data)) {
                         </button>
                     </div>
                 <?php else: ?>
-                    <!-- GIAO DIỆN CHO THUỐC BẮT BUỘC KÊ ĐƠN (RX) -->
-                    <!-- GIAO DIỆN CHO THUỐC BẮT BUỘC KÊ ĐƠN (RX) -->
                     <div class="action-row">
-                        <a href="<?php echo URLROOT; ?>/khachHang/dangKeToaThuoc?idThuoc=<?php echo $thuoc['idThuoc']; ?>" class="btn btn-rx-consult">
-                            <i class="fa-solid fa-file-prescription"></i> Gửi đơn thuốc để tư vấn
-                        </a>
+                        <button class="btn btn-solid" disabled style="background:#888780; cursor:not-allowed; opacity:0.6;">
+                            <i class="fa-solid fa-ban"></i> Sản phẩm tạm hết hàng
+                        </button>
                     </div>
                 <?php endif; ?>
             </div>
         </div>
     </div>
 
-    <!-- PHẦN 2: HÀM LƯỢNG VÀ CÔNG DỤNG THUỐC BÊN DƯỚI -->
     <div class="bottom-grid">
         <div class="card">
-            <div class="info-block-title">
-                <i class="fa-solid fa-flask"></i> Hàm lượng & Thành phần
-            </div>
+            <div class="info-block-title"><i class="fa-solid fa-flask"></i> Hàm lượng & Thành phần</div>
             <p class="info-content-text">
                 <?php echo nl2br(htmlspecialchars(isset($thuoc['thanhPhan']) ? $thuoc['thanhPhan'] : '')); ?>
                 <?php if (!empty($thuoc['hamLuong'])): ?>
@@ -104,9 +91,7 @@ if (isset($data) && is_array($data)) {
         </div>
 
         <div class="card">
-            <div class="info-block-title">
-                <i class="fa-solid fa-shield-virus"></i> Chỉ định & Công dụng
-            </div>
+            <div class="info-block-title"><i class="fa-solid fa-shield-virus"></i> Chỉ định & Công dụng</div>
             <p class="info-content-text">
                 <?php echo nl2br(htmlspecialchars(isset($thuoc['congDung']) ? $thuoc['congDung'] : '')); ?>
             </p>
@@ -121,9 +106,16 @@ if (isset($data) && is_array($data)) {
 
 <script>
     let soLuongHienTai = 1;
+    const maxAllowed = <?php echo $maxAllowedVal; ?>;
 
     function xuLyThayDoiSoLuong(delta) {
-        soLuongHienTai = Math.max(1, soLuongHienTai + delta);
+        let n = soLuongHienTai + delta;
+        if (n < 1) n = 1;
+        if (maxAllowed > 0 && n > maxAllowed) {
+            alert(`Sản phẩm này giới hạn mua tối đa ${maxAllowed} đơn vị!`);
+            n = maxAllowed;
+        }
+        soLuongHienTai = n;
         const qtyElem = document.getElementById('qtyVal');
         if (qtyElem) qtyElem.textContent = soLuongHienTai;
     }
@@ -146,32 +138,22 @@ if (isset($data) && is_array($data)) {
                 },
                 body: `idThuoc=${idThuoc}&soLuong=${qty}`
             })
-            .then(res => res.text()) // Đọc dữ liệu dạng text trước để tránh lỗi JSON parse
-            .then(text => {
-                try {
-                    const res = JSON.parse(text);
-                    if (res.status) {
-                        hienThiThongBao(res.message);
-                        const badge = document.getElementById('cartCountBadge');
-                        if (badge) {
-                            badge.textContent = parseInt(badge.textContent || 0) + qty;
-                        }
-                    } else if (res.requireLogin) {
-                        // Chưa đăng nhập -> Thông báo và tự nhảy sang trang Đăng nhập
-                        alert(res.message);
-                        window.location.href = `<?php echo URLROOT; ?>/khachHang/xacThuc/dangNhap`;
-                    } else {
-                        alert(res.message || "Thêm giỏ hàng thất bại.");
+            .then(res => res.json())
+            .then(res => {
+                if (res.status) {
+                    hienThiThongBao(res.message);
+                    const badge = document.getElementById('cartCountBadge');
+                    if (badge && res.cartCount !== undefined) {
+                        badge.textContent = res.cartCount;
                     }
-                } catch (e) {
-                    console.error("Lỗi dữ liệu từ Server:", text);
-                    alert("Có lỗi phản hồi từ máy chủ. Vui lòng thử lại!");
+                } else if (res.requireLogin) {
+                    alert(res.message);
+                    window.location.href = `<?php echo URLROOT; ?>/khachHang/xacThuc/dangNhap`;
+                } else {
+                    alert(res.message || "Thêm giỏ hàng thất bại.");
                 }
             })
-            .catch(err => {
-                console.error("Fetch error:", err);
-                alert("Không thể kết nối đến máy chủ.");
-            });
+            .catch(() => alert("Không thể kết nối đến máy chủ."));
     }
 
     const thumbRow = document.getElementById('thumbRow');

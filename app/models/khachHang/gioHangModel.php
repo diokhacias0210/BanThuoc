@@ -1,16 +1,13 @@
 <?php
 class gioHangModel extends Model
 {
-    // Lấy hoặc tự động tạo giỏ hàng (Đã sửa lỗi FK 1452)
     public function layHoacTaoGioHang($idKhachHang)
     {
-        // 1. Đảm bảo idKhachHang luôn tồn tại trong bảng KhachHang
         $sqlEnsureKhachHang = "INSERT IGNORE INTO KhachHang (idNguoiDung, diemTichLuy) VALUES (:id, 0)";
         $this->db->query($sqlEnsureKhachHang);
         $this->db->bind(':id', $idKhachHang);
         $this->db->execute();
 
-        // 2. Tìm giỏ hàng hiện tại
         $sql = "SELECT idGioHang FROM GioHang WHERE idKhachHang = :idKhachHang";
         $this->db->query($sql);
         $this->db->bind(':idKhachHang', $idKhachHang);
@@ -20,7 +17,6 @@ class gioHangModel extends Model
             return $gioHang['idGioHang'];
         }
 
-        // 3. Nếu chưa có -> Tạo giỏ hàng mới
         $sqlInsert = "INSERT INTO GioHang (idKhachHang, ngayTao) VALUES (:idKhachHang, NOW())";
         $this->db->query($sqlInsert);
         $this->db->bind(':idKhachHang', $idKhachHang);
@@ -33,12 +29,15 @@ class gioHangModel extends Model
     public function layDanhSachChiTietGioHang($idGioHang)
     {
         $sql = "SELECT c.id, c.idGioHang, c.idThuoc, c.idDonThuoc, c.soLuong, c.donGia, c.trangThaiThaoTac,
-                       t.tenThuoc, t.donViTinh, d.tenDanhMuc,
+                       t.tenThuoc, t.donViTinh, t.gioiHanMua, d.tenDanhMuc,
+                       COALESCE(SUM(l.soLuongTon), 0) AS tongTon,
                        (SELECT duongDan FROM HinhAnhThuoc h WHERE h.idThuoc = t.idThuoc ORDER BY h.idHinhAnh ASC LIMIT 1) AS hinhAnh
                 FROM ChiTietGioHang c
                 INNER JOIN Thuoc t ON c.idThuoc = t.idThuoc
                 LEFT JOIN DanhMucThuoc d ON t.idDanhMuc = d.idDanhMuc
+                LEFT JOIN LoThuoc l ON t.idThuoc = l.idThuoc AND l.hanSuDung >= CURDATE()
                 WHERE c.idGioHang = :idGioHang
+                GROUP BY c.id
                 ORDER BY c.id DESC";
 
         $this->db->query($sql);
@@ -46,9 +45,43 @@ class gioHangModel extends Model
         return $this->db->resultSet();
     }
 
+    public function getSoLuongHienCoTrongGio($idGioHang, $idThuoc)
+    {
+        $sql = "SELECT COALESCE(SUM(soLuong), 0) AS total 
+                FROM ChiTietGioHang 
+                WHERE idGioHang = :idGioHang AND idThuoc = :idThuoc AND trangThaiThaoTac = 'CHO_PHEP'";
+        $this->db->query($sql);
+        $this->db->bind(':idGioHang', $idGioHang);
+        $this->db->bind(':idThuoc', $idThuoc);
+        $row = $this->db->single();
+        return $row ? intval($row['total']) : 0;
+    }
+
+    public function getChiTietItemTheoID($idChiTiet, $idGioHang)
+    {
+        $sql = "SELECT c.*, t.gioiHanMua, COALESCE(SUM(l.soLuongTon), 0) AS tongTon
+                FROM ChiTietGioHang c
+                INNER JOIN Thuoc t ON c.idThuoc = t.idThuoc
+                LEFT JOIN LoThuoc l ON t.idThuoc = l.idThuoc AND l.hanSuDung >= CURDATE()
+                WHERE c.id = :id AND c.idGioHang = :idGioHang
+                GROUP BY c.id";
+        $this->db->query($sql);
+        $this->db->bind(':id', $idChiTiet);
+        $this->db->bind(':idGioHang', $idGioHang);
+        return $this->db->single();
+    }
+
+    public function demSoChungLoaiThuocTrongGio($idGioHang)
+    {
+        $sql = "SELECT COUNT(DISTINCT idThuoc) AS total FROM ChiTietGioHang WHERE idGioHang = :idGioHang";
+        $this->db->query($sql);
+        $this->db->bind(':idGioHang', $idGioHang);
+        $row = $this->db->single();
+        return $row ? intval($row['total']) : 0;
+    }
+
     public function themItemVaoGio($idGioHang, $idThuoc, $soLuong, $donGia, $trangThaiThaoTac = 'CHO_PHEP', $idDonThuoc = null)
     {
-        // Thuốc không kê đơn (CHO_PHEP) -> Cộng dồn số lượng nếu đã có trong giỏ
         if ($trangThaiThaoTac === 'CHO_PHEP') {
             $sqlCheck = "SELECT id, soLuong FROM ChiTietGioHang 
                          WHERE idGioHang = :idGioHang AND idThuoc = :idThuoc AND trangThaiThaoTac = 'CHO_PHEP'";
@@ -68,7 +101,6 @@ class gioHangModel extends Model
             }
         }
 
-        // Thuốc kê đơn (KHOA) -> Tạo dòng riêng biệt độc lập
         $sqlInsert = "INSERT INTO ChiTietGioHang (idGioHang, idThuoc, idDonThuoc, soLuong, donGia, trangThaiThaoTac) 
                       VALUES (:idGioHang, :idThuoc, :idDonThuoc, :soLuong, :donGia, :trangThaiThaoTac)";
         $this->db->query($sqlInsert);

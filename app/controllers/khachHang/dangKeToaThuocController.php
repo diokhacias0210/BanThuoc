@@ -1,11 +1,12 @@
 <?php
-class DangKeToaThuocController extends Controller
+class dangKeToaThuocController extends Controller
 {
     private $dangKeModel;
     private $gioHangModel;
 
     public function __construct()
     {
+        // Gọi model dangKeToaThuocModel
         $this->dangKeModel = $this->model("dangKeToaThuocModel");
         $this->gioHangModel = $this->model("gioHangModel");
     }
@@ -47,6 +48,7 @@ class DangKeToaThuocController extends Controller
 
         ob_start();
         extract($data);
+        // Load đúng file view dangKeToaThuoc.php
         require_once APPROOT . '/views/khachHang/dangKeToaThuoc.php';
         $data['content'] = ob_get_clean();
 
@@ -72,7 +74,6 @@ class DangKeToaThuocController extends Controller
         $ghiChu = isset($_POST['ghiChu']) ? trim($_POST['ghiChu']) : '';
         $danhSachThuocInput = isset($_POST['danhSachThuoc']) ? $_POST['danhSachThuoc'] : array();
 
-        // 1. Tạo đơn thuốc trong CSDL
         $idDonThuoc = $this->dangKeModel->taoDonThuoc($idKhachHang, $ghiChu);
 
         if (!$idDonThuoc) {
@@ -80,7 +81,6 @@ class DangKeToaThuocController extends Controller
             exit;
         }
 
-        // 2. Xử lý lưu NHIỀU HÌNH ẢNH vào bảng HinhAnhDonThuoc
         if (isset($_FILES['hinhAnhFiles']) && !empty($_FILES['hinhAnhFiles']['name'][0])) {
             $uploadDir = 'public/assets/images/uploads/donThuoc/';
             if (!is_dir($uploadDir)) {
@@ -100,25 +100,19 @@ class DangKeToaThuocController extends Controller
             }
         }
 
-        // 3. Lấy hoặc tạo Giỏ hàng
         $idGioHang = $this->gioHangModel->layHoacTaoGioHang($idKhachHang);
 
-        // 4. Lặp qua danh sách thuốc đã chọn -> LƯU MỖI THUỐC THÀNH 1 DÒNG KHOÁ RIÊNG TRONG GIỎ HÀNG
         if (!empty($danhSachThuocInput) && is_array($danhSachThuocInput)) {
             foreach ($danhSachThuocInput as $tenThuoc) {
                 $tenClean = trim($tenThuoc);
                 if (empty($tenClean)) continue;
 
-                // Thêm vào bảng ChiTietDonThuoc
                 $this->dangKeModel->themChiTietDonThuoc($idDonThuoc, $tenClean, 1);
-
-                // Tìm thông tin thuốc trong hệ thống
                 $thuoc = $this->dangKeModel->timThuocTheoTen($tenClean);
 
                 $idThuoc = $thuoc ? $thuoc['idThuoc'] : 1;
                 $donGia = $thuoc ? $thuoc['giaBan'] : 0;
 
-                // Lưu riêng từng dòng vào ChiTietGioHang với trạng thái KHOA
                 $this->gioHangModel->themItemVaoGio($idGioHang, $idThuoc, 1, $donGia, 'KHOA', $idDonThuoc);
             }
         }

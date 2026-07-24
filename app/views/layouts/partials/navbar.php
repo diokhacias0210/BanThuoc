@@ -33,7 +33,7 @@ $userName = isset($_SESSION['user_name']) ? $_SESSION['user_name'] : '';
         <a class="drawer-item <?php echo (isset($active_tab) && $active_tab == 'giohang') ? 'active' : ''; ?>" href="<?php echo URLROOT; ?>/khachHang/gioHang">
             <i class="fa-solid fa-cart-shopping"></i>Giỏ hàng
         </a>
-        <a class="drawer-item <?php echo (isset($active_tab) && $active_tab == 'taidon') ? 'active' : ''; ?>" href="<?php echo URLROOT; ?>/khachHang/taiDonThuoc">
+        <a class="drawer-item <?php echo (isset($active_tab) && $active_tab == 'taidon') ? 'active' : ''; ?>" href="<?php echo URLROOT; ?>/khachHang/dangKeToaThuoc">
             <i class="fa-solid fa-file-prescription"></i>Tải đơn thuốc
         </a>
 
