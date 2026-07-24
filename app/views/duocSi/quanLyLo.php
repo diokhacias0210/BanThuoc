@@ -1,5 +1,5 @@
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
 <div id="tab-lothuoc">
-
   <div class="stat-grid">
     <div class="stat-card" data-quickfilter="all">
       <div class="stat-icon green">
@@ -13,14 +13,14 @@
         <div class="icon icon-box"></div>
       </div>
       <div class="stat-value" id="statWarn">0</div>
-      <div class="stat-label">Sắp hết hạn (< 90 ngày)</div>
+      <div class="stat-label">Sắp hết hạn (&lt; 90 ngày)</div>
     </div>
     <div class="stat-card" data-quickfilter="disabled">
       <div class="stat-icon red">
         <div class="icon icon-box"></div>
       </div>
       <div class="stat-value" id="statDisabled">0</div>
-      <div class="stat-label">Tự động vô hiệu hóa (< 30 ngày)</div>
+      <div class="stat-label">Tự động vô hiệu hóa (&lt; 30 ngày)</div>
     </div>
   </div>
 
@@ -70,7 +70,6 @@
   </div>
 </div>
 
-<!-- Modal Form Thêm/Sửa lô thuốc -->
 <div class="modal-overlay hidden" id="modalForm">
   <div class="modal-box">
     <div class="modal-head">
@@ -81,153 +80,85 @@
       <button class="modal-close" data-close="modalForm">&times;</button>
     </div>
     <div class="modal-body">
+      <div class="info-banner">
+        <div class="icon icon-alert-circle"></div>
+        Lô thuốc sẽ tự động được đánh dấu “Sắp hết hạn” khi còn dưới 90 ngày và tự động vô hiệu hóa khi còn dưới 30 ngày kể từ hạn sử dụng.
+      </div>
       <form id="loThuocForm" onsubmit="return false;">
         <input type="hidden" id="f_idLo" name="idLo">
         <div class="form-grid">
-          <div class="form-field">
+          <div class="form-field span-2">
             <label>Thuốc <span class="req">*</span></label>
             <select id="f_idThuoc" name="idThuoc" required>
               <option value="">— Chọn thuốc —</option>
             </select>
+            <div class="error-msg">Vui lòng chọn thuốc.</div>
           </div>
+
           <div class="form-field">
             <label>Mã lô <span class="req">*</span></label>
-            <input type="text" id="f_maLo" name="maLo" placeholder="VD: LOT-2024-001" required>
+            <input type="text" id="f_maLo" name="maLo" placeholder="VD: LO2026-001" required>
+            <div class="error-msg">Vui lòng nhập mã lô.</div>
           </div>
+          <div class="form-field">
+            <label>Số lượng tồn <span class="req">*</span></label>
+            <input type="number" id="f_soLuongTon" name="soLuongTon" min="0" step="1" placeholder="0" required>
+            <div class="error-msg">Số lượng tồn phải ≥ 0.</div>
+          </div>
+
           <div class="form-field">
             <label>Ngày sản xuất</label>
             <input type="date" id="f_ngaySanXuat" name="ngaySanXuat">
+            <div class="error-msg">Ngày sản xuất không hợp lệ.</div>
           </div>
           <div class="form-field">
             <label>Hạn sử dụng <span class="req">*</span></label>
             <input type="date" id="f_hanSuDung" name="hanSuDung" required>
+            <div class="error-msg">Hạn sử dụng phải hợp lệ.</div>
+          </div>
+
+          <div class="form-field">
+            <label>Giá nhập (đ/đơn vị) <span class="req">*</span></label>
+            <input type="number" id="f_giaNhap" name="giaNhap" min="0" step="1000" placeholder="0" required>
+            <div class="error-msg">Vui lòng nhập giá nhập hợp lệ.</div>
           </div>
           <div class="form-field">
-            <label>Số lượng tồn <span class="req">*</span></label>
-            <input type="number" id="f_soLuongTon" name="soLuongTon" min="0" required>
-          </div>
-          <div class="form-field">
-            <label>Giá nhập (đ) <span class="req">*</span></label>
-            <input type="number" id="f_giaNhap" name="giaNhap" min="0" required>
-          </div>
-          <div class="form-field">
-            <label>Thành tiền</label>
-            <input type="text" id="f_thanhTien" readonly style="background:#f1f5f9; font-weight:600; color:var(--green-700);">
+            <label>Thành tiền nhập lô</label>
+            <input type="text" id="f_thanhTien" class="field-readonly" readonly placeholder="Tự động tính">
           </div>
         </div>
       </form>
     </div>
     <div class="modal-foot">
-      <button class="btn btn-ghost" data-close="modalForm">Hủy bỏ</button>
-      <button class="btn btn-primary" id="btnSaveLo"><i class="fa-solid fa-floppy-disk"></i> Lưu dữ liệu</button>
+      <button class="btn btn-ghost" data-close="modalForm">Hủy</button>
+      <button class="btn btn-primary" id="btnSaveLo">Lưu lô thuốc</button>
     </div>
   </div>
 </div>
 
-<!-- Modal Xem chi tiết lô thuốc -->
 <div class="modal-overlay hidden" id="modalDetail">
-  <div class="modal-box">
+  <div class="modal-box wide">
     <div class="modal-head">
       <div>
         <h2>Chi tiết lô thuốc</h2>
+        <div class="desc">Thông tin đầy đủ của lô và thuốc liên quan</div>
       </div>
       <button class="modal-close" data-close="modalDetail">&times;</button>
     </div>
-    <div class="modal-body" id="detailBody">
-    </div>
+    <div class="modal-body" id="detailBody"></div>
     <div class="modal-foot">
       <button class="btn btn-ghost" data-close="modalDetail">Đóng</button>
-      <button class="btn btn-primary" id="btnEditFromDetail"><i class="fa-solid fa-pen-to-square"></i> Chỉnh sửa</button>
+      <button class="btn btn-primary" id="btnEditFromDetail">Chỉnh sửa lô này</button>
     </div>
   </div>
 </div>
 
-<!-- Toast Notification -->
 <div class="toast" id="toast">
   <i class="fa-solid fa-circle-check"></i>
-  <span id="toastMsg">Thao tác thành công</span>
-</div>
-
-<!-- Modal Form Thêm/Sửa lô thuốc -->
-<div class="modal-overlay hidden" id="modalForm">
-    <div class="modal-box">
-        <div class="modal-head">
-            <div>
-                <h2 id="formModalTitle">Thêm lô thuốc mới</h2>
-                <div class="desc">Nhập đầy đủ thông tin lô thuốc theo dữ liệu hệ thống</div>
-            </div>
-            <button class="modal-close" data-close="modalForm">&times;</button>
-        </div>
-        <div class="modal-body">
-            <form id="loThuocForm" onsubmit="return false;">
-                <input type="hidden" id="f_idLo" name="idLo">
-                <div class="form-grid">
-                    <div class="form-field">
-                        <label>Thuốc <span class="req">*</span></label>
-                        <select id="f_idThuoc" name="idThuoc" required>
-                            <option value="">— Chọn thuốc —</option>
-                        </select>
-                    </div>
-                    <div class="form-field">
-                        <label>Mã lô <span class="req">*</span></label>
-                        <input type="text" id="f_maLo" name="maLo" placeholder="VD: LOT-2024-001" required>
-                    </div>
-                    <div class="form-field">
-                        <label>Ngày sản xuất</label>
-                        <input type="date" id="f_ngaySanXuat" name="ngaySanXuat">
-                    </div>
-                    <div class="form-field">
-                        <label>Hạn sử dụng <span class="req">*</span></label>
-                        <input type="date" id="f_hanSuDung" name="hanSuDung" required>
-                    </div>
-                    <div class="form-field">
-                        <label>Số lượng tồn <span class="req">*</span></label>
-                        <input type="number" id="f_soLuongTon" name="soLuongTon" min="0" required>
-                    </div>
-                    <div class="form-field">
-                        <label>Giá nhập (đ) <span class="req">*</span></label>
-                        <input type="number" id="f_giaNhap" name="giaNhap" min="0" required>
-                    </div>
-                    <div class="form-field">
-                        <label>Thành tiền</label>
-                        <input type="text" id="f_thanhTien" readonly style="background:#f1f5f9; font-weight:600; color:var(--green-700);">
-                    </div>
-                </div>
-            </form>
-        </div>
-        <div class="modal-foot">
-            <button class="btn btn-ghost" data-close="modalForm">Hủy bỏ</button>
-            <button class="btn btn-primary" id="btnSaveLo"><i class="fa-solid fa-floppy-disk"></i> Lưu dữ liệu</button>
-        </div>
-    </div>
-</div>
-
-<!-- Modal Xem chi tiết lô thuốc -->
-<div class="modal-overlay hidden" id="modalDetail">
-    <div class="modal-box">
-        <div class="modal-head">
-            <div>
-                <h2>Chi tiết lô thuốc</h2>
-            </div>
-            <button class="modal-close" data-close="modalDetail">&times;</button>
-        </div>
-        <div class="modal-body" id="detailBody">
-        </div>
-        <div class="modal-foot">
-            <button class="btn btn-ghost" data-close="modalDetail">Đóng</button>
-            <button class="btn btn-primary" id="btnEditFromDetail"><i class="fa-solid fa-pen-to-square"></i> Chỉnh sửa</button>
-        </div>
-    </div>
-</div>
-
-<!-- Toast Notification -->
-<div class="toast" id="toast">
-    <i class="fa-solid fa-circle-check"></i>
-    <span id="toastMsg">Thao tác thành công</span>
+  <span id="toastMsg">Đã lưu thành công</span>
 </div>
 
 <script>
-// ===== HÀM TIỆN ÍCH =====
 function fmtMoney(n) {
     return Number(n || 0).toLocaleString('vi-VN') + 'đ';
 }
@@ -240,18 +171,14 @@ function fmtDateVN(str) {
     return d.toLocaleDateString('vi-VN');
 }
 
-const TODAY = new Date();
-TODAY.setHours(0, 0, 0, 0);
-
 function tinhTrangThaiHan(soNgayConLai) {
-    const daysLeft = Number(soNgayConLai);
+    const daysLeft = Number(soNgayConLai || 0);
     if (daysLeft < 0) return { code: 'expired', label: 'Đã hết hạn', class: 'badge-expired' };
     if (daysLeft < 30) return { code: 'disabled', label: 'Vô hiệu hóa (tự động)', class: 'badge-disabled' };
     if (daysLeft < 90) return { code: 'warn', label: 'Sắp hết hạn', class: 'badge-warn' };
     return { code: 'active', label: 'Còn hạn', class: 'badge-active' };
 }
 
-// ===== STATE =====
 let state = {
     search: '',
     status: 'all',
@@ -264,11 +191,9 @@ let state = {
 };
 
 let searchTimeout;
-
 const modalForm = document.getElementById('modalForm');
 const modalDetail = document.getElementById('modalDetail');
 
-// ===== MODAL CONTROLS =====
 function openModal(el) {
     el.classList.remove('hidden');
     document.body.style.overflow = 'hidden';
@@ -279,13 +204,21 @@ function closeModal(el) {
     document.body.style.overflow = '';
 }
 
-document.querySelectorAll('[data-close]').forEach(btn => {
-    btn.addEventListener('click', () => closeModal(document.getElementById(btn.dataset.close)));
+document.querySelectorAll('[data-close]').forEach(function(btn) {
+    btn.addEventListener('click', function() {
+        closeModal(document.getElementById(btn.dataset.close));
+    });
+});
+[modalForm, modalDetail].forEach(function(m) {
+    m.addEventListener('click', function(e) {
+        if (e.target === m) closeModal(m);
+    });
 });
 
-// ===== FORM VALIDATION =====
 function clearFormErrors() {
-    document.querySelectorAll('#loThuocForm .form-field').forEach(f => f.classList.remove('has-error'));
+    document.querySelectorAll('#loThuocForm .form-field').forEach(function(f) {
+        f.classList.remove('has-error');
+    });
 }
 
 function setFieldError(id, hasError) {
@@ -295,7 +228,6 @@ function setFieldError(id, hasError) {
     if (formField) formField.classList.toggle('has-error', hasError);
 }
 
-// Tự động tính thành tiền
 function updateThanhTien() {
     const sl = Number(document.getElementById('f_soLuongTon').value) || 0;
     const gia = Number(document.getElementById('f_giaNhap').value) || 0;
@@ -304,18 +236,17 @@ function updateThanhTien() {
 document.getElementById('f_soLuongTon').addEventListener('input', updateThanhTien);
 document.getElementById('f_giaNhap').addEventListener('input', updateThanhTien);
 
-// ===== TOAST =====
 let toastTimer;
-
 function showToast(msg) {
     const toast = document.getElementById('toast');
     document.getElementById('toastMsg').textContent = msg;
     toast.classList.add('show');
     clearTimeout(toastTimer);
-    toastTimer = setTimeout(() => toast.classList.remove('show'), 2600);
+    toastTimer = setTimeout(function() {
+        toast.classList.remove('show');
+    }, 2600);
 }
 
-// ===== FETCH DATA FROM API =====
 function fetchData() {
     const params = new URLSearchParams({
         search: state.search,
@@ -327,8 +258,8 @@ function fetchData() {
     });
 
     fetch('<?php echo URLROOT; ?>/duocSi/quanLyLo/getList?' + params.toString())
-        .then(res => res.json())
-        .then(res => {
+        .then(function(res) { return res.json(); })
+        .then(function(res) {
             if (res.status) {
                 renderTable(res.data, res.total);
                 renderStats(res.stats);
@@ -336,20 +267,22 @@ function fetchData() {
                 renderPagination(res.total);
             }
         })
-        .catch(err => console.error('Lỗi tải dữ liệu:', err));
+        .catch(function(err) {
+            console.error('Lỗi tải dữ liệu:', err);
+        });
 }
 
-// ===== RENDER CATEGORY FILTER =====
 function renderCategoryFilter(categories) {
     const filterSelect = document.getElementById('filterDanhMuc');
     const currentVal = filterSelect.value;
     let opts = '<option value="all">Tất cả danh mục</option>';
-    opts += categories.map(c => '<option value="' + c.idDanhMuc + '">' + c.tenDanhMuc + '</option>').join('');
+    opts += (categories || []).map(function(c) {
+        return '<option value="' + c.idDanhMuc + '">' + c.tenDanhMuc + '</option>';
+    }).join('');
     filterSelect.innerHTML = opts;
-    filterSelect.value = currentVal;
+    if (currentVal) filterSelect.value = currentVal;
 }
 
-// ===== RENDER STATS =====
 function renderStats(stats) {
     if (!stats) return;
     document.getElementById('statTotal').textContent = Number(stats.tongSo || 0).toLocaleString('vi-VN');
@@ -357,43 +290,37 @@ function renderStats(stats) {
     document.getElementById('statDisabled').textContent = Number(stats.voHieuHoa || 0).toLocaleString('vi-VN');
 }
 
-// ===== RENDER TABLE =====
 function renderTable(list, total) {
     const tbody = document.getElementById('tableBody');
     const emptyState = document.getElementById('emptyState');
     state.total = total || list.length;
 
-    if (list.length === 0) {
+    if (!list || list.length === 0) {
         tbody.innerHTML = '';
         emptyState.style.display = 'block';
         document.getElementById('pagination').innerHTML = '';
         return;
     }
-    emptyState.style.display = 'none';
 
+    emptyState.style.display = 'none';
     tbody.innerHTML = list.map(function(item) {
         var tt = tinhTrangThaiHan(item.soNgayConLai);
-        var sxDate = item.ngaySanXuat ? fmtDateVN(item.ngaySanXuat) : '—';
         return '<tr>' +
-            '<td class="cell-mono cell-strong">' + item.maLo + '</td>' +
-            '<td class="cell-strong">' + (item.tenThuoc || '—') + '</td>' +
-            '<td>' + sxDate + '</td>' +
-            '<td>' + fmtDateVN(item.hanSuDung) + '</td>' +
-            '<td class="cell-strong">' + Number(item.soLuongTon).toLocaleString('vi-VN') + '</td>' +
+            '<td><div class="cell-strong cell-mono">' + (item.maLo || '—') + '</div><div class="cell-sub">ID lô: ' + item.idLo + '</div></td>' +
+            '<td><div class="cell-strong">' + (item.tenThuoc || '—') + '</div></td>' +
+            '<td>' + fmtDateVN(item.ngaySanXuat) + '</td>' +
+            '<td><div class="hsd-cell"><span class="hsd-pill">' + fmtDateVN(item.hanSuDung) + '</span><div class="cell-sub">' + (Number(item.soNgayConLai || 0) >= 0 ? 'còn ' + (item.soNgayConLai || 0) + ' ngày' : 'quá hạn ' + Math.abs(item.soNgayConLai || 0) + ' ngày') + '</div></div></td>' +
+            '<td class="cell-strong">' + Number(item.soLuongTon || 0).toLocaleString('vi-VN') + '</td>' +
             '<td class="cell-strong" style="color:var(--green-700);">' + fmtMoney(item.giaNhap) + '</td>' +
             '<td><span class="badge ' + tt.class + '">' + tt.label + '</span></td>' +
-            '<td>' +
-                '<div class="actions-cell">' +
-                    '<button class="action-btn view" data-view="' + item.idLo + '" title="Chi tiết"><i class="fa-solid fa-eye"></i></button>' +
-                    '<button class="action-btn edit" data-edit="' + item.idLo + '" title="Sửa"><i class="fa-solid fa-pen-to-square"></i></button>' +
-                    '<button class="action-btn delete" data-delete="' + item.idLo + '" title="Xóa"><i class="fa-solid fa-trash-can"></i></button>' +
-                '</div>' +
-            '</td>' +
+            '<td><div class="actions-cell" style="justify-content:flex-end;">' +
+                '<button class="action-btn view" data-view="' + item.idLo + '" title="Xem chi tiết"><i class="fa-solid fa-eye"></i></button>' +
+                '<button class="action-btn edit" data-edit="' + item.idLo + '" title="Sửa"><i class="fa-solid fa-pen-to-square"></i></button>' +
+            '</div></td>' +
         '</tr>';
     }).join('');
 }
 
-// ===== RENDER PAGINATION =====
 function renderPagination(total) {
     var paginationEl = document.getElementById('pagination');
     var totalPages = Math.ceil(total / state.pageSize);
@@ -435,11 +362,10 @@ function goToPage(page) {
     fetchData();
 }
 
-// ===== LOAD THUOC LIST FOR FORM SELECT =====
-function loadThuocList() {
+function loadThuocList(callback) {
     fetch('<?php echo URLROOT; ?>/duocSi/quanLyLo/getListThuoc?_=' + Date.now())
-        .then(res => res.json())
-        .then(res => {
+        .then(function(res) { return res.json(); })
+        .then(function(res) {
             if (res.status && res.data) {
                 var select = document.getElementById('f_idThuoc');
                 var opts = '<option value="">— Chọn thuốc —</option>';
@@ -447,12 +373,14 @@ function loadThuocList() {
                     return '<option value="' + t.idThuoc + '">' + t.tenThuoc + ' (' + (t.donViTinh || 'N/A') + ')</option>';
                 }).join('');
                 select.innerHTML = opts;
+                if (typeof callback === 'function') callback();
             }
         })
-        .catch(err => console.error('Lỗi tải danh sách thuốc:', err));
+        .catch(function(err) {
+            console.error('Lỗi tải danh sách thuốc:', err);
+        });
 }
 
-// ===== OPEN ADD FORM =====
 document.getElementById('btnAddLo').addEventListener('click', function() {
     state.editingId = null;
     clearFormErrors();
@@ -464,19 +392,17 @@ document.getElementById('btnAddLo').addEventListener('click', function() {
     openModal(modalForm);
 });
 
-// ===== OPEN EDIT FORM =====
 function openEditForm(idLo) {
     state.editingId = idLo;
     clearFormErrors();
     document.getElementById('formModalTitle').textContent = 'Sửa lô thuốc';
 
     fetch('<?php echo URLROOT; ?>/duocSi/quanLyLo/detail/' + idLo)
-        .then(res => res.json())
-        .then(res => {
+        .then(function(res) { return res.json(); })
+        .then(function(res) {
             if (res.status) {
                 var d = res.data;
-                loadThuocList();
-                setTimeout(function() {
+                loadThuocList(function() {
                     document.getElementById('f_idLo').value = d.idLo;
                     document.getElementById('f_idThuoc').value = d.idThuoc;
                     document.getElementById('f_maLo').value = d.maLo;
@@ -486,50 +412,51 @@ function openEditForm(idLo) {
                     document.getElementById('f_giaNhap').value = d.giaNhap;
                     updateThanhTien();
                     openModal(modalForm);
-                }, 300);
+                });
             } else {
                 alert(res.message);
             }
         })
-        .catch(err => console.error('Lỗi tải chi tiết:', err));
+        .catch(function(err) {
+            console.error('Lỗi tải chi tiết:', err);
+        });
 }
 
-// ===== OPEN DETAIL MODAL =====
 function openDetailModal(idLo) {
     state.detailId = idLo;
     fetch('<?php echo URLROOT; ?>/duocSi/quanLyLo/detail/' + idLo)
-        .then(res => res.json())
-        .then(res => {
+        .then(function(res) { return res.json(); })
+        .then(function(res) {
             if (res.status) {
                 var d = res.data;
                 var tt = tinhTrangThaiHan(d.soNgayConLai);
-                document.getElementById('detailBody').innerHTML =
-                    '<div class="detail-grid">' +
-                        '<div class="detail-row"><span class="detail-label">Mã lô:</span><span class="detail-value cell-mono">' + d.maLo + '</span></div>' +
-                        '<div class="detail-row"><span class="detail-label">Thuốc:</span><span class="detail-value">' + (d.tenThuoc || '—') + '</span></div>' +
-                        '<div class="detail-row"><span class="detail-label">Danh mục:</span><span class="detail-value">' + (d.tenDanhMuc || '—') + '</span></div>' +
-                        '<div class="detail-row"><span class="detail-label">Ngày sản xuất:</span><span class="detail-value">' + fmtDateVN(d.ngaySanXuat) + '</span></div>' +
-                        '<div class="detail-row"><span class="detail-label">Hạn sử dụng:</span><span class="detail-value">' + fmtDateVN(d.hanSuDung) + '</span></div>' +
-                        '<div class="detail-row"><span class="detail-label">Số lượng tồn:</span><span class="detail-value">' + Number(d.soLuongTon).toLocaleString('vi-VN') + '</span></div>' +
-                        '<div class="detail-row"><span class="detail-label">Giá nhập:</span><span class="detail-value" style="color:var(--green-700);">' + fmtMoney(d.giaNhap) + '</span></div>' +
-                        '<div class="detail-row"><span class="detail-label">Trạng thái:</span><span class="detail-value"><span class="badge ' + tt.class + '">' + tt.label + '</span></span></div>' +
-                        '<div class="detail-row"><span class="detail-label">Số ngày còn lại:</span><span class="detail-value">' + (d.soNgayConLai >= 0 ? d.soNgayConLai + ' ngày' : 'Đã quá hạn ' + Math.abs(d.soNgayConLai) + ' ngày') + '</span></div>' +
-                    '</div>';
+                var detailHtml = '<div class="detail-grid">' +
+                    '<div class="detail-row"><span class="detail-label">Mã lô</span><span class="detail-value cell-mono">' + (d.maLo || '—') + '</span></div>' +
+                    '<div class="detail-row"><span class="detail-label">Thuốc</span><span class="detail-value">' + (d.tenThuoc || '—') + '</span></div>' +
+                    '<div class="detail-row"><span class="detail-label">Danh mục</span><span class="detail-value">' + (d.tenDanhMuc || '—') + '</span></div>' +
+                    '<div class="detail-row"><span class="detail-label">Ngày sản xuất</span><span class="detail-value">' + fmtDateVN(d.ngaySanXuat) + '</span></div>' +
+                    '<div class="detail-row"><span class="detail-label">Hạn sử dụng</span><span class="detail-value">' + fmtDateVN(d.hanSuDung) + '</span></div>' +
+                    '<div class="detail-row"><span class="detail-label">Số lượng tồn</span><span class="detail-value">' + Number(d.soLuongTon || 0).toLocaleString('vi-VN') + '</span></div>' +
+                    '<div class="detail-row"><span class="detail-label">Giá nhập</span><span class="detail-value" style="color:var(--green-700);">' + fmtMoney(d.giaNhap) + '</span></div>' +
+                    '<div class="detail-row"><span class="detail-label">Trạng thái</span><span class="detail-value"><span class="badge ' + tt.class + '">' + tt.label + '</span></span></div>' +
+                    '<div class="detail-row"><span class="detail-label">Số ngày còn lại</span><span class="detail-value">' + (Number(d.soNgayConLai || 0) >= 0 ? (d.soNgayConLai || 0) + ' ngày' : 'Đã quá hạn ' + Math.abs(d.soNgayConLai || 0) + ' ngày') + '</span></div>' +
+                '</div>';
+                document.getElementById('detailBody').innerHTML = detailHtml;
                 openModal(modalDetail);
             } else {
                 alert(res.message);
             }
         })
-        .catch(err => console.error('Lỗi tải chi tiết:', err));
+        .catch(function(err) {
+            console.error('Lỗi tải chi tiết:', err);
+        });
 }
 
-// Edit from detail
 document.getElementById('btnEditFromDetail').addEventListener('click', function() {
     closeModal(modalDetail);
     if (state.detailId) openEditForm(state.detailId);
 });
 
-// ===== SAVE FORM =====
 document.getElementById('btnSaveLo').addEventListener('click', function() {
     var ok = true;
     var idThuoc = document.getElementById('f_idThuoc').value;
@@ -574,39 +501,15 @@ document.getElementById('btnSaveLo').addEventListener('click', function() {
     });
 });
 
-// ===== DELETE =====
-function deleteLo(idLo) {
-    if (!confirm('Bạn có chắc chắn muốn xóa lô thuốc này?')) return;
 
-    fetch('<?php echo URLROOT; ?>/duocSi/quanLyLo/delete/' + idLo, {
-        method: 'POST'
-    })
-    .then(function(res) { return res.json(); })
-    .then(function(res) {
-        if (res.status) {
-            showToast(res.message);
-            fetchData();
-        } else {
-            alert(res.message);
-        }
-    })
-    .catch(function(err) {
-        console.error('Lỗi:', err);
-        alert('Lỗi kết nối máy chủ!');
-    });
-}
 
-// ===== EVENT DELEGATION FOR TABLE ACTIONS =====
 document.getElementById('tableBody').addEventListener('click', function(e) {
     var editBtn = e.target.closest('[data-edit]');
     var viewBtn = e.target.closest('[data-view]');
-    var deleteBtn = e.target.closest('[data-delete]');
     if (editBtn) openEditForm(Number(editBtn.dataset.edit));
     if (viewBtn) openDetailModal(Number(viewBtn.dataset.view));
-    if (deleteBtn) deleteLo(Number(deleteBtn.dataset.delete));
 });
 
-// ===== SEARCH & FILTER EVENTS =====
 document.getElementById('searchInput').addEventListener('input', function(e) {
     state.search = e.target.value;
     state.page = 1;
@@ -638,7 +541,6 @@ document.getElementById('btnResetFilter').addEventListener('click', function() {
     fetchData();
 });
 
-// Quick filter by stat cards
 document.querySelectorAll('.stat-grid .stat-card[data-quickfilter]').forEach(function(card) {
     card.addEventListener('click', function() {
         document.querySelectorAll('.stat-grid .stat-card').forEach(function(c) { c.classList.remove('is-active'); });
@@ -650,6 +552,5 @@ document.querySelectorAll('.stat-grid .stat-card[data-quickfilter]').forEach(fun
     });
 });
 
-// ===== INIT =====
 fetchData();
 </script>
