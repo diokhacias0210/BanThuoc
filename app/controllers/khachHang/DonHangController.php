@@ -4,114 +4,55 @@ class DonHangController extends Controller
 {
 
     private $donHangModel;
-    private $gioHangModel;
 
     public function __construct()
     {
-        $this->donHangModel=$this->model("DonHangModel");
-        $this->gioHangModel=$this->model("GioHangModel");
+        $this->donHangModel = $this->model("DonHangModel");
     }
 
     public function index()
     {
-        if(!isset($_SESSION["user"]))
-        {
-            header("Location: ".URLROOT."/khachHang/XacThuc/dangNhap");
-            exit();
-        }
-
-        $idKhachHang=$_SESSION["user"]["idNguoiDung"];
-
-        $danhSachDonHang=
-            $this->donHangModel
-            ->getDanhSachDonHang($idKhachHang);
-
-        $data=[
-
-            "title"=>"Đơn hàng",
-
-            "content"=>"khachHang/donHang",
-
-            "danhSachDonHang"=>$danhSachDonHang
-
-        ];
-
-        $this->view("layouts/khachHangLayout",$data);
-    }
-
-    public function datHang()
-    {
         if (!isset($_SESSION["user"]))
         {
-            header("Location: " . URLROOT . "/khachHang/XacThuc/dangNhap");
+            header("Location: " . URLROOT . "/khachHang/xacThuc/dangNhap");
             exit();
         }
 
         $idKhachHang = $_SESSION["user"]["idNguoiDung"];
 
-        $gioHang = $this->gioHangModel->getByKhachHang($idKhachHang);
+        $danhSachDonHang =
+            $this->donHangModel
+            ->getDanhSachDonHang($idKhachHang);
 
-        if (!$gioHang)
-        {
-            header("Location: " . URLROOT . "/khachHang/gioHang");
-            exit();
-        }
+        $data = [
 
-        $danhSachThuoc = $this->gioHangModel->getDanhSachThuoc($gioHang["idGioHang"]);
+            "title" => "Đơn hàng",
 
-        if (empty($danhSachThuoc))
-        {
-            header("Location: " . URLROOT . "/khachHang/donHang");
-            exit();
-        }
-        $tongTien = 0;
+            "content" => "khachHang/donHang",
 
-        foreach ($danhSachThuoc as $thuoc)
-        {
-            $tongTien += $thuoc["soLuong"] * $thuoc["donGia"];
-        }
+            "danhSachDonHang" => $danhSachDonHang
 
-        $this->donHangModel->taoDonHang(
-            $idKhachHang,
-            $tongTien
-        );
+        ];
 
-        $idDonHang = $this->donHangModel->getLastId();
-
-        foreach ($danhSachThuoc as $thuoc)
-        {
-            $this->donHangModel->themChiTiet(
-                $idDonHang,
-                $thuoc["idThuoc"],
-                $thuoc["soLuong"],
-                $thuoc["donGia"]
-            );
-        }
-
-        $this->gioHangModel->xoaTatCa(
-            $gioHang["idGioHang"]
-        );
-
-        header("Location: " . URLROOT . "/khachHang/donHang");
-        exit();
+        $this->view("layouts/khachHangLayout", $data);
     }
 
     public function chiTiet($idDonHang)
     {
-        $chiTiet=
+        $chiTiet =
             $this->donHangModel
             ->getChiTietDonHang($idDonHang);
 
-        $data=[
+        $data = [
 
-            "title"=>"Chi tiết đơn hàng",
+            "title" => "Chi tiết đơn hàng",
 
-            "content"=>"khachHang/chiTietDonHang",
+            "content" => "khachHang/chiTietDonHang",
 
-            "chiTiet"=>$chiTiet
+            "chiTiet" => $chiTiet
 
         ];
 
-        $this->view("layouts/khachHangLayout",$data);
+        $this->view("layouts/khachHangLayout", $data);
     }
 }

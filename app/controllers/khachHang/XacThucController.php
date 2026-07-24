@@ -37,7 +37,7 @@ class XacThucController extends Controller
                         $this->redirect('admin/quanLyTaiKhoan');
                         break;
                     case 'DUOC_SI':
-                        $this->redirect('duocSi/duyetDon');
+                        $this->redirect('duocSi/ThongTinDuocSi');
                         break;
                     case 'KHACH_HANG':
                         $this->redirect('khachHang/trangChu');

@@ -183,4 +183,16 @@
     }
 
     capNhatTongTien();
+
+    // Bấm "Mua hàng" -> chuyển sang TRANG THANH TOÁN kèm ID các sản phẩm ĐÃ TÍCH CHỌN
+    // (trước đây không gửi gì cả nên trang thanh toán lấy nhầm TOÀN BỘ giỏ hàng)
+    document.getElementById('checkoutBtn').addEventListener('click', () => {
+        const selectedIds = Array.from(document.querySelectorAll('.ci-check:checked'))
+            .map(cb => cb.dataset.id);
+
+        if (selectedIds.length === 0) return;
+
+        const query = `?ids=${selectedIds.join(',')}`;
+        window.location.href = `<?php echo URLROOT; ?>/khachHang/thanhToanDatHang${query}`;
+    });
 </script>
