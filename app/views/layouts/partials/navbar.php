@@ -41,7 +41,7 @@ $userName = isset($_SESSION['user_name']) ? $_SESSION['user_name'] : '';
 
         <?php if ($isLoggedIn): ?>
             <!-- KHU VỰC DÀNH CHO TÀI KHOẢN ĐÃ ĐĂNG NHẬP -->
-            <a class="drawer-item <?php echo (isset($active_tab) && $active_tab == 'donhang') ? 'active' : ''; ?>" href="<?php echo URLROOT; ?>/khachHang/donHang">
+            <a class="drawer-item <?php echo (isset($active_tab) && $active_tab == 'donhang') ? 'active' : ''; ?>" href="<?php echo URLROOT; ?>/khachHang/quanLyDonHang">
                 <i class="fa-solid fa-box-open"></i>Đơn hàng của tôi
             </a>
             <a class="drawer-item <?php echo (isset($active_tab) && $active_tab == 'thongTinCaNhan') ? 'active' : ''; ?>" href="<?php echo URLROOT; ?>/khachHang/thongTinCaNhan">
