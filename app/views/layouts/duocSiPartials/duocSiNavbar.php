@@ -41,8 +41,7 @@
 <script>
     function handleLogout() {
         if (confirm('Xác nhận đăng xuất khỏi hệ thống PharmaCare?')) {
-            // Thực hiện xóa Session / Token qua URL router
-            window.location.href = '/xacthuc/dangxuat';
+            window.location.href = '<?php echo URLROOT; ?>/khachHang/xacThuc/dangXuat';
         }
     }
 </script>
