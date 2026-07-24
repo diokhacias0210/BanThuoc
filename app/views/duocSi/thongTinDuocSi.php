@@ -176,10 +176,12 @@
         };
 
         fetch(`<?php echo URLROOT; ?>/duocSi/thongTinDuocSi/capNhatThongTin`, {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
-            body: new URLSearchParams(updatedData).toString()
-        })
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/x-www-form-urlencoded'
+                },
+                body: new URLSearchParams(updatedData).toString()
+            })
             .then(res => res.json())
             .then(res => {
                 if (res.status) {
@@ -206,15 +208,15 @@
 
     // Dữ liệu thật lấy từ CSDL, do Controller PHP truyền xuống (thay cho initialData giả lập)
     const initialData = <?php echo $thongTin ? json_encode([
-        'idNguoiDung' => $thongTin['idNguoiDung'],
-        'hoTen' => $thongTin['hoTen'],
-        'vaiTroLabel' => $nhanVaiTro[$thongTin['vaiTro']] ?? $thongTin['vaiTro'],
-        'trangThai' => $thongTin['trangThai'],
-        'email' => $thongTin['email'],
-        'soDienThoai' => $thongTin['soDienThoai'],
-        'chungChiHanhNghe' => $thongTin['chungChiHanhNghe'],
-        'trinhDo' => $thongTin['trinhDo'],
-        'noiCap' => $thongTin['noiCap']
-    ], JSON_UNESCAPED_UNICODE) : 'null'; ?>;
+                            'idNguoiDung' => $thongTin['idNguoiDung'],
+                            'hoTen' => $thongTin['hoTen'],
+                            'vaiTroLabel' => $nhanVaiTro[isset($thongTin['vaiTro']) ? $thongTin['vaiTro'] : null] ?? $thongTin['vaiTro'],
+                            'trangThai' => $thongTin['trangThai'],
+                            'email' => $thongTin['email'],
+                            'soDienThoai' => $thongTin['soDienThoai'],
+                            'chungChiHanhNghe' => $thongTin['chungChiHanhNghe'],
+                            'trinhDo' => $thongTin['trinhDo'],
+                            'noiCap' => $thongTin['noiCap']
+                        ], JSON_UNESCAPED_UNICODE) : 'null'; ?>;
     displayPharmacistProfile(initialData);
 </script>
