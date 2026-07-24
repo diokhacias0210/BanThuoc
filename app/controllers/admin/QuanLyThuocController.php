@@ -109,11 +109,26 @@ class QuanLyThuocController extends Controller
                 'trangThai' => isset($_POST['trangThai']) ? 1 : 0,
             );
 
-            // Xử lý Upload hình ảnh
-            $imagePath = '';
-            if (isset($_FILES['hinhAnhFile']) && $_FILES['hinhAnhFile']['error'] === UPLOAD_ERR_OK) {
-                $ext = pathinfo($_FILES['hinhAnhFile']['name'], PATHINFO_EXTENSION);
-                $fileName = time() . '_' . uniqid() . '.' . $ext;
+            // Xử lý xóa ảnh được chỉ định (chỉ khi update)
+            if (!empty($id) && isset($_POST['deleteImages']) && is_array($_POST['deleteImages'])) {
+                foreach ($_POST['deleteImages'] as $duongDanXoa) {
+                    $duongDanXoa = trim($duongDanXoa);
+                    if (!empty($duongDanXoa)) {
+                        // Xóa trong DB
+                        $this->thuocModel->deleteImageByPath($duongDanXoa);
+                        // Xóa file vật lý
+                        $filePath = APPROOT . '/../public/' . str_replace(URLROOT . '/', '', $duongDanXoa);
+                        if (file_exists($filePath)) {
+                            @unlink($filePath);
+                        }
+                    }
+                }
+            }
+
+            // Xử lý Upload nhiều hình ảnh
+            $uploadedImages = [];
+            if (isset($_FILES['hinhAnhFiles']) && is_array($_FILES['hinhAnhFiles']['name'])) {
+                $fileCount = count($_FILES['hinhAnhFiles']['name']);
                 $uploadDir = 'assets/images/uploads/thuoc/';
                 $fullPath = APPROOT . '/../public/' . $uploadDir;
 
@@ -121,22 +136,34 @@ class QuanLyThuocController extends Controller
                     @mkdir($fullPath, 0777, true);
                 }
 
-                $tmp_name = $_FILES['hinhAnhFile']['tmp_name'];
-                if (@move_uploaded_file($tmp_name, $fullPath . $fileName)) {
-                    $imagePath = URLROOT . '/' . $uploadDir . $fileName;
+                for ($i = 0; $i < $fileCount; $i++) {
+                    if ($_FILES['hinhAnhFiles']['error'][$i] === UPLOAD_ERR_OK) {
+                        $ext = pathinfo($_FILES['hinhAnhFiles']['name'][$i], PATHINFO_EXTENSION);
+                        $fileName = time() . '_' . uniqid() . '.' . $ext;
+                        $tmp_name = $_FILES['hinhAnhFiles']['tmp_name'][$i];
+
+                        if (@move_uploaded_file($tmp_name, $fullPath . $fileName)) {
+                            $uploadedImages[] = URLROOT . '/' . $uploadDir . $fileName;
+                        }
+                    }
                 }
             }
 
             if (!empty($id)) {
                 $result = $this->thuocModel->update($id, $payload);
-                if ($result && !empty($imagePath)) {
-                    $this->thuocModel->saveImage($id, $imagePath);
+                // Thêm ảnh mới (nếu có)
+                if ($result && !empty($uploadedImages)) {
+                    foreach ($uploadedImages as $imgPath) {
+                        $this->thuocModel->addImage($id, $imgPath);
+                    }
                 }
                 $msg = "Đã cập nhật thông tin thuốc thành công!";
             } else {
                 $idThuoc = $this->thuocModel->create($payload);
-                if ($idThuoc && !empty($imagePath)) {
-                    $this->thuocModel->saveImage($idThuoc, $imagePath);
+                if ($idThuoc && !empty($uploadedImages)) {
+                    foreach ($uploadedImages as $imgPath) {
+                        $this->thuocModel->addImage($idThuoc, $imgPath);
+                    }
                 }
                 $result = $idThuoc ? true : false;
                 $msg = "Đã thêm thuốc mới vào hệ thống thành công!";

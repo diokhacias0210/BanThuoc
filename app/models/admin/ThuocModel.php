@@ -112,33 +112,39 @@ class ThuocModel extends Model
         return $res;
     }
 
-    // Thêm hình ảnh mới vào bảng HinhAnhThuoc
-    public function saveImage($idThuoc, $duongDan)
+    // Xóa 1 hình ảnh theo đường dẫn
+    public function deleteImageByPath($duongDan)
+    {
+        $this->db->query("DELETE FROM HinhAnhThuoc WHERE duongDan = :duongDan");
+        $this->db->bind(':duongDan', $duongDan);
+        return $this->db->execute();
+    }
+
+    // Thêm 1 hình ảnh mới vào bảng HinhAnhThuoc
+    public function addImage($idThuoc, $duongDan)
     {
         $this->db->query("
-        DELETE FROM HinhAnhThuoc
-        WHERE idThuoc=:idThuoc
-    ");
+            INSERT INTO HinhAnhThuoc (idThuoc, duongDan)
+            VALUES (:idThuoc, :duongDan)
+        ");
+        $this->db->bind(':idThuoc', $idThuoc);
+        $this->db->bind(':duongDan', $duongDan);
+        return $this->db->execute();
+    }
 
+    // Giữ lại saveImage cho tương thích ngược (xóa hết rồi thêm 1 ảnh)
+    public function saveImage($idThuoc, $duongDan)
+    {
+        $this->db->query("DELETE FROM HinhAnhThuoc WHERE idThuoc=:idThuoc");
         $this->db->bind(':idThuoc', $idThuoc);
         $this->db->execute();
 
         $this->db->query("
-        INSERT INTO HinhAnhThuoc
-        (
-            idThuoc,
-            duongDan
-        )
-        VALUES
-        (
-            :idThuoc,
-            :duongDan
-        )
-    ");
-
+            INSERT INTO HinhAnhThuoc (idThuoc, duongDan)
+            VALUES (:idThuoc, :duongDan)
+        ");
         $this->db->bind(':idThuoc', $idThuoc);
         $this->db->bind(':duongDan', $duongDan);
-
         return $this->db->execute();
     }
 

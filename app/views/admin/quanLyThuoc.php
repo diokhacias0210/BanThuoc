@@ -122,17 +122,15 @@
                         <label>Giá bán niêm yết (đ) <span class="req">*</span></label>
                         <input type="number" id="f_giaBan" name="giaBan" required>
                     </div>
-                    <div class="form-field">
-                        <label>Hình ảnh sản phẩm</label>
-                        <div class="img-preview-row">
-                            <img id="f_hinhAnhPreview" class="img-preview" src="" alt="preview">
-                            <div class="file-input-wrapper" style="flex:1;">
-                                <button type="button" class="btn-upload-trigger">
-                                    <i class="fa-solid fa-cloud-arrow-up"></i> Chọn ảnh từ máy
-                                </button>
-                                <input type="file" id="f_hinhAnh" name="hinhAnhFile" accept="image/*">
-                            </div>
+                    <div class="form-field span-2">
+                        <label>Hình ảnh sản phẩm (có thể chọn nhiều)</label>
+                        <div class="file-input-wrapper" style="margin-bottom:8px;">
+                            <button type="button" class="btn-upload-trigger">
+                                <i class="fa-solid fa-cloud-arrow-up"></i> Chọn ảnh từ máy
+                            </button>
+                            <input type="file" id="f_hinhAnh" name="hinhAnhFiles[]" accept="image/*" multiple>
                         </div>
+                        <div id="f_hinhAnhPreviews" class="image-previews"></div>
                     </div>
                     <div class="form-field span-2">
                         <label>Phân loại quản lý dược</label>
@@ -218,13 +216,26 @@
         document.getElementById('trangThaiLabel').textContent = e.target.checked ? 'Đang bán' : 'Tạm ngưng';
     });
 
-    // Preview File ảnh nội bộ nhanh
+    // Preview nhiều ảnh khi chọn file
     document.getElementById('f_hinhAnh').addEventListener('change', (e) => {
-        const file = e.target.files[0];
-        if (file) {
-            const reader = new FileReader();
-            reader.onload = (event) => document.getElementById('f_hinhAnhPreview').src = event.target.result;
-            reader.readAsDataURL(file);
+        const previewsContainer = document.getElementById('f_hinhAnhPreviews');
+        // Chỉ xóa previews cũ (không xóa ảnh đang có từ edit)
+        const newPreviews = previewsContainer.querySelectorAll('.preview-new');
+        newPreviews.forEach(el => el.remove());
+
+        const files = e.target.files;
+        for (let i = 0; i < files.length; i++) {
+            const file = files[i];
+            if (file) {
+                const reader = new FileReader();
+                reader.onload = (event) => {
+                    const div = document.createElement('div');
+                    div.className = 'preview-item preview-new';
+                    div.innerHTML = `<img class="preview-thumb" src="${event.target.result}" alt="preview"><span class="preview-label">Mới</span>`;
+                    previewsContainer.appendChild(div);
+                };
+                reader.readAsDataURL(file);
+            }
         }
     });
 
@@ -310,23 +321,15 @@
     }
 
     function openAddForm() {
-
         document.getElementById('formModalTitle').textContent = 'Thêm ';
-
         document.getElementById('thuocForm').reset();
-
         document.getElementById('f_idThuoc').value = '';
-        document.getElementById('f_hinhAnhUrlHienTai').value = '';
-
-        document.getElementById('f_hinhAnhPreview').src = PLACEHOLDER_IMG;
-
+        // Xóa toàn bộ previews
+        document.getElementById('f_hinhAnhPreviews').innerHTML = '';
         document.getElementById('f_gioiHanMua').disabled = true;
-
         document.getElementById('f_trangThai').checked = true;
         document.getElementById('trangThaiLabel').textContent = 'Đang bán';
-
         setKedonToggle('Không kê đơn');
-
         openModal(modalForm);
     }
 
@@ -338,8 +341,6 @@
                     const t = res.thuoc;
                     document.getElementById('formModalTitle').textContent = 'Chỉnh sửa thông tin thuốc';
                     document.getElementById('f_idThuoc').value = t.idThuoc;
-                    document.getElementById('f_hinhAnhUrlHienTai').value = t.hinhAnh || '';
-                    document.getElementById('f_hinhAnhPreview').src = t.hinhAnh || PLACEHOLDER_IMG;
                     document.getElementById('f_tenThuoc').value = t.tenThuoc;
                     document.getElementById('f_idDanhMuc').value = t.idDanhMuc || '';
                     document.getElementById('f_donViTinh').value = t.donViTinh;
@@ -357,6 +358,43 @@
 
                     document.getElementById('f_trangThai').checked = t.trangThai == 1;
                     document.getElementById('trangThaiLabel').textContent = t.trangThai == 1 ? 'Đang bán' : 'Tạm ngưng';
+
+                    // Hiển thị danh sách ảnh hiện có kèm nút xóa
+                    const previewsContainer = document.getElementById('f_hinhAnhPreviews');
+                    previewsContainer.innerHTML = '';
+                    if (res.images && res.images.length > 0) {
+                        res.images.forEach(img => {
+                            const div = document.createElement('div');
+                            div.className = 'preview-item preview-existing';
+                            div.innerHTML = `
+                                <img class="preview-thumb" src="${img.duongDan}" alt="">
+                                <button class="preview-delete-btn" type="button" title="Xóa ảnh" data-img="${img.duongDan}">&times;</button>
+                            `;
+                            previewsContainer.appendChild(div);
+                        });
+
+                        // Gắn sự kiện xóa cho từng nút
+                        previewsContainer.querySelectorAll('.preview-delete-btn').forEach(btn => {
+                            btn.addEventListener('click', function() {
+                                // Thêm đường dẫn ảnh cần xóa vào hidden input
+                                const imgPath = this.dataset.img;
+                                let deleteInput = document.getElementById('f_deleteImages');
+                                if (!deleteInput) {
+                                    deleteInput = document.createElement('div');
+                                    deleteInput.id = 'f_deleteImages';
+                                    document.getElementById('thuocForm').appendChild(deleteInput);
+                                }
+                                // Tạo hidden input cho mỗi ảnh cần xóa
+                                const hidden = document.createElement('input');
+                                hidden.type = 'hidden';
+                                hidden.name = 'deleteImages[]';
+                                hidden.value = imgPath;
+                                deleteInput.appendChild(hidden);
+                                // Ẩn item preview
+                                this.closest('.preview-item').style.display = 'none';
+                            });
+                        });
+                    }
 
                     openModal(modalForm);
                 }
