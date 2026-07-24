@@ -362,22 +362,52 @@
             });
     }
 
-    document.getElementById('btnSaveThuoc').addEventListener('click', () => {
-        const form = document.getElementById('thuocForm');
-        const formData = new FormData(form);
+    document.getElementById('btnSaveThuoc').addEventListener('click', function () {
+        var form = document.getElementById('thuocForm');
 
-        fetch(`<?php echo URLROOT; ?>/admin/quanLyThuoc/save`, {
-                method: 'POST',
-                body: formData
-            })
-            .then(res => res.json())
-            .then(res => {
-                if (res.status) {
-                    closeModal(modalForm);
-                    showToast(res.message);
-                    fetchThuocList();
-                } else alert(res.message);
-            });
+        if (!form.checkValidity()) {
+            form.reportValidity();
+            return;
+        }
+
+        var formData = new FormData(form);
+
+        fetch('<?php echo URLROOT; ?>/admin/quanLyThuoc/save', {
+            method: 'POST',
+            body: formData
+        })
+        .then(function (res) {
+            return res.text(); // Lấy dạng chuỗi thô để tránh crash khi PHP có Warning
+        })
+        .then(function (text) {
+            var res;
+            try {
+                res = JSON.parse(text);
+            } catch (e) {
+                console.error("Server Response Error:", text);
+                alert("Lỗi phản hồi từ máy chủ! Chi tiết: " + text.substring(0, 200));
+                return;
+            }
+
+            if (res.status) {
+                // Đóng Modal ngay lập tức
+                var modal = document.getElementById('modalForm');
+                if (modal) {
+                    modal.classList.add('hidden');
+                    document.body.style.overflow = '';
+                }
+                alert(res.message);
+                
+                // Cập nhật lại danh sách trực tiếp không cần reload toàn bộ trang
+                fetchThuocList();
+            } else {
+                alert(res.message || 'Có lỗi xảy ra, không thể lưu dữ liệu!');
+            }
+        })
+        .catch(function (err) {
+            console.error(err);
+            alert('Lỗi kết nối máy chủ!');
+        });
     });
 
     function toggleStatus(id) {

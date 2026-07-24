@@ -86,15 +86,19 @@ class QuanLyThuocController extends Controller
     }
 
     // API: Thêm mới hoặc Cập nhật thông tin thuốc
+    // API: Thêm mới hoặc Cập nhật thông tin thuốc
     public function save()
     {
+        // Xóa mọi output thừa trước đó nếu có
+        if (ob_get_length()) ob_clean();
         header('Content-Type: application/json');
+
         if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             $id = isset($_POST['idThuoc']) ? $_POST['idThuoc'] : '';
 
             $payload = array(
                 'tenThuoc' => trim(isset($_POST['tenThuoc']) ? $_POST['tenThuoc'] : ''),
-                'idDanhMuc' => isset($_POST['idDanhMuc']) ? $_POST['idDanhMuc'] : null,
+                'idDanhMuc' => !empty($_POST['idDanhMuc']) ? $_POST['idDanhMuc'] : null,
                 'donViTinh' => trim(isset($_POST['donViTinh']) ? $_POST['donViTinh'] : ''),
                 'thanhPhan' => trim(isset($_POST['thanhPhan']) ? $_POST['thanhPhan'] : ''),
                 'hamLuong' => trim(isset($_POST['hamLuong']) ? $_POST['hamLuong'] : ''),
@@ -106,42 +110,35 @@ class QuanLyThuocController extends Controller
             );
 
             // Xử lý Upload hình ảnh
+            $imagePath = '';
             if (isset($_FILES['hinhAnhFile']) && $_FILES['hinhAnhFile']['error'] === UPLOAD_ERR_OK) {
                 $ext = pathinfo($_FILES['hinhAnhFile']['name'], PATHINFO_EXTENSION);
                 $fileName = time() . '_' . uniqid() . '.' . $ext;
-                // Thư mục lưu ảnh trên server (từ thư mục gốc web public/)
                 $uploadDir = 'assets/images/uploads/thuoc/';
-                // Đường dẫn tuyệt đối vật lý trên ổ đĩa dùng DIRECTORY_SEPARATOR cho Windows
-                $fullPath = dirname(__DIR__, 2) . DIRECTORY_SEPARATOR . 'public' . DIRECTORY_SEPARATOR . str_replace('/', DIRECTORY_SEPARATOR, $uploadDir);
+                $fullPath = APPROOT . '/../public/' . $uploadDir;
 
                 if (!is_dir($fullPath)) {
-                    mkdir($fullPath, 0777, true);
+                    @mkdir($fullPath, 0777, true);
                 }
 
                 $tmp_name = $_FILES['hinhAnhFile']['tmp_name'];
-                $imagePath = '';
-
-                if (move_uploaded_file($tmp_name, $fullPath . $fileName)) {
-                    // Lưu URL để hiển thị ảnh: http://localhost/BanThuoc/public/assets/images/uploads/thuoc/ten-file.jpg
+                if (@move_uploaded_file($tmp_name, $fullPath . $fileName)) {
                     $imagePath = URLROOT . '/' . $uploadDir . $fileName;
                 }
             }
 
             if (!empty($id)) {
                 $result = $this->thuocModel->update($id, $payload);
-
                 if ($result && !empty($imagePath)) {
                     $this->thuocModel->saveImage($id, $imagePath);
                 }
                 $msg = "Đã cập nhật thông tin thuốc thành công!";
             } else {
                 $idThuoc = $this->thuocModel->create($payload);
-
                 if ($idThuoc && !empty($imagePath)) {
                     $this->thuocModel->saveImage($idThuoc, $imagePath);
                 }
-
-                $result = $idThuoc;
+                $result = $idThuoc ? true : false;
                 $msg = "Đã thêm thuốc mới vào hệ thống thành công!";
             }
 
