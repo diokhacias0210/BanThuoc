@@ -235,7 +235,7 @@
         const phanLoai = document.getElementById('filterPhanLoai').value;
         const trangThai = document.getElementById('filterTrangThai').value;
 
-        fetch(`<?php echo URLROOT; ?>/admin/quanLyThuoc/getList?search=${encodeURIComponent(search)}&idDanhMuc=${idDanhMuc}&phanLoai=${phanLoai}&trangThai=${trangThai}`)
+        fetch(`<?php echo URLROOT; ?>/admin/quanLyThuoc/getList?search=${encodeURIComponent(search)}&idDanhMuc=${idDanhMuc}&phanLoai=${phanLoai}&trangThai=${trangThai}&_=${Date.now()}`)
             .then(res => res.json())
             .then(res => {
                 if (res.status) {
@@ -270,12 +270,13 @@
 
         tbody.innerHTML = list.map(item => {
             const badgeClass = item.yeuCauKeDon === 'Kê đơn' ? 'badge-rx' : 'badge-otc';
-            const statusClass = item.trangThai ? 'badge-active' : 'badge-inactive';
-            const statusLabel = item.trangThai ? 'Còn bán' : 'Tạm ngưng';
+            const trangThai = item.trangThai == 1 || item.trangThai === '1' || item.trangThai === true;
+            const statusClass = trangThai ? 'badge-active' : 'badge-inactive';
+            const statusLabel = trangThai ? 'Còn bán' : 'Tạm ngưng';
             const lowStockHTML = item.tongTon <= 10 ? `<br><span class="badge badge-lowstock" style="margin-top:4px;">Sắp hết hàng</span>` : '';
 
             return `
-                <tr class="${item.trangThai ? '' : 'row-inactive'}">
+                <tr class="${trangThai ? '' : 'row-inactive'}">
                     <td style="text-align:center;"><img class="thumb" src="${item.hinhAnh || PLACEHOLDER_IMG}" alt=""></td>
                     <td>
                         <div class="cell-strong">${item.tenThuoc}</div>
@@ -413,15 +414,35 @@
     function toggleStatus(id) {
         if (confirm('Xác nhận thay đổi trạng thái mở bán / tạm ngưng của mặt hàng thuốc này?')) {
             fetch(`<?php echo URLROOT; ?>/admin/quanLyThuoc/toggleStatus/${id}`, {
-                    method: 'POST'
-                })
-                .then(res => res.json())
-                .then(res => {
-                    if (res.status) {
+                method: 'POST',
+                headers: {
+                    'Cache-Control': 'no-cache'
+                }
+            })
+            .then(function (res) {
+                return res.json();
+            })
+            .then(function (res) {
+                if (res.status) {
+                    if (typeof showToast === 'function') {
                         showToast(res.message);
-                        fetchThuocList();
+                    } else {
+                        alert(res.message);
                     }
-                });
+                    
+                    // Chuyển bộ lọc về "Tất cả trạng thái" để thấy thay đổi ngay trên màn hình
+                    document.getElementById('filterTrangThai').value = 'all';
+                    
+                    // Cập nhật lại danh sách
+                    fetchThuocList();
+                } else {
+                    alert(res.message || 'Thay đổi trạng thái thất bại!');
+                }
+            })
+            .catch(function (err) {
+                console.error('Lỗi khi đổi trạng thái:', err);
+                alert('Có lỗi kết nối khi đổi trạng thái!');
+            });
         }
     }
 
