@@ -174,7 +174,7 @@ CREATE TABLE BaoCaoThongKe (
 -- 0. CHÈN TÀI KHOẢN QUẢN TRỊ VIÊN (idNguoiDung = 1)
 -- ==========================================================
 INSERT INTO NguoiDung (idNguoiDung, hoTen, email, soDienThoai, matKhau, trangThai, vaiTro)
-VALUES (1, 'admin', 'admin@pharmacare.com', '0999888777', 'admin123', TRUE, 'QUAN_TRI_VIEN');
+VALUES (1, 'admin', 'admin@pharmacare.com', '0999888777', '123456', TRUE, 'QUAN_TRI_VIEN');
 
 INSERT INTO QuanTriVien (idNguoiDung)
 VALUES (1);
@@ -186,11 +186,11 @@ VALUES (1);
 
 -- Chèn vào bảng cha NguoiDung
 INSERT INTO NguoiDung (idNguoiDung, hoTen, email, soDienThoai, matKhau, trangThai, vaiTro) VALUES
-(2, 'Nguyễn Văn A', 'nguyenvana@gmail.com', '0901234567', 'p@ssword123', TRUE, 'KHACH_HANG'),
-(3, 'Trần Thị B', 'tranthib@gmail.com', '0902345678', 'p@ssword123', TRUE, 'KHACH_HANG'),
-(4, 'Lê Văn C', 'levanc@gmail.com', '0903456789', 'p@ssword123', TRUE, 'KHACH_HANG'),
-(5, 'Phạm Thị D', 'phamthid@gmail.com', '0904567890', 'p@ssword123', TRUE, 'KHACH_HANG'),
-(6, 'Hoàng Văn E', 'hoangvane@gmail.com', '0905678901', 'p@ssword123', TRUE, 'KHACH_HANG');
+(2, 'Nguyễn Văn A', 'nguyenvana@gmail.com', '0901234567', '123456', TRUE, 'KHACH_HANG'),
+(3, 'Trần Thị B', 'tranthib@gmail.com', '0902345678', '123456', TRUE, 'KHACH_HANG'),
+(4, 'Lê Văn C', 'levanc@gmail.com', '0903456789', '123456', TRUE, 'KHACH_HANG'),
+(5, 'Phạm Thị D', 'phamthid@gmail.com', '0904567890', '123456', TRUE, 'KHACH_HANG'),
+(6, 'Hoàng Văn E', 'hoangvane@gmail.com', '0905678901', '123456', TRUE, 'KHACH_HANG');
 
 -- Chèn vào bảng con KhachHang (Đã bỏ cột diaChiGiaoHang thừa)
 INSERT INTO KhachHang (idNguoiDung, diemTichLuy, ngaySinh) VALUES
