@@ -210,7 +210,8 @@
     const initialData = <?php echo $thongTin ? json_encode(array(
                             'idNguoiDung' => $thongTin['idNguoiDung'],
                             'hoTen' => $thongTin['hoTen'],
-                            'vaiTroLabel' => (isset($thongTin['vaiTro']) && isset($nhanVaiTro[$thongTin['vaiTro']])) ? $nhanVaiTro[$thongTin['vaiTro']] : (isset($thongTin['vaiTro']) ? $thongTin['vaiTro'] : 'Không xác định'),
+                            'vaiTro' => $thongTin['vaiTro'],
+                            'vaiTroLabel' => $thongTin['vaiTroLabel'],
                             'trangThai' => $thongTin['trangThai'],
                             'email' => $thongTin['email'],
                             'soDienThoai' => $thongTin['soDienThoai'],

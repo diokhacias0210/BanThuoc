@@ -100,9 +100,12 @@
             const isRx = p.yeuCauKeDon === 'Kê đơn';
             const hetHang = parseInt(p.tongTon) <= 0;
             const priceFormatted = parseInt(p.giaBan).toLocaleString('vi-VN') + 'đ';
+            const detailUrl = isRx
+                ? `${urlRoot}/khachHang/dangKeToaThuoc?idThuoc=${p.idThuoc}`
+                : `${urlRoot}/khachHang/thuoc/chiTiet/${p.idThuoc}`;
 
             return `
-                <div class="pcard" onclick="window.location.href='${urlRoot}/khachHang/thuoc/chiTiet/${p.idThuoc}'">
+                <div class="pcard" onclick="window.location.href='${detailUrl}'">
                     <div class="pcard-img">
                         ${isRx ? `<span class="pcard-tag">Kê đơn</span>` : (hetHang ? `<span class="pcard-tag" style="background:#fdecea; color:#c0392b; border:1px solid #f9d6d2;">Hết hàng</span>` : '')}
                         <img src="${p.hinhAnhUrl}" alt="${p.tenThuoc}" style="width:100%; height:100%; object-fit:cover;">
@@ -112,7 +115,7 @@
                         <div class="pcard-foot">
                             <span class="pcard-price">${priceFormatted}</span>
                             ${isRx ? 
-                                `<button type="button" class="btn-view-detail">Xem chi tiết</button>` : 
+                                `<button type="button" class="btn-view-detail" onclick="event.stopPropagation(); window.location.href='${detailUrl}'">Xem chi tiết</button>` : 
                                 (hetHang ? 
                                     `<button type="button" class="add-btn" disabled style="opacity: 0.4; cursor: not-allowed; background: #888780;" title="Sản phẩm tạm hết hàng"><i class="fa-solid fa-ban"></i></button>` : 
                                     `<button type="button" class="add-btn" onclick="event.stopPropagation(); xuLyThemNhanh(${p.idThuoc})" title="Thêm vào giỏ"><i class="fa-solid fa-plus"></i></button>`
