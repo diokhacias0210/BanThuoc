@@ -41,11 +41,18 @@ class TaiKhoanModel extends Model
 
         // Tùy theo vai trò hiện tại, lấy thêm thông tin ở các bảng liên kết đặc thù
         if ($user['vaiTro'] === 'KHACH_HANG') {
-            $sqlExt = "SELECT diemTichLuy, diaChiGiaoHang, ngaySinh FROM KhachHang WHERE idNguoiDung = :id";
+            $sqlExt = "SELECT diemTichLuy FROM KhachHang WHERE idNguoiDung = :id";
             $this->db->query($sqlExt);
             $this->db->bind(':id', $id);
             $ext = $this->db->single();
             if ($ext) $user = array_merge($user, $ext);
+
+            $this->db->query("SELECT diaChiChiTiet AS diaChiGiaoHang FROM DiaChiGiaoHang WHERE idNguoiDung = :id AND laMacDinh = 1 LIMIT 1");
+            $this->db->bind(':id', $id);
+            $addr = $this->db->single();
+            if ($addr) {
+                $user['diaChiGiaoHang'] = $addr['diaChiGiaoHang'];
+            }
         } elseif ($user['vaiTro'] === 'DUOC_SI') {
             $sqlExt = "SELECT chungChiHanhNghe, noiCap, trinhDo FROM DuocSi WHERE idNguoiDung = :id";
             $this->db->query($sqlExt);
