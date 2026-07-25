@@ -30,8 +30,8 @@
         </a>
     </nav>
 
-    <a class="logout-link" href="<?php echo URLROOT; ?>/khachHang/xacThuc/dangXuat" onclick="return confirm('Xác nhận đăng xuất khỏi hệ thống PharmaCare?');">
-        <i class="fa-solid fa-right-from-bracket"></i>
+    <a class="btn-logout-sidebar" id="btnLogout"  href="<?php echo URLROOT; ?>/khachHang/xacThuc/dangXuat" onclick="return confirm('Xác nhận đăng xuất khỏi hệ thống PharmaCare?');">
+        <i class="icon-logout-line"></i>
         Đăng xuất
     </a>
 </aside>
