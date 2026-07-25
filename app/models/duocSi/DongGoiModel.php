@@ -11,7 +11,7 @@ class DongGoiModel extends Model
                 FROM DonHang dh
                 INNER JOIN NguoiDung nd ON nd.idNguoiDung = dh.idKhachHang
                 WHERE dh.trangThai IN ('CHO_XAC_NHAN', 'DA_XAC_NHAN', 'DANG_GIAO')
-                ORDER BY dh.ngayDat ASC";
+                ORDER BY dh.ngayDat DESC";
 
         $this->db->query($sql);
         return $this->db->resultSet();
