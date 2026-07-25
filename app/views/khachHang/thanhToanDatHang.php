@@ -207,7 +207,7 @@
     <form id="checkoutForm" method="POST" action="<?php echo URLROOT; ?>/khachHang/thanhToanDatHang/xacNhan">
 
         <!-- Giữ lại đúng danh sách sản phẩm đã chọn từ giỏ hàng -->
-        <input type="hidden" name="selectedIds" value="<?php echo htmlspecialchars($selectedIdsStr ?? ''); ?>">
+        <input type="hidden" name="selectedIds" value="<?php echo htmlspecialchars(isset($selectedIdsStr) ? $selectedIdsStr : ''); ?>">
 
         <div class="checkout-grid">
             <!-- CỘT TRÁI -->
@@ -280,13 +280,13 @@
                             <div class="addr-grid">
                                 <input class="addr-input" type="text" name="hoTenNguoiNhan" id="f_hoTenNguoiNhan"
                                     placeholder="Họ và tên người nhận"
-                                    value="<?php echo htmlspecialchars($diaChiMacDinh['tenNguoiNhan'] ?? ($_SESSION['user_name'] ?? '')); ?>" required>
+                                    value="<?php echo htmlspecialchars(isset($_SESSION['user_name']) ? $_SESSION['user_name'] : (isset($diaChiMacDinh['tenNguoiNhan']) ? $diaChiMacDinh['tenNguoiNhan'] : (isset( $_SESSION['user_name'] ) ? $_SESSION['user_name'] : ''))); ?>" required>
                                 <input class="addr-input" type="text" name="soDienThoaiNhan" id="f_soDienThoaiNhan"
                                     placeholder="Số điện thoại"
-                                    value="<?php echo htmlspecialchars($diaChiMacDinh['soDienThoaiNhan'] ?? ''); ?>" required>
+                                    value="<?php echo htmlspecialchars(isset($diaChiMacDinh['soDienThoaiNhan']) ? $diaChiMacDinh['soDienThoaiNhan'] : ''); ?>" required>
                                 <input class="addr-input span-2" type="text" name="diaChiGiaoHang" id="f_diaChiGiaoHang"
                                     placeholder="Địa chỉ giao hàng cụ thể (số nhà, đường, phường/xã, tỉnh/thành)"
-                                    value="<?php echo htmlspecialchars($diaChiMacDinh['diaChiChiTiet'] ?? ''); ?>" required>
+                                    value="<?php echo htmlspecialchars(isset($diaChiMacDinh['diaChiChiTiet']) ? $diaChiMacDinh['diaChiChiTiet'] : ''); ?>" required>
                             </div>
                         </div>
                     </div>
