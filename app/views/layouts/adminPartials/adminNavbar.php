@@ -28,7 +28,7 @@
             Quản lý tài khoản
         </a>
     </nav>
-    <a class="logout-link" href="/xacthuc/dangxuat" onclick="return confirm('Bạn muốn đăng xuất khỏi Admin Panel?');">
+    <a class="logout-link" href="<?php echo URLROOT; ?>/khachHang/xacThuc/dangXuat" onclick="return confirm('Bạn muốn đăng xuất khỏi Admin Panel?');">
         <i class="fa-solid fa-right-from-bracket"></i>
         Đăng xuất
     </a>

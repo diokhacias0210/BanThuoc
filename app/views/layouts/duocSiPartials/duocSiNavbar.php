@@ -30,12 +30,10 @@
         </a>
     </nav>
 
-    <button class="btn-logout-sidebar" id="btnLogout" onclick="handleLogout()">
-        <div class="icon icon-logout">
-            <div class="icon-logout-line"></div>
-        </div>
+    <a class="logout-link" href="<?php echo URLROOT; ?>/khachHang/xacThuc/dangXuat" onclick="return confirm('Xác nhận đăng xuất khỏi hệ thống PharmaCare?');">
+        <i class="fa-solid fa-right-from-bracket"></i>
         Đăng xuất
-    </button>
+    </a>
 </aside>
 
 <script>
