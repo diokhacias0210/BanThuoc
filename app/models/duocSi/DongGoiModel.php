@@ -1,7 +1,7 @@
 <?php
 class DongGoiModel extends Model
 {
-    // Danh sách đơn hàng CẦN ĐÓNG GÓI: đã xác nhận (chờ đóng gói) hoặc đang giao (đã đóng gói xong)
+    // Danh sách đơn hàng CẦN ĐÓNG GÓI: chờ xác nhận (mới đặt), đã xác nhận (chờ đóng gói), hoặc đang giao (đã đóng gói xong)
     public function layDanhSachDonCanDongGoi()
     {
         $sql = "SELECT dh.idDonHang, dh.ngayDat, dh.tongTien, dh.trangThai,
@@ -10,7 +10,7 @@ class DongGoiModel extends Model
                        (SELECT COALESCE(SUM(c.soLuong), 0) FROM ChiTietDonHang c WHERE c.idDonHang = dh.idDonHang) AS tongSoThuoc
                 FROM DonHang dh
                 INNER JOIN NguoiDung nd ON nd.idNguoiDung = dh.idKhachHang
-                WHERE dh.trangThai IN ('DA_XAC_NHAN', 'DANG_GIAO')
+                WHERE dh.trangThai IN ('CHO_XAC_NHAN', 'DA_XAC_NHAN', 'DANG_GIAO')
                 ORDER BY dh.ngayDat ASC";
 
         $this->db->query($sql);
@@ -48,7 +48,12 @@ class DongGoiModel extends Model
     public function layChiTietDeDongGoi($idDonHang)
     {
         $sqlChiTiet = "SELECT c.id, c.idThuoc, c.soLuong, c.donGia,
-                               t.tenThuoc, t.donViTinh
+                               t.tenThuoc, t.donViTinh, t.thanhPhan, t.hamLuong,
+                               (SELECT ha.duongDan
+                                FROM HinhAnhThuoc ha
+                                WHERE ha.idThuoc = t.idThuoc
+                                ORDER BY ha.idHinhAnh ASC
+                                LIMIT 1) AS hinhAnh
                         FROM ChiTietDonHang c
                         INNER JOIN Thuoc t ON t.idThuoc = c.idThuoc
                         WHERE c.idDonHang = :idDonHang
@@ -72,11 +77,50 @@ class DongGoiModel extends Model
         return $danhSach;
     }
 
-    // Xác nhận đóng gói xong -> chuyển trạng thái đơn từ DA_XAC_NHAN sang DANG_GIAO
+    // BƯỚC 1: Dược sĩ xem & xác nhận đơn hợp lệ -> chuyển CHO_XAC_NHAN sang DA_XAC_NHAN
+    // Chưa đụng tới tồn kho, chỉ đơn thuần duyệt đơn để chuyển qua bước đóng gói
+    public function xacNhanDon($idDonHang)
+    {
+        $sqlCheck = "SELECT trangThai FROM DonHang WHERE idDonHang = :id";
+        $this->db->query($sqlCheck);
+        $this->db->bind(':id', $idDonHang);
+        $donHang = $this->db->single();
+
+        if (!$donHang || $donHang['trangThai'] !== 'CHO_XAC_NHAN') {
+            return false;
+        }
+
+        $sqlUpdate = "UPDATE DonHang SET trangThai = 'DA_XAC_NHAN' WHERE idDonHang = :id AND trangThai = 'CHO_XAC_NHAN'";
+        $this->db->query($sqlUpdate);
+        $this->db->bind(':id', $idDonHang);
+        return $this->db->execute();
+    }
+
+    // BƯỚC 1b: Dược sĩ từ chối đơn không hợp lệ -> chuyển CHO_XAC_NHAN sang DA_HUY (kèm lý do)
+    public function tuChoiDon($idDonHang, $lyDo)
+    {
+        $sqlCheck = "SELECT trangThai FROM DonHang WHERE idDonHang = :id";
+        $this->db->query($sqlCheck);
+        $this->db->bind(':id', $idDonHang);
+        $donHang = $this->db->single();
+
+        if (!$donHang || $donHang['trangThai'] !== 'CHO_XAC_NHAN') {
+            return false;
+        }
+
+        $sqlUpdate = "UPDATE DonHang SET trangThai = 'DA_HUY', lyDoHuy = :lyDo
+                       WHERE idDonHang = :id AND trangThai = 'CHO_XAC_NHAN'";
+        $this->db->query($sqlUpdate);
+        $this->db->bind(':lyDo', $lyDo);
+        $this->db->bind(':id', $idDonHang);
+        return $this->db->execute();
+    }
+
+    // BƯỚC 2: Xác nhận đóng gói xong -> chuyển trạng thái đơn từ DA_XAC_NHAN sang DANG_GIAO
     // Đồng thời trừ tồn kho theo FEFO cho từng thuốc trong đơn
     public function xacNhanDongGoiXong($idDonHang)
     {
-        // Chỉ cho phép chuyển khi đơn đang ở trạng thái DA_XAC_NHAN (tránh bấm nhầm/đóng gói trùng)
+        // Chỉ cho phép chuyển khi đơn đang ở trạng thái DA_XAC_NHAN (đã được duyệt ở bước 1)
         $sqlCheck = "SELECT trangThai FROM DonHang WHERE idDonHang = :id";
         $this->db->query($sqlCheck);
         $this->db->bind(':id', $idDonHang);

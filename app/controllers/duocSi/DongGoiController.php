@@ -60,6 +60,7 @@ class DongGoiController extends Controller
             'donHang' => [
                 'idDonHang'       => (int) $thongTin['idDonHang'],
                 'hoTen'           => $thongTin['hoTen'],
+                'trangThai'       => $thongTin['trangThai'],
                 'diaChiGiaoHang'  => $diaChi['diaChiChiTiet'] ?? 'Chưa có địa chỉ giao hàng',
                 'tenNguoiNhan'    => $diaChi['tenNguoiNhan'] ?? $thongTin['hoTen'],
                 'soDienThoaiNhan' => $diaChi['soDienThoaiNhan'] ?? $thongTin['soDienThoai'],
@@ -69,7 +70,54 @@ class DongGoiController extends Controller
         exit;
     }
 
-    // API: xác nhận đã đóng gói xong -> chuyển đơn sang "Đang giao" + trừ tồn kho theo FEFO
+    // API BƯỚC 1: xác nhận đơn hợp lệ -> chuyển "Chờ xác nhận" sang "Đã xác nhận" (chưa đụng tồn kho)
+    public function xacNhanDon($idDonHang = null)
+    {
+        header('Content-Type: application/json');
+
+        $idDonHang = (int) $idDonHang;
+        if ($idDonHang <= 0) {
+            echo json_encode(['status' => false, 'message' => 'Thiếu mã đơn hàng']);
+            exit;
+        }
+
+        $ok = $this->dongGoiModel->xacNhanDon($idDonHang);
+
+        echo json_encode([
+            'status' => (bool) $ok,
+            'message' => $ok ? 'Đã xác nhận đơn hàng!' : 'Đơn hàng không ở trạng thái chờ xác nhận.'
+        ]);
+        exit;
+    }
+
+    // API BƯỚC 1b: từ chối đơn hàng không hợp lệ -> chuyển "Chờ xác nhận" sang "Đã huỷ" kèm lý do
+    public function tuChoiDon($idDonHang = null)
+    {
+        header('Content-Type: application/json');
+
+        $idDonHang = (int) $idDonHang;
+        if ($idDonHang <= 0) {
+            echo json_encode(['status' => false, 'message' => 'Thiếu mã đơn hàng']);
+            exit;
+        }
+
+        $input = json_decode(file_get_contents('php://input'), true);
+        $lyDo = trim($input['lyDo'] ?? '');
+        if ($lyDo === '') {
+            echo json_encode(['status' => false, 'message' => 'Vui lòng nhập lý do từ chối']);
+            exit;
+        }
+
+        $ok = $this->dongGoiModel->tuChoiDon($idDonHang, $lyDo);
+
+        echo json_encode([
+            'status' => (bool) $ok,
+            'message' => $ok ? 'Đã từ chối đơn hàng!' : 'Đơn hàng không ở trạng thái chờ xác nhận.'
+        ]);
+        exit;
+    }
+
+    // API BƯỚC 2: xác nhận đã đóng gói xong -> chuyển đơn sang "Đang giao" + trừ tồn kho theo FEFO
     public function xacNhanDongGoi($idDonHang = null)
     {
         header('Content-Type: application/json');
