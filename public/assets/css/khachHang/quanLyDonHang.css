@@ -361,3 +361,326 @@
             color: #fff;
         }
 
+/* ═══════════════════════════════════════════════════
+   CSS BỔ SUNG CHO POPUP "CHI TIẾT ĐƠN HÀNG"
+   (mở khi bấm vào 1 dòng đơn hàng ở trang danh sách - không load lại trang)
+   Lấy đúng theo chiTietDonHang.css gốc, chỉ thêm những class CÒN THIẾU
+   ở trang này (không định nghĩa lại .card / .status-badge / .modal-* /
+   .reason-* vì các class đó đã có ở trên, giữ nguyên để không đổi giao
+   diện trang danh sách đơn hàng).
+   ═══════════════════════════════════════════════════ */
+
+        /* Khung popup chi tiết + nút đóng (X) */
+        #detailModal .modal-box {
+            width: min(920px, 92vw);
+            max-width: none;
+            max-height: 88vh;
+            overflow-y: auto;
+            position: relative;
+            text-align: left;
+        }
+
+        .dhd-close-x {
+            position: absolute;
+            top: 14px;
+            right: 14px;
+            width: 34px;
+            height: 34px;
+            border: none;
+            border-radius: 50%;
+            background: #f1f1f1;
+            color: #555;
+            font-size: 15px;
+            cursor: pointer;
+            z-index: 2;
+        }
+
+        .dhd-close-x:hover {
+            background: #e3e3e3;
+        }
+
+        .dhd-loading {
+            padding: 60px 0;
+            text-align: center;
+            color: var(--muted2);
+            font-size: 15px;
+        }
+
+        /* Đảm bảo modal huỷ đơn luôn nổi TRÊN popup chi tiết đơn hàng
+           (vì #detailModal nằm sau #cancelModal trong HTML) */
+        #cancelModal {
+            z-index: 10000;
+        }
+
+        /* Thanh tiêu đề trong popup (tên đơn hàng + nút huỷ đơn) */
+        .detail-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 20px;
+            gap: 16px;
+            padding-right: 34px;
+        }
+
+        .detail-header h3 {
+            margin: 0;
+            font-size: 18px;
+            color: var(--green-dark);
+        }
+
+        .detail-header-left {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+        }
+
+        /* Nút huỷ đơn hàng trong popup chi tiết */
+        .btn-cancel-order {
+            background: #fff;
+            border: 1px solid #fecaca;
+            color: var(--red);
+            padding: 10px 16px;
+            font-size: 13px;
+            font-weight: 600;
+            border-radius: 8px;
+            cursor: pointer;
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+            box-shadow: var(--shadow-green-black-sm);
+            transition: all .15s;
+        }
+
+        .btn-cancel-order:hover {
+            background: var(--red-soft);
+            border-color: var(--red);
+        }
+
+        /* Bố cục lưới 2 cột trong popup chi tiết */
+        .detail-layout {
+            display: grid;
+            grid-template-columns: 1.5fr 1fr;
+            gap: 20px;
+            align-items: start;
+        }
+
+        @media (max-width: 700px) {
+            .detail-layout {
+                grid-template-columns: 1fr;
+            }
+        }
+
+        /* Card riêng trong popup - không đổi margin-top của .card gốc,
+           chỉ thêm margin-bottom giữa các card xếp chồng trong 1 cột */
+        #detailModal .card {
+            margin-top: 0;
+            margin-bottom: 20px;
+        }
+
+        #detailModal .card:last-child {
+            margin-bottom: 0;
+        }
+
+        .section-title {
+            font-size: 14.5px;
+            font-weight: 700;
+            margin-bottom: 16px;
+            color: var(--text);
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            border-bottom: 1px solid #f1f2f4;
+            padding-bottom: 10px;
+        }
+
+        .section-title i {
+            color: var(--green);
+        }
+
+        /* Timeline tiến trình đơn hàng */
+        .timeline {
+            display: flex;
+            align-items: center;
+            padding: 10px 0;
+        }
+
+        .tl-step {
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            text-align: center;
+            position: relative;
+        }
+
+        .tl-dot {
+            width: 34px;
+            height: 36px;
+            border-radius: 50%;
+            background: #f3f4f6;
+            color: var(--muted2);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            z-index: 1;
+            font-size: 13px;
+        }
+
+        .tl-step.done .tl-dot {
+            background: var(--green);
+            color: #fff;
+        }
+
+        .tl-step.current .tl-dot {
+            background: var(--teal, #0d9488);
+            color: #fff;
+            box-shadow: 0 0 0 4px var(--green-light);
+        }
+
+        .tl-step.cancelled .tl-dot {
+            background: var(--red);
+            color: #fff;
+        }
+
+        .tl-line {
+            position: absolute;
+            top: 18px;
+            left: -50%;
+            width: 100%;
+            height: 2px;
+            background: var(--border);
+            z-index: 0;
+        }
+
+        .tl-step:first-child .tl-line {
+            display: none;
+        }
+
+        .tl-step.done .tl-line {
+            background: var(--green);
+        }
+
+        .tl-step.cancelled .tl-line {
+            background: var(--red);
+        }
+
+        .tl-label {
+            font-size: 12px;
+            font-weight: 600;
+            margin-top: 8px;
+            color: var(--muted);
+        }
+
+        .tl-step.done .tl-label,
+        .tl-step.current .tl-label {
+            color: var(--text);
+        }
+
+        .tl-step.cancelled .tl-label {
+            color: var(--red);
+        }
+
+        /* Banner "Đơn hàng đã bị huỷ" */
+        .cancelled-banner {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            background: var(--red-soft);
+            border: 1px solid #fecaca;
+            border-radius: 10px;
+            padding: 14px;
+            margin-bottom: 20px;
+            color: #991b1b;
+            font-weight: 600;
+        }
+
+        /* Khung thông tin (sidebar phải trong popup: thanh toán / giao nhận) */
+        .info-stack {
+            display: grid;
+            gap: 14px;
+        }
+
+        .info-group {
+            background: #f9fafb;
+            padding: 12px 14px;
+            border-radius: 8px;
+            border: 1px solid #f1f2f4;
+        }
+
+        .info-item .label {
+            font-size: 11.5px;
+            color: var(--muted);
+            text-transform: uppercase;
+            letter-spacing: 0.02em;
+            font-weight: 500;
+        }
+
+        .info-item .value {
+            font-size: 13.5px;
+            font-weight: 600;
+            margin-top: 4px;
+            color: var(--text);
+            line-height: 1.4;
+        }
+
+        /* Bảng danh sách thuốc trong popup chi tiết */
+        .prod-table {
+            width: 100%;
+            border-collapse: collapse;
+        }
+
+        .prod-table th {
+            text-align: left;
+            font-size: 11.5px;
+            color: var(--muted);
+            padding: 10px 8px;
+            border-bottom: 1px solid var(--border);
+            text-transform: uppercase;
+        }
+
+        .prod-table td {
+            padding: 14px 8px;
+            font-size: 13.5px;
+            border-bottom: 1px solid #f1f2f4;
+        }
+
+        .prod-table .num {
+            text-align: right;
+        }
+
+        .totals-box {
+            margin-top: 14px;
+            padding-top: 12px;
+        }
+
+        .totals-row {
+            display: flex;
+            justify-content: space-between;
+            font-size: 13.5px;
+            color: var(--muted);
+            padding: 5px 0;
+        }
+
+        .totals-row.grand {
+            font-size: 15px;
+            font-weight: 700;
+            color: var(--text);
+            padding-top: 10px;
+            border-top: 1px dashed var(--border);
+        }
+
+        .totals-row.grand .val {
+            color: var(--green-dark);
+            font-size: 18px;
+        }
+
+        /* Trạng thái "Đã xác nhận" - còn thiếu ở bộ .st-* của trang này */
+        .st-da_xac_nhan {
+            background: #e0f2fe;
+            color: #0369a1;
+        }
+
+        .st-da_xac_nhan .dot {
+            background: #0369a1;
+        }
+

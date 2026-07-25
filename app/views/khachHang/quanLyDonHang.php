@@ -45,6 +45,20 @@
         </div>
     </div>
 
+    <!-- Modal/Popup CHI TIẾT ĐƠN HÀNG - hiện đè lên trang, KHÔNG reload trang.
+         Nội dung bên trong #dhdBody được JS render bằng dữ liệu lấy qua AJAX
+         từ QuanLyDonHangController::chiTietAjax() -->
+    <div class="modal-overlay" id="detailModal">
+        <div class="modal-box">
+            <button class="dhd-close-x" onclick="closeDetailModal()" aria-label="Đóng">
+                <i class="fa-solid fa-xmark"></i>
+            </button>
+            <div id="dhdBody">
+                <div class="dhd-loading"><i class="fa-solid fa-spinner fa-spin"></i> Đang tải chi tiết đơn hàng...</div>
+            </div>
+        </div>
+    </div>
+
 <script>
         const statusMeta = {
             CHO_XAC_NHAN: { label: "Chờ xác nhận", cls: "st-cho_xac_nhan" },
@@ -69,6 +83,7 @@
         const itemsPerPage = 8;
         let cancelTargetId = null;
         let selectedReason = "";
+        let currentDetailId = null; // id đơn hàng đang mở trong popup chi tiết (nếu có)
 
         const cancelReasons = [
             "Tôi muốn đổi sản phẩm khác / thêm thuốc",
@@ -154,8 +169,187 @@
 
         function changePage(page) { currentPage = page; renderTable(); }
 
-        // Điều hướng sang trang chi tiết đơn hàng - dùng idDonHang thật (số) thay vì mã "DH00128"
-        function navigateToDetail(id) { window.location.href = `<?php echo URLROOT; ?>/khachHang/chiTietDonHang/${id}`; }
+        // ĐÃ SỬA THEO YÊU CẦU: không chuyển trang / không reload nữa.
+        // Bấm vào 1 dòng đơn hàng -> mở POPUP chi tiết, lấy dữ liệu qua AJAX
+        // từ QuanLyDonHangController::chiTietAjax($id) (trả JSON).
+        function navigateToDetail(id) { openDetailModal(id); }
+
+        function openDetailModal(id) {
+            currentDetailId = id;
+            document.getElementById('dhdBody').innerHTML = `<div class="dhd-loading"><i class="fa-solid fa-spinner fa-spin"></i> Đang tải chi tiết đơn hàng...</div>`;
+            document.getElementById('detailModal').classList.add('show');
+
+            fetch(`<?php echo URLROOT; ?>/QuanLyDonHang/chiTietAjax/${id}`)
+                .then(res => res.json())
+                .then(res => {
+                    if (res.status) {
+                        renderDetailModal(res.donHangInfo, res.sanPhamList);
+                    } else {
+                        document.getElementById('dhdBody').innerHTML =
+                            `<div class="dhd-loading">${res.message || 'Không tải được chi tiết đơn hàng.'}</div>`;
+                    }
+                })
+                .catch(() => {
+                    document.getElementById('dhdBody').innerHTML =
+                        `<div class="dhd-loading">Có lỗi xảy ra, vui lòng thử lại.</div>`;
+                });
+        }
+
+        function closeDetailModal() {
+            document.getElementById('detailModal').classList.remove('show');
+            currentDetailId = null;
+        }
+
+        // Render nội dung popup chi tiết đơn hàng (tương đương views/khachHang/chiTietDonHang.php,
+        // nhưng render bằng JS để không phải load lại trang)
+        function renderDetailModal(donHangInfo, sanPhamList) {
+            const trangThai = donHangInfo.trangThai;
+            const meta = statusMeta[trangThai] || { label: trangThai, cls: '' };
+            const phiVanChuyen = donHangInfo.phiVanChuyen != null ? Number(donHangInfo.phiVanChuyen) : 15000;
+            const tamTinh = sanPhamList.reduce((sum, sp) => sum + Number(sp.lineTotal), 0);
+            const tongTien = donHangInfo.tongTien != null ? Number(donHangInfo.tongTien) : (tamTinh + phiVanChuyen);
+            const money = n => Number(n).toLocaleString('vi-VN') + 'đ';
+
+            // Timeline
+            let timelineHtml = '';
+            if (trangThai === 'DA_HUY') {
+                timelineHtml = `
+                    <div class="tl-step done">
+                        <div class="tl-line"></div>
+                        <div class="tl-dot"><i class="fa-solid fa-file-invoice"></i></div>
+                        <div class="tl-label">Tạo đơn</div>
+                    </div>
+                    <div class="tl-step cancelled">
+                        <div class="tl-line"></div>
+                        <div class="tl-dot"><i class="fa-solid fa-xmark"></i></div>
+                        <div class="tl-label">Đã huỷ đơn</div>
+                    </div>`;
+            } else {
+                const steps = [
+                    { key: 'CHO_XAC_NHAN', label: 'Chờ xác nhận', icon: 'fa-clipboard-check' },
+                    { key: 'DA_XAC_NHAN', label: 'Đã xác nhận', icon: 'fa-square-check' },
+                    { key: 'DANG_GIAO', label: 'Đang giao', icon: 'fa-truck-fast' },
+                    { key: 'DA_GIAO', label: 'Đã giao thuốc', icon: 'fa-circle-check' }
+                ];
+                const currentIndex = steps.findIndex(s => s.key === trangThai);
+                timelineHtml = steps.map((s, i) => {
+                    let cls = 'upcoming';
+                    if (currentIndex !== -1) {
+                        if (i < currentIndex) cls = 'done';
+                        else if (i === currentIndex) cls = 'current';
+                    }
+                    return `
+                    <div class="tl-step ${cls}">
+                        <div class="tl-line"></div>
+                        <div class="tl-dot"><i class="fa-solid ${s.icon}"></i></div>
+                        <div class="tl-label">${s.label}</div>
+                    </div>`;
+                }).join('');
+            }
+
+            const cancelledBanner = trangThai === 'DA_HUY'
+                ? `<div class="cancelled-banner"><i class="fa-solid fa-circle-exclamation"></i>
+                     <div><strong>Đơn hàng này đã bị huỷ${donHangInfo.lyDoHuy ? ' — Lý do: ' + donHangInfo.lyDoHuy : ''}</strong></div>
+                   </div>`
+                : '';
+
+            const cancelBtn = trangThai === 'CHO_XAC_NHAN'
+                ? `<button class="btn-cancel-order" onclick="openCancelModal(${donHangInfo.idDonHang}, event)">
+                       <i class="fa-solid fa-rectangle-xmark"></i> Huỷ đơn hàng
+                   </button>`
+                : '';
+
+            const rowsHtml = sanPhamList.map(sp => `
+                <tr>
+                    <td><strong>${sp.name}</strong></td>
+                    <td class="num">${sp.qty}</td>
+                    <td class="num">${money(sp.price)}</td>
+                    <td class="num"><strong>${money(sp.lineTotal)}</strong></td>
+                </tr>`).join('');
+
+            document.getElementById('dhdBody').innerHTML = `
+                <div class="detail-header">
+                    <h3>Chi tiết đơn hàng #${formatMaDon(donHangInfo.idDonHang)}</h3>
+                    ${cancelBtn}
+                </div>
+                ${cancelledBanner}
+
+                <div class="detail-layout">
+                    <div>
+                        <div class="card">
+                            <div class="section-title"><i class="fa-solid fa-circle-nodes"></i> Tiến trình đơn hàng</div>
+                            <div class="timeline">${timelineHtml}</div>
+                        </div>
+
+                        <div class="card">
+                            <div class="section-title"><i class="fa-solid fa-kit-medical"></i> Danh sách thuốc đã đặt</div>
+                            <table class="prod-table">
+                                <thead>
+                                    <tr>
+                                        <th>Tên thuốc / Dược phẩm</th>
+                                        <th class="num">Số lượng</th>
+                                        <th class="num">Đơn giá</th>
+                                        <th class="num">Thành tiền</th>
+                                    </tr>
+                                </thead>
+                                <tbody>${rowsHtml}</tbody>
+                            </table>
+                            <div class="totals-box">
+                                <div class="totals-row"><span>Tạm tính tiền thuốc</span><span>${money(tamTinh)}</span></div>
+                                <div class="totals-row"><span>Phí vận chuyển</span><span>${money(phiVanChuyen)}</span></div>
+                                <div class="totals-row grand"><span>Tổng tiền thanh toán</span><span class="val">${money(tongTien)}</span></div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div>
+                        <div class="card">
+                            <div class="section-title"><i class="fa-solid fa-credit-card"></i> Trạng thái & Thanh toán</div>
+                            <div class="info-stack">
+                                <div class="info-group">
+                                    <div class="info-item">
+                                        <div class="label">Phương thức thanh toán</div>
+                                        <div class="value">${donHangInfo.phuongThucThanhToan || 'Thanh toán khi nhận hàng (COD)'}</div>
+                                    </div>
+                                </div>
+                                <div class="info-group">
+                                    <div class="info-item">
+                                        <div class="label">Trạng thái đơn hàng hiện tại</div>
+                                        <div style="margin-top: 8px;">
+                                            <span class="status-badge ${meta.cls}"><span class="dot"></span>${meta.label}</span>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="card">
+                            <div class="section-title"><i class="fa-solid fa-address-card"></i> Thông tin giao nhận hàng</div>
+                            <div class="info-stack">
+                                <div class="info-group">
+                                    <div class="info-item">
+                                        <div class="label">Người nhận hàng</div>
+                                        <div class="value">${donHangInfo.tenNguoiNhan || '—'}</div>
+                                    </div>
+                                </div>
+                                <div class="info-group">
+                                    <div class="info-item">
+                                        <div class="label">Số điện thoại</div>
+                                        <div class="value">${donHangInfo.soDienThoai || '—'}</div>
+                                    </div>
+                                </div>
+                                <div class="info-group">
+                                    <div class="info-item">
+                                        <div class="label">Địa chỉ nhận hàng</div>
+                                        <div class="value">${donHangInfo.diaChiGiaoHang || '—'}</div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            `;
+        }
 
         function openCancelModal(id, event) {
             event.stopPropagation();
@@ -177,8 +371,9 @@
         function selectReason(r) { selectedReason = r; renderReasonOptions(); }
 
         // Gọi API huỷ đơn thật xuống CSDL (bảng DonHang: trangThai + lyDoHuy)
+        // ĐÃ SỬA: route đúng là Controller "QuanLyDonHang", action "huyDonHang"
         function confirmCancelOrder() {
-            fetch(`<?php echo URLROOT; ?>/khachHang/quanLyDonHang/huyDonHang/${cancelTargetId}`, {
+            fetch(`<?php echo URLROOT; ?>/QuanLyDonHang/huyDonHang/${cancelTargetId}`, {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
                 body: `lyDoHuy=${encodeURIComponent(selectedReason)}`
@@ -192,6 +387,10 @@
                         closeCancelModal();
                         renderStatusTabs();
                         renderTable();
+                        // Nếu popup chi tiết đang mở đúng đơn hàng vừa huỷ -> tải lại để hiện trạng thái "Đã huỷ"
+                        if (currentDetailId === cancelTargetId) {
+                            openDetailModal(cancelTargetId);
+                        }
                     } else {
                         alert(res.message || 'Huỷ đơn hàng thất bại, vui lòng thử lại.');
                     }
@@ -204,3 +403,4 @@
         renderStatusTabs();
         renderTable();
 </script>
+    
