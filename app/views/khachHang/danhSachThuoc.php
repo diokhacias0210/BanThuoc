@@ -100,9 +100,7 @@
             const isRx = p.yeuCauKeDon === 'Kê đơn';
             const hetHang = parseInt(p.tongTon) <= 0;
             const priceFormatted = parseInt(p.giaBan).toLocaleString('vi-VN') + 'đ';
-            const detailUrl = isRx
-                ? `${urlRoot}/khachHang/dangKeToaThuoc?idThuoc=${p.idThuoc}`
-                : `${urlRoot}/khachHang/thuoc/chiTiet/${p.idThuoc}`;
+            const detailUrl = `${urlRoot}/khachHang/thuoc/chiTiet/${p.idThuoc}`;
 
             return `
                 <div class="pcard" onclick="window.location.href='${detailUrl}'">

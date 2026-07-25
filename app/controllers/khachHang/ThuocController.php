@@ -48,10 +48,7 @@ class thuocController extends Controller
             $this->redirect('khachHang/thuoc');
         }
 
-        // Chuyển hướng sang dangKeToaThuoc nếu là Thuốc kê đơn
-        if ($thuoc['yeuCauKeDon'] === 'Kê đơn') {
-            $this->redirect('khachHang/dangKeToaThuoc?idThuoc=' . $idThuoc);
-        }
+
 
         $this->redirect('khachHang/chiTietThuoc/chiTiet/' . $idThuoc);
     }
