@@ -82,7 +82,12 @@ class dangKeToaThuocController extends Controller
         }
 
         if (isset($_FILES['hinhAnhFiles']) && !empty($_FILES['hinhAnhFiles']['name'][0])) {
-            $uploadDir = 'public/assets/images/uploads/donThuoc/';
+            // APPROOT = .../BanThuoc/app, còn public/ nằm ngang hàng với app/
+            // (.../BanThuoc/public) nên phải lùi ra ngoài APPROOT 1 cấp rồi mới
+            // vào public/. Không dùng đường dẫn tương đối 'public/...' vì nó
+            // phụ thuộc vào thư mục làm việc hiện tại lúc script chạy (thường
+            // đã là public/ sẵn rồi) và từng gây lưu ảnh lồng vào public/public/.
+            $uploadDir = dirname(APPROOT) . '/public/assets/images/uploads/donThuoc/';
             if (!is_dir($uploadDir)) {
                 mkdir($uploadDir, 0777, true);
             }
@@ -102,6 +107,10 @@ class dangKeToaThuocController extends Controller
 
         $idGioHang = $this->gioHangModel->layHoacTaoGioHang($idKhachHang);
 
+        $tenKhongKhopHeThong = array(); // thuốc khách gõ nhưng không có trong bảng Thuoc
+        $themGioLoi = array();          // thuốc match được nhưng insert vào giỏ vẫn fail
+        $soLuongThemGioThanhCong = 0;
+
         if (!empty($danhSachThuocInput) && is_array($danhSachThuocInput)) {
             foreach ($danhSachThuocInput as $tenThuoc) {
                 $tenClean = trim($tenThuoc);
@@ -110,16 +119,40 @@ class dangKeToaThuocController extends Controller
                 $this->dangKeModel->themChiTietDonThuoc($idDonThuoc, $tenClean, 1);
                 $thuoc = $this->dangKeModel->timThuocTheoTen($tenClean);
 
-                $idThuoc = $thuoc ? $thuoc['idThuoc'] : 1;
-                $donGia = $thuoc ? $thuoc['giaBan'] : 0;
+                // KHÔNG fallback idThuoc = 1 nữa: nếu không tìm thấy thuốc khớp tên
+                // trong hệ thống thì bỏ qua bước thêm vào giỏ (tránh vỡ FK / fail âm thầm),
+                // đơn thuốc vẫn được ghi nhận bình thường để dược sĩ duyệt thủ công.
+                if (!$thuoc) {
+                    $tenKhongKhopHeThong[] = $tenClean;
+                    continue;
+                }
 
-                $this->gioHangModel->themItemVaoGio($idGioHang, $idThuoc, 1, $donGia, 'KHOA', $idDonThuoc);
+                $ok = $this->gioHangModel->themItemVaoGio(
+                    $idGioHang, $thuoc['idThuoc'], 1, $thuoc['giaBan'], 'KHOA', $idDonThuoc
+                );
+
+                if ($ok) {
+                    $soLuongThemGioThanhCong++;
+                } else {
+                    $themGioLoi[] = $tenClean;
+                }
             }
+        }
+
+        $message = 'Gửi đơn thuốc thành công!';
+        if ($soLuongThemGioThanhCong > 0) {
+            $message .= ' Các sản phẩm kê đơn khớp hệ thống đã được đưa vào giỏ hàng ở trạng thái Chờ dược sĩ duyệt.';
+        }
+        if (!empty($tenKhongKhopHeThong)) {
+            $message .= ' Lưu ý: ' . count($tenKhongKhopHeThong) . ' thuốc bạn nhập chưa có trong hệ thống nên chưa hiện trong giỏ hàng, dược sĩ sẽ xử lý thủ công (' . implode(', ', $tenKhongKhopHeThong) . ').';
         }
 
         echo json_encode(array(
             'status' => true,
-            'message' => 'Gửi đơn thuốc thành công! Các sản phẩm kê đơn đã được đưa vào giỏ hàng ở trạng thái Chờ dược sĩ duyệt.',
+            'message' => $message,
+            'soLuongThemGioThanhCong' => $soLuongThemGioThanhCong,
+            'tenKhongKhopHeThong' => $tenKhongKhopHeThong,
+            'themGioLoi' => $themGioLoi,
             'redirect' => URLROOT . '/khachHang/gioHang'
         ));
         exit;

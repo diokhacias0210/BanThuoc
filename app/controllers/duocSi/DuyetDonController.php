@@ -45,17 +45,21 @@ class DuyetDonController extends Controller
         $page = isset($_GET['page']) ? max(1, intval($_GET['page'])) : 1;
         $pageSize = 8;
 
-        $items = $this->duyetDonModel->getList($search, $status, $page, $pageSize);
-        $total = $this->duyetDonModel->countList($search, $status);
+        try {
+            $items = $this->duyetDonModel->getList($search, $status, $page, $pageSize);
+            $total = $this->duyetDonModel->countList($search, $status);
 
-        echo json_encode([
-            'status' => true,
-            'data' => $items,
-            'total' => $total,
-            'page' => $page,
-            'pageSize' => $pageSize,
-            'pendingCount' => $this->duyetDonModel->getPendingCount()
-        ]);
+            echo json_encode([
+                'status' => true,
+                'data' => $items,
+                'total' => $total,
+                'page' => $page,
+                'pageSize' => $pageSize,
+                'pendingCount' => $this->duyetDonModel->getPendingCount()
+            ]);
+        } catch (PDOException $e) {
+            echo json_encode(['status' => false, 'message' => 'Lỗi CSDL: ' . $e->getMessage()]);
+        }
         exit;
     }
 
@@ -63,12 +67,16 @@ class DuyetDonController extends Controller
     {
         $this->ensureAllowedRole();
         header('Content-Type: application/json');
-        $item = $this->duyetDonModel->getById($id);
 
-        if ($item) {
-            echo json_encode(['status' => true, 'data' => $item]);
-        } else {
-            echo json_encode(['status' => false, 'message' => 'Không tìm thấy đơn thuốc.']);
+        try {
+            $item = $this->duyetDonModel->getById($id);
+            if ($item) {
+                echo json_encode(['status' => true, 'data' => $item]);
+            } else {
+                echo json_encode(['status' => false, 'message' => 'Không tìm thấy đơn thuốc.']);
+            }
+        } catch (PDOException $e) {
+            echo json_encode(['status' => false, 'message' => 'Lỗi CSDL: ' . $e->getMessage()]);
         }
         exit;
     }
@@ -79,12 +87,19 @@ class DuyetDonController extends Controller
         header('Content-Type: application/json');
 
         $idDuocSi = isset($_SESSION['user_id']) ? intval($_SESSION['user_id']) : null;
-        $ok = $this->duyetDonModel->updateStatus($id, 'DA_DUYET', $idDuocSi);
 
-        if ($ok) {
-            echo json_encode(['status' => true, 'message' => 'Đã duyệt đơn thuốc thành công.']);
-        } else {
-            echo json_encode(['status' => false, 'message' => 'Không thể duyệt đơn thuốc.']);
+        try {
+            $ok = $this->duyetDonModel->updateStatus($id, 'DA_DUYET', $idDuocSi);
+            if ($ok) {
+                echo json_encode(['status' => true, 'message' => 'Đã duyệt đơn thuốc thành công.']);
+            } else {
+                echo json_encode(['status' => false, 'message' => 'Không thể duyệt đơn thuốc.']);
+            }
+        } catch (PDOException $e) {
+            // Bắt lỗi thật từ CSDL (VD: vi phạm khóa ngoại idDuocSi nếu tài khoản
+            // Dược sĩ đang đăng nhập chưa có bản ghi trong bảng DuocSi) thay vì
+            // để PHP crash trắng trang khiến JS hiểu nhầm thành lỗi kết nối chung chung.
+            echo json_encode(['status' => false, 'message' => 'Lỗi CSDL khi duyệt đơn: ' . $e->getMessage()]);
         }
         exit;
     }
@@ -95,16 +110,20 @@ class DuyetDonController extends Controller
         header('Content-Type: application/json');
         $idDuocSi = isset($_SESSION['user_id']) ? intval($_SESSION['user_id']) : null;
 
-        $items = $this->duyetDonModel->getList('', 'CHO_DUYET', 1, 1000);
-        $updated = 0;
+        try {
+            $items = $this->duyetDonModel->getList('', 'CHO_DUYET', 1, 1000);
+            $updated = 0;
 
-        foreach ($items as $item) {
-            if ($this->duyetDonModel->updateStatus($item['idDonThuoc'], 'DA_DUYET', $idDuocSi)) {
-                $updated++;
+            foreach ($items as $item) {
+                if ($this->duyetDonModel->updateStatus($item['idDonThuoc'], 'DA_DUYET', $idDuocSi)) {
+                    $updated++;
+                }
             }
-        }
 
-        echo json_encode(['status' => true, 'message' => "Đã duyệt {$updated} đơn thuốc.", 'updated' => $updated]);
+            echo json_encode(['status' => true, 'message' => "Đã duyệt {$updated} đơn thuốc.", 'updated' => $updated]);
+        } catch (PDOException $e) {
+            echo json_encode(['status' => false, 'message' => 'Lỗi CSDL khi duyệt tất cả: ' . $e->getMessage()]);
+        }
         exit;
     }
 
@@ -120,12 +139,16 @@ class DuyetDonController extends Controller
         }
 
         $idDuocSi = isset($_SESSION['user_id']) ? intval($_SESSION['user_id']) : null;
-        $ok = $this->duyetDonModel->updateStatus($id, 'TU_CHOI', $idDuocSi, $reason);
 
-        if ($ok) {
-            echo json_encode(['status' => true, 'message' => 'Đã từ chối đơn thuốc.']);
-        } else {
-            echo json_encode(['status' => false, 'message' => 'Không thể từ chối đơn thuốc.']);
+        try {
+            $ok = $this->duyetDonModel->updateStatus($id, 'TU_CHOI', $idDuocSi, $reason);
+            if ($ok) {
+                echo json_encode(['status' => true, 'message' => 'Đã từ chối đơn thuốc.']);
+            } else {
+                echo json_encode(['status' => false, 'message' => 'Không thể từ chối đơn thuốc.']);
+            }
+        } catch (PDOException $e) {
+            echo json_encode(['status' => false, 'message' => 'Lỗi CSDL khi từ chối đơn: ' . $e->getMessage()]);
         }
         exit;
     }

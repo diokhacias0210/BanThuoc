@@ -145,7 +145,7 @@ CREATE TABLE ChiTietGioHang (
     idDonThuoc INT NULL,
     soLuong INT NOT NULL CHECK (soLuong > 0),
     donGia DECIMAL(12, 2) NOT NULL,
-    trangThaiThaoTac ENUM('CHO_PHEP', 'KHOA') DEFAULT 'CHO_PHEP',
+    trangThaiThaoTac ENUM('CHO_PHEP', 'KHOA','TU_CHOI') DEFAULT 'CHO_PHEP',
     FOREIGN KEY (idGioHang) REFERENCES GioHang(idGioHang) ON DELETE CASCADE,
     FOREIGN KEY (idThuoc) REFERENCES Thuoc(idThuoc) ON DELETE CASCADE,
     FOREIGN KEY (idDonThuoc) REFERENCES DonThuoc(idDonThuoc) ON DELETE SET NULL

@@ -87,7 +87,7 @@ CREATE TABLE ChiTietGioHang (
     idDonThuoc INT NULL, -- Liên kết ngược để biết thuốc này thuộc đơn thuốc nào
     soLuong INT NOT NULL CHECK (soLuong > 0),
     donGia DECIMAL(12, 2) NOT NULL,
-    trangThaiThaoTac ENUM('CHO_PHEP', 'KHOA') DEFAULT 'CHO_PHEP', -- Khóa thao tác sửa/xóa
+    trangThaiThaoTac ENUM('CHO_PHEP', 'KHOA','TU_CHOI') DEFAULT 'CHO_PHEP', -- Khóa thao tác sửa/xóa
     FOREIGN KEY (idGioHang) REFERENCES GioHang(idGioHang) ON DELETE CASCADE,
     FOREIGN KEY (idThuoc) REFERENCES Thuoc(idThuoc) ON DELETE CASCADE,
     FOREIGN KEY (idDonThuoc) REFERENCES DonThuoc(idDonThuoc) ON DELETE SET NULL

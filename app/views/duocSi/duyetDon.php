@@ -263,7 +263,9 @@
         document.getElementById('view_ngayGui').textContent = formatDate(item.ngayGui);
         document.getElementById('view_ghiChu').textContent = item.ghiChu || 'Không có';
 
-        const imageUrl = item.hinhAnhDonThuoc || 'https://placehold.co/600x480/e8f5ee/2d7a4f?text=No+Image';
+        const imageUrl = item.hinhAnhDonThuoc
+            ? `<?php echo URLROOT; ?>/${item.hinhAnhDonThuoc}`
+            : 'https://placehold.co/600x480/e8f5ee/2d7a4f?text=No+Image';
         const img = document.getElementById('view_hinhAnhToa');
         img.src = imageUrl;
         document.getElementById('lightboxImg').src = imageUrl;

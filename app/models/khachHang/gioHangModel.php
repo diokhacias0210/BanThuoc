@@ -31,11 +31,14 @@ class gioHangModel extends Model
         $sql = "SELECT c.id, c.idGioHang, c.idThuoc, c.idDonThuoc, c.soLuong, c.donGia, c.trangThaiThaoTac,
                        t.tenThuoc, t.donViTinh, t.gioiHanMua, d.tenDanhMuc,
                        COALESCE(SUM(l.soLuongTon), 0) AS tongTon,
-                       (SELECT duongDan FROM HinhAnhThuoc h WHERE h.idThuoc = t.idThuoc ORDER BY h.idHinhAnh ASC LIMIT 1) AS hinhAnh
+                       (SELECT duongDan FROM HinhAnhThuoc h WHERE h.idThuoc = t.idThuoc ORDER BY h.idHinhAnh ASC LIMIT 1) AS hinhAnh,
+                       dt.trangThai AS trangThaiDonThuoc,
+                       dt.ghiChu AS ghiChuDonThuoc
                 FROM ChiTietGioHang c
                 INNER JOIN Thuoc t ON c.idThuoc = t.idThuoc
                 LEFT JOIN DanhMucThuoc d ON t.idDanhMuc = d.idDanhMuc
                 LEFT JOIN LoThuoc l ON t.idThuoc = l.idThuoc AND l.hanSuDung >= CURDATE()
+                LEFT JOIN DonThuoc dt ON c.idDonThuoc = dt.idDonThuoc
                 WHERE c.idGioHang = :idGioHang
                 GROUP BY c.id
                 ORDER BY c.id DESC";

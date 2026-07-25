@@ -26,15 +26,17 @@
                 <?php foreach ($cartItems as $item): ?>
                     <?php
                     $isKhoa = ($item['trangThaiThaoTac'] === 'KHOA');
+                    $isTuChoi = ($item['trangThaiThaoTac'] === 'TU_CHOI');
+                    $khongChoMua = ($isKhoa || $isTuChoi);
                     $thanhTien = $item['donGia'] * $item['soLuong'];
                     $maxAllowed = isset($item['maxAllowed']) ? $item['maxAllowed'] : 999;
                     ?>
-                    <div class="cart-item <?php echo $isKhoa ? 'status-pending unchecked' : ''; ?>" data-id="<?php echo $item['id']; ?>" data-max="<?php echo $maxAllowed; ?>">
+                    <div class="cart-item <?php echo $khongChoMua ? 'status-pending unchecked' : ''; ?> <?php echo $isTuChoi ? 'status-rejected' : ''; ?>" data-id="<?php echo $item['id']; ?>" data-max="<?php echo $maxAllowed; ?>">
                         <div class="col-name-wrapper">
                             <input type="checkbox" class="ci-check"
                                 data-id="<?php echo $item['id']; ?>"
                                 data-price="<?php echo $item['donGia']; ?>"
-                                <?php echo $isKhoa ? 'disabled' : 'checked'; ?>
+                                <?php echo $khongChoMua ? 'disabled' : 'checked'; ?>
                                 onchange="capNhatTongTien()">
                             <div class="ci-img">
                                 <img src="<?php echo $item['hinhAnhUrl']; ?>" alt="<?php echo htmlspecialchars($item['tenThuoc']); ?>">
@@ -44,6 +46,15 @@
                                 <div class="ci-brand"><?php echo htmlspecialchars($item['tenDanhMuc'] ? $item['tenDanhMuc'] : 'Dược phẩm'); ?> · <?php echo htmlspecialchars($item['donViTinh']); ?></div>
                                 <?php if ($isKhoa): ?>
                                     <div class="badge-pending" style="color:var(--orange); font-size:12px; margin-top:4px;"><i class="fa-solid fa-hourglass-half"></i> Chờ dược sĩ duyệt đơn</div>
+                                <?php elseif ($isTuChoi): ?>
+                                    <div class="badge-rejected" style="color:#dc2626; font-size:12px; margin-top:4px; font-weight:600;">
+                                        <i class="fa-solid fa-circle-xmark"></i> Đã bị dược sĩ từ chối
+                                    </div>
+                                    <?php if (!empty($item['ghiChuDonThuoc'])): ?>
+                                        <div style="color:#dc2626; font-size:12px; margin-top:2px;">
+                                            Lý do: <?php echo htmlspecialchars($item['ghiChuDonThuoc']); ?>
+                                        </div>
+                                    <?php endif; ?>
                                 <?php endif; ?>
                             </div>
                         </div>
@@ -52,9 +63,9 @@
 
                         <div class="col-action-wrapper">
                             <div class="qty-box">
-                                <button type="button" class="qty-btn" <?php echo $isKhoa ? 'disabled' : ''; ?> onclick="thayDoiSoLuong(<?php echo $item['id']; ?>, -1)"><i class="fa-solid fa-minus"></i></button>
+                                <button type="button" class="qty-btn" <?php echo $khongChoMua ? 'disabled' : ''; ?> onclick="thayDoiSoLuong(<?php echo $item['id']; ?>, -1)"><i class="fa-solid fa-minus"></i></button>
                                 <span class="qty-val" id="qty_<?php echo $item['id']; ?>"><?php echo $item['soLuong']; ?></span>
-                                <button type="button" class="qty-btn" <?php echo $isKhoa ? 'disabled' : ''; ?> onclick="thayDoiSoLuong(<?php echo $item['id']; ?>, 1)"><i class="fa-solid fa-plus"></i></button>
+                                <button type="button" class="qty-btn" <?php echo $khongChoMua ? 'disabled' : ''; ?> onclick="thayDoiSoLuong(<?php echo $item['id']; ?>, 1)"><i class="fa-solid fa-plus"></i></button>
                             </div>
 
                             <button type="button" class="ci-remove" onclick="xoaItemGioHang(<?php echo $item['id']; ?>)" title="Xoá khỏi giỏ">

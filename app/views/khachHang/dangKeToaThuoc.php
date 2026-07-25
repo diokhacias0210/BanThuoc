@@ -123,7 +123,7 @@
         const cleanVal = val.replace(/"/g, '&quot;');
 
         div.innerHTML = `
-            <input type="text" class="drug-input" name="danhSachThuoc[]" value="${cleanVal}" placeholder="Nhập tên thuốc kê đơn...">
+            <input type="text" class="drug-input" name="danhSachThuoc[]" value="${cleanVal}" placeholder="Nhấn để chọn thuốc từ danh mục..." readonly onclick="openDrugModal('row', '${id}')" style="cursor:pointer;">
             <button type="button" class="icon-btn green" onclick="openDrugModal('row', '${id}')" title="Chọn thuốc">
                 <i class="fa-solid fa-plus"></i>
             </button>
@@ -209,6 +209,26 @@
         const fileInput = document.getElementById('file-in');
         if (!fileInput.files || fileInput.files.length === 0) {
             alert('Vui lòng đính kèm ít nhất 1 hình ảnh đơn thuốc!');
+            return;
+        }
+
+        // Xóa các dòng thuốc trống (chưa chọn) để không gửi rác lên server,
+        // đồng thời kiểm tra tên đã chọn có thật sự nằm trong danh mục hệ thống không
+        // (phòng trường hợp giá trị bị can thiệp bất thường ở phía client).
+        const drugInputs = Array.from(document.querySelectorAll('.drug-input'));
+        let coTenKhongHopLe = false;
+
+        drugInputs.forEach(input => {
+            const val = input.value.trim();
+            if (val === '') {
+                input.closest('.drug-row').remove();
+            } else if (!SYSTEM_DRUGS.includes(val)) {
+                coTenKhongHopLe = true;
+            }
+        });
+
+        if (coTenKhongHopLe) {
+            alert('Có dòng thuốc chưa chọn hợp lệ từ danh mục hệ thống. Vui lòng chọn lại bằng nút "Chọn thuốc".');
             return;
         }
 
