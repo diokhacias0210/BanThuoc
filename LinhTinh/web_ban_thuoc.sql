@@ -174,7 +174,7 @@ CREATE TABLE BaoCaoThongKe (
 -- 0. CHÈN TÀI KHOẢN QUẢN TRỊ VIÊN (idNguoiDung = 1)
 -- ==========================================================
 INSERT INTO NguoiDung (idNguoiDung, hoTen, email, soDienThoai, matKhau, trangThai, vaiTro)
-VALUES (1, 'admin', 'admin@pharmacare.com', '0999888777', 'admin123', TRUE, 'QUAN_TRI_VIEN');
+VALUES (1, 'admin', 'admin@pharmacare.com', '0999888777', '123456', TRUE, 'QUAN_TRI_VIEN');
 
 INSERT INTO QuanTriVien (idNguoiDung)
 VALUES (1);
