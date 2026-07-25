@@ -61,9 +61,9 @@ class DongGoiController extends Controller
                 'idDonHang'       => (int) $thongTin['idDonHang'],
                 'hoTen'           => $thongTin['hoTen'],
                 'trangThai'       => $thongTin['trangThai'],
-                'diaChiGiaoHang'  => $diaChi['diaChiChiTiet'] ?? 'Chưa có địa chỉ giao hàng',
-                'tenNguoiNhan'    => $diaChi['tenNguoiNhan'] ?? $thongTin['hoTen'],
-                'soDienThoaiNhan' => $diaChi['soDienThoaiNhan'] ?? $thongTin['soDienThoai'],
+                'diaChiGiaoHang'  => isset($diaChi['diaChiChiTiet']) ? $diaChi['diaChiChiTiet'] : 'Chưa có địa chỉ giao hàng',
+                'tenNguoiNhan'    => isset($diaChi['tenNguoiNhan']) ? $diaChi['tenNguoiNhan'] : $thongTin['hoTen'],
+                'soDienThoaiNhan' => isset($diaChi['soDienThoaiNhan']) ? $diaChi['soDienThoaiNhan'] : $thongTin['soDienThoai'],
             ],
             'chiTiet' => $chiTiet
         ]);
@@ -102,7 +102,7 @@ class DongGoiController extends Controller
         }
 
         $input = json_decode(file_get_contents('php://input'), true);
-        $lyDo = trim($input['lyDo'] ?? '');
+        $lyDo = trim(isset($input['lyDo']) ? $input['lyDo'] : '');
         if ($lyDo === '') {
             echo json_encode(['status' => false, 'message' => 'Vui lòng nhập lý do từ chối']);
             exit;
