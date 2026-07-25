@@ -64,9 +64,15 @@ $maxAllowedVal = isset($maxAllowed) ? intval($maxAllowed) : 0;
                     </div>
 
                     <div class="action-row">
-                        <button class="btn btn-solid" onclick="xuLyThemGioHang(<?php echo isset($thuoc['idThuoc']) ? $thuoc['idThuoc'] : 0; ?>)">
-                            <i class="fa-solid fa-cart-plus"></i> Thêm vào giỏ hàng
-                        </button>
+                        <?php if (isset($thuoc['yeuCauKeDon']) && $thuoc['yeuCauKeDon'] === 'Kê đơn'): ?>
+                            <button class="btn btn-solid" onclick="window.location.href='<?php echo URLROOT; ?>/khachHang/dangKeToaThuoc?idThuoc=<?php echo isset($thuoc['idThuoc']) ? $thuoc['idThuoc'] : 0; ?>'">
+                                <i class="fa-solid fa-file-prescription"></i> Đăng kê toa thuốc
+                            </button>
+                        <?php else: ?>
+                            <button class="btn btn-solid" onclick="xuLyThemGioHang(<?php echo isset($thuoc['idThuoc']) ? $thuoc['idThuoc'] : 0; ?>)">
+                                <i class="fa-solid fa-cart-plus"></i> Thêm vào giỏ hàng
+                            </button>
+                        <?php endif; ?>
                     </div>
                 <?php else: ?>
                     <div class="action-row">
