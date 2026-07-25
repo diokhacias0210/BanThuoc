@@ -10,7 +10,10 @@
         <option value="TU_CHOI">Từ chối</option>
     </select>
     <button class="btn btn-ghost" id="btnResetFilter">Đặt lại</button>
-    <button class="btn btn-primary" id="btnApproveAll" style="margin-left:auto;">Duyệt tất cả yêu cầu chờ</button>
+            <button class="btn btn-primary" id="btnApproveAll" style="margin-left:auto;">
+                <div class="icon icon-check-all"></div>
+                Duyệt tất cả yêu cầu chờ
+            </button>
 </div>
 
 <div class="table-card">
@@ -29,9 +32,10 @@
             <tbody id="tableBody"></tbody>
         </table>
     </div>
-    <div id="emptyState" class="empty-state" style="display:none;">
-        <div class="t1">Không tìm thấy yêu cầu nào</div>
-    </div>
+            <div id="emptyState" class="empty-state" style="display:none;">
+                <div class="icon icon-empty-box"></div>
+                <div class="t1">Không tìm thấy yêu cầu nào</div>
+            </div>
     <div class="pagination-bar">
         <div class="pagination" id="pagination"></div>
     </div>
@@ -41,7 +45,9 @@
     <div class="modal-box wide">
         <div class="modal-head">
             <h2>Chi tiết đơn thuốc kê đơn</h2>
-            <button class="modal-close" data-close="modalDetail" type="button">×</button>
+            <button class="modal-close" data-close="modalDetail" type="button">
+                <div class="icon icon-close-modal"></div>
+            </button>
         </div>
         <div class="modal-body">
             <div class="prescription-flow">
@@ -73,7 +79,7 @@
                 <div class="prescription-meta">
                     <h4>Ảnh toa thuốc</h4>
                     <div class="panel-image">
-                        <div class="title-hint">Nhấn vào ảnh để phóng to</div>
+                        <div class="title-hint">(Nhấn trực tiếp vào ảnh dưới đây để phóng to xem rõ nét)</div>
                         <img id="view_hinhAnhToa" class="prescription-img" src="" alt="Ảnh toa thuốc">
                     </div>
                 </div>
@@ -87,7 +93,9 @@
     <div class="modal-box">
         <div class="modal-head">
             <h2>Từ chối đơn thuốc</h2>
-            <button class="modal-close" data-close="modalRejectReason" type="button">×</button>
+            <button class="modal-close" data-close="modalRejectReason" type="button">
+                <div class="icon icon-close-modal"></div>
+            </button>
         </div>
         <div class="modal-body">
             <label for="txtRejectReason" style="display:block; margin-bottom:8px; font-weight:600;">Lý do từ chối</label>
@@ -107,7 +115,10 @@
     </div>
 </div>
 
-<div class="toast" id="toast"><span></span></div>
+<div class="toast" id="toast">
+    <div class="icon icon-toast-success"></div>
+    <span id="toastMsg">Thao tác thành công</span>
+</div>
 
 <script>
     let donThuocList = [];
@@ -376,7 +387,12 @@
 
     function showToast(msg) {
         const toast = document.getElementById('toast');
-        toast.querySelector('span').textContent = msg;
+        const msgSpan = document.getElementById('toastMsg');
+        if (msgSpan) {
+            msgSpan.textContent = msg;
+        } else {
+            toast.querySelector('span').textContent = msg;
+        }
         toast.classList.add('show');
         setTimeout(() => toast.classList.remove('show'), 3000);
     }

@@ -261,6 +261,21 @@ tbody tr:hover {
     background: currentColor;
 }
 
+.badge-pending {
+    background: var(--orange-50);
+    color: var(--orange-600);
+}
+
+.badge-approved {
+    background: var(--green-50);
+    color: var(--green-700);
+}
+
+.badge-rejected {
+    background: var(--red-50);
+    color: var(--red-600);
+}
+
 .toast {
     position: fixed;
     bottom: 26px;
