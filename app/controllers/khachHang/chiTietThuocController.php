@@ -20,10 +20,6 @@ class chiTietThuocController extends Controller
             $this->redirect('khachHang/thuoc');
         }
 
-        // TỰ ĐỘNG CHUYỂN HƯỚNG NẾU LÀ THUỐC KÊ ĐƠN (RX)
-        if ($thuoc['yeuCauKeDon'] === 'Kê đơn') {
-            $this->redirect('khachHang/dangKeToaThuoc?idThuoc=' . $idThuoc);
-        }
 
         // Lấy danh sách ảnh phụ
         $danhSachAnhRaw = $this->chiTietModel->getDanhSachAnhThuocTheoID($idThuoc);
