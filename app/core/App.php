@@ -108,6 +108,7 @@ class App
             return;
         }
 
+        // Thử với ucfirst trước (cho tên Controller URL dạng "quanlythuoc")
         $controller = ucfirst($url[0]) . "Controller";
 
         $path =
@@ -125,7 +126,49 @@ class App
             unset($url[0]);
 
             $url = array_values($url);
+
+            return;
         }
+
+        // Nếu không tìm thấy, thử chuyển camelCase -> PascalCase
+        // VD: "quanLyThuoc" -> "QuanLyThuocController"
+        // VD: "baoCaoThongKe" -> "BaoCaoThongKeController"
+        $controller = $this->camelToPascal($url[0]) . "Controller";
+
+        $path =
+            APPROOT .
+            "/controllers/" .
+            self::$module .
+            "/" .
+            $controller .
+            ".php";
+
+        if (file_exists($path)) {
+
+            $this->controller = $controller;
+
+            unset($url[0]);
+
+            $url = array_values($url);
+        }
+    }
+
+    /*
+    |--------------------------------------------------------------------------
+    | Chuyển camelCase -> PascalCase
+    |--------------------------------------------------------------------------
+    */
+
+    // "quanLyThuoc" -> "QuanLyThuoc"
+    // "dangNhap" -> "DangNhap"
+    private function camelToPascal($str)
+    {
+        // Viết hoa chữ cái đầu
+        $result = ucfirst($str);
+
+        // Nếu chữ cái đầu đã viết hoa và có chữ hoa ở giữa -> giữ nguyên
+        // (chỉ cần ucfirst là đủ cho trường hợp "quanLyThuoc" -> "QuanLyThuoc")
+        return $result;
     }
 
 

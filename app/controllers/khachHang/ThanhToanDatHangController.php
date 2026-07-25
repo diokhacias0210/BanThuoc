@@ -52,7 +52,7 @@ class thanhToanDatHangController extends Controller
 
     private function layDanhSachIdDaChon()
     {
-        $raw = $_POST['selectedIds'] ?? ($_GET['ids'] ?? null);
+        $raw = isset($_POST['selectedIds']) ? $_POST['selectedIds'] : (isset($_GET['ids']) ? $_GET['ids'] : null);
         if ($raw === null || $raw === '') return null;
 
         return array_filter(array_map('trim', explode(',', $raw)), function ($v) {
@@ -121,11 +121,11 @@ class thanhToanDatHangController extends Controller
             exit();
         }
 
-        $hoTenNguoiNhan  = trim($_POST['hoTenNguoiNhan'] ?? '');
-        $soDienThoaiNhan = trim($_POST['soDienThoaiNhan'] ?? '');
-        $diaChiGiaoHang  = trim($_POST['diaChiGiaoHang'] ?? '');
-        $phuongThucTT    = trim($_POST['phuongThucThanhToan'] ?? 'COD');
-        $ghiChu          = trim($_POST['ghiChu'] ?? '');
+        $hoTenNguoiNhan  = trim(isset($_POST['hoTenNguoiNhan']) ? $_POST['hoTenNguoiNhan'] : '');
+        $soDienThoaiNhan = trim(isset($_POST['soDienThoaiNhan']) ? $_POST['soDienThoaiNhan'] : '');
+        $diaChiGiaoHang  = trim(isset($_POST['diaChiGiaoHang']) ? $_POST['diaChiGiaoHang'] : '');
+        $phuongThucTT    = trim(isset($_POST['phuongThucThanhToan']) ? $_POST['phuongThucThanhToan'] : 'COD');
+        $ghiChu          = trim(isset($_POST['ghiChu']) ? $_POST['ghiChu'] : '');
 
         $tongTien = 0;
         foreach ($danhSachMua as $thuoc) {

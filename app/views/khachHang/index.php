@@ -58,7 +58,7 @@
                             <div class="pcard-price"><?php echo number_format($t['giaBan'], 0, ',', '.'); ?>đ</div>
 
                             <?php if ($isKeDon): ?>
-                                <button type="button" class="btn-view-detail">Xem chi tiết</button>
+                                <button type="button" class="btn-view-detail" >Xem chi tiết</button>
                             <?php elseif ($hetHang): ?>
                                 <!-- KHI HẾT HÀNG: VÔ HIỆU HÓA NÚT THÊM NHANH -->
                                 <button type="button" class="add-btn" disabled style="opacity: 0.4; cursor: not-allowed; background: #888780;" title="Sản phẩm tạm hết hàng">
