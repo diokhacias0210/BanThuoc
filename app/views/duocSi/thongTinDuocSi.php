@@ -207,11 +207,10 @@
     });
 
     // Dữ liệu thật lấy từ CSDL, do Controller PHP truyền xuống (thay cho initialData giả lập)
-    const initialData = <?php echo $thongTin ? json_encode(array(
+     const initialData = <?php echo $thongTin ? json_encode(array(
                             'idNguoiDung' => $thongTin['idNguoiDung'],
                             'hoTen' => $thongTin['hoTen'],
-                            'vaiTro' => $thongTin['vaiTro'],
-                            'vaiTroLabel' => $thongTin['vaiTroLabel'],
+                            'vaiTroLabel' => (isset($thongTin['vaiTro']) && isset($nhanVaiTro[$thongTin['vaiTro']])) ? $nhanVaiTro[$thongTin['vaiTro']] : (isset($thongTin['vaiTro']) ? $thongTin['vaiTro'] : 'Không xác định'),
                             'trangThai' => $thongTin['trangThai'],
                             'email' => $thongTin['email'],
                             'soDienThoai' => $thongTin['soDienThoai'],
