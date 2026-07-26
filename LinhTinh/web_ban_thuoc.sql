@@ -190,7 +190,8 @@ INSERT INTO NguoiDung (idNguoiDung, hoTen, email, soDienThoai, matKhau, trangTha
 (3, 'Trần Thị B', 'tranthib@gmail.com', '0902345678', '123456', TRUE, 'KHACH_HANG'),
 (4, 'Lê Văn C', 'levanc@gmail.com', '0903456789', '123456', TRUE, 'KHACH_HANG'),
 (5, 'Phạm Thị D', 'phamthid@gmail.com', '0904567890', '123456', TRUE, 'KHACH_HANG'),
-(6, 'Hoàng Văn E', 'hoangvane@gmail.com', '0905678901', '123456', TRUE, 'KHACH_HANG');
+(6, 'Hoàng Văn E', 'hoangvane@gmail.com', '0905678901', '123456', TRUE, 'KHACH_HANG'),
+(20, 'Ngô Hoàng Kha', 'kha@gmail.com', '0913420982', '123456', TRUE, 'KHACH_HANG');
 
 -- Chèn vào bảng con KhachHang (Đã bỏ cột diaChiGiaoHang thừa)
 INSERT INTO KhachHang (idNguoiDung, diemTichLuy, ngaySinh) VALUES
@@ -198,7 +199,8 @@ INSERT INTO KhachHang (idNguoiDung, diemTichLuy, ngaySinh) VALUES
 (3, 50, '1998-08-23'),
 (4, 0, '1990-11-02'),
 (5, 340, '2001-01-15'),
-(6, 15, '1993-06-30');
+(6, 15, '1993-06-30'),
+(20, 0, '2000-01-01');
 
 
 -- ==========================================================
@@ -725,7 +727,66 @@ INSERT INTO HinhAnhThuoc (idThuoc, duongDan) VALUES
 (50, 'assets/images/uploads/50/50-2.jpg');
 
 
+-- ==========================================================
+-- CHÈN DỮ LIỆU BẢNG DonThuoc (10 Toa thuốc mẫu)
+-- ==========================================================
+INSERT INTO DonThuoc (idDonThuoc, idKhachHang, idDuocSi, idDonHang, ngayGui, ghiChu, trangThai) VALUES
+-- 1. Trạng thái CHO_DUYET (Mới gửi, chưa có Dược sĩ nhận)
+(1, 2, NULL, NULL, '2026-07-24 09:15:00', 'Tôi bị ho có đờm và sốt nhẹ 2 ngày nay, nhờ dược sĩ xem toa.', 'CHO_DUYET'),
+(2, 3, NULL, NULL, '2026-07-25 14:30:00', 'Toa thuốc tái khám nha khoa ngày 25/07.', 'CHO_DUYET'),
+(3, 4, NULL, NULL, '2026-07-26 08:00:00', 'Toa thuốc trị viêm da dị ứng của Bệnh viện Da Liễu.', 'CHO_DUYET'),
 
+-- 2. Trạng thái DA_DUYET (Dược sĩ đã tiếp nhận, kiểm tra và duyệt toa)
+(4, 2, 7,  4,    '2026-01-14 10:00:00', 'Giao giờ hành chính giúp tôi.', 'DA_DUYET'),
+(5, 5, 8,  10,   '2026-07-19 16:20:00', 'Đã xác nhận với dược sĩ qua điện thoại.', 'DA_DUYET'),
+(6, 6, 9,  11,   '2026-07-21 11:05:00', 'Toa thuốc trị nấm ngoài da.', 'DA_DUYET'),
+(7, 3, 10, NULL, '2026-07-22 15:30:00', 'Dược sĩ đã gọi tư vấn và chốt danh sách thuốc, chờ khách tạo đơn.', 'DA_DUYET'),
+
+-- 3. Trạng thái TU_CHOI (Dược sĩ từ chối do toa không hợp lệ)
+(8, 4, 7,  NULL, '2026-07-10 09:45:00', 'Ảnh chụp toa thuốc quá mờ, không rõ tên thuốc và liều dùng.', 'TU_CHOI'),
+(9, 5, 11, NULL, '2026-07-15 13:10:00', 'Toa thuốc đã quá thời hạn 30 ngày kể từ ngày kê đơn.', 'TU_CHOI'),
+
+-- 4. Trạng thái KH_HUY (Khách hàng chủ động hủy yêu cầu)
+(10, 6, NULL, NULL, '2026-07-20 18:00:00', 'Khách hàng đổi ý, không muốn đặt thuốc kê đơn nữa.', 'KH_HUY');
+
+-- ==========================================================
+-- CHÈN DỮ LIỆU BẢNG HinhAnhDonThuoc (Mỗi đơn có 1-2 ảnh toa)
+-- ==========================================================
+INSERT INTO HinhAnhDonThuoc (idDonThuoc, duongDan) VALUES
+(1, 'assets/images/placeholder.png'),
+(2, 'assets/images/placeholder.png'),
+(3, 'assets/images/placeholder.png'),
+(1, 'assets/images/placeholder.png'),
+(2, 'assets/images/placeholder.png'),
+(3, 'assets/images/placeholder.png'),
+(4, 'assets/images/placeholder.png'),
+(5, 'assets/images/placeholder.png'),
+(6, 'assets/images/placeholder.png'),
+(7, 'assets/images/placeholder.png'),
+(8, 'assets/images/placeholder.png'),
+(9, 'assets/images/placeholder.png'),
+(10, 'assets/images/placeholder.png');
+
+
+-- ==========================================================
+-- CHÈN DỮ LIỆU BẢNG ChiTietDonThuoc 
+-- (Chỉ có các đơn đã DA_DUYET mới có chi tiết thuốc do Dược sĩ bóc tách)
+-- ==========================================================
+INSERT INTO ChiTietDonThuoc (idDonThuoc, tenThuoc, lieuDung, soLuong) VALUES
+-- Chi tiết cho Đơn thuốc 4 (Đã duyệt)
+(4, 'Thuốc Tocemux', 'Uống 1 viên/lần, ngày 2 lần sau khi ăn', 10),
+(4, 'Viên nén Paracetamol Stada 500mg', 'Uống 1 viên khi sốt trên 38.5 độ C', 10),
+
+-- Chi tiết cho Đơn thuốc 5 (Đã duyệt)
+(5, 'Siro HoAstex-S 90ml', 'Uống 10ml/lần, ngày 3 lần', 2),
+(5, 'Thuốc Exopadin 60mg Trường Thọ', 'Uống 1 viên/lần, ngày 2 lần', 20),
+
+-- Chi tiết cho Đơn thuốc 6 (Đã duyệt)
+(6, 'Kem bôi da Ketoconazol 2% Medipharco', 'Thoa một lớp mỏng lên vùng da bị tổn thương 2 lần/ngày', 2),
+
+-- Chi tiết cho Đơn thuốc 7 (Đã duyệt)
+(7, 'Thuốc Tocemux', 'Uống 1 viên/lần, ngày 2 lần', 15),
+(7, 'Thuốc Allerphast 180mg Mebiphar', 'Uống 1 viên vào buổi tối trước khi đi ngủ', 10);
 
 
 
