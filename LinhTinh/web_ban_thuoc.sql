@@ -229,11 +229,11 @@ INSERT INTO DiaChiGiaoHang (idNguoiDung, tenNguoiNhan, soDienThoaiNhan, diaChiCh
 
 -- Chèn vào bảng cha NguoiDung
 INSERT INTO NguoiDung (idNguoiDung, hoTen, email, soDienThoai, matKhau, trangThai, vaiTro) VALUES
-(7, 'Dược sĩ Nguyễn Tiến Minh', 'tienminh.ds@gmail.com', '0911234567', 'ds_secret2026', TRUE, 'DUOC_SI'),
-(8, 'Dược sĩ Lê Thanh Hoa', 'thanhhoa.ds@gmail.com', '0912345678', 'ds_secret2026', TRUE, 'DUOC_SI'),
-(9, 'Dược sĩ Phạm Minh Tuấn', 'minhtuan.ds@gmail.com', '0913456789', 'ds_secret2026', TRUE, 'DUOC_SI'),
-(10, 'Dược sĩ Trần Thu Linh', 'thulinh.ds@gmail.com', '0914567890', 'ds_secret2026', TRUE, 'DUOC_SI'),
-(11, 'Dược sĩ Hoàng Văn Nam', 'hoangnam.ds@gmail.com', '0915678901', 'ds_secret2026', TRUE, 'DUOC_SI');
+(7, 'Dược sĩ Nguyễn Tiến Minh', 'tienminh.ds@gmail.com', '0911234567', '123456', TRUE, 'DUOC_SI'),
+(8, 'Dược sĩ Lê Thanh Hoa', 'thanhhoa.ds@gmail.com', '0912345678', '123456', TRUE, 'DUOC_SI'),
+(9, 'Dược sĩ Phạm Minh Tuấn', 'minhtuan.ds@gmail.com', '0913456789', '123456', TRUE, 'DUOC_SI'),
+(10, 'Dược sĩ Trần Thu Linh', 'thulinh.ds@gmail.com', '0914567890', '123456', TRUE, 'DUOC_SI'),
+(11, 'Dược sĩ Hoàng Văn Nam', 'hoangnam.ds@gmail.com', '0915678901', '123456', TRUE, 'DUOC_SI');
 
 -- Chèn vào bảng con DuocSi tương ứng với ID vừa tạo
 INSERT INTO DuocSi (idNguoiDung, chungChiHanhNghe, noiCap, trinhDo) VALUES
