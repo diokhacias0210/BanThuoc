@@ -120,7 +120,7 @@
 <script>
     const modalEl = document.getElementById('modalEditProfile');
 
-    function generateInitials(name) {
+    function layChuCaiDau(name) {
         if (!name) return '—';
         let cleanName = name.replace(/^DS\.\s*/i, '');
         let parts = cleanName.trim().split(' ');
@@ -128,16 +128,16 @@
         return (parts[0].charAt(0) + parts[parts.length - 1].charAt(0)).toUpperCase();
     }
 
-    function showModal() {
+    function hienModal() {
         modalEl.classList.remove('hidden');
     }
 
-    function hideModal() {
+    function anModal() {
         modalEl.classList.add('hidden');
     }
 
-    document.getElementById('btnModalClose').addEventListener('click', hideModal);
-    document.getElementById('btnModalCancel').addEventListener('click', hideModal);
+    document.getElementById('btnModalClose').addEventListener('click', anModal);
+    document.getElementById('btnModalCancel').addEventListener('click', anModal);
 
     document.getElementById('btnEditProfile').addEventListener('click', () => {
         document.getElementById('f_hoTen').value = document.getElementById('view_hoTen').textContent.replace(/^DS\.\s*/i, '');
@@ -146,14 +146,14 @@
         document.getElementById('f_chungChi').value = document.getElementById('db_chungChiHanhNghe').textContent;
         document.getElementById('f_trinhDo').value = document.getElementById('db_trinhDo').textContent;
         document.getElementById('f_noiCap').value = document.getElementById('db_noiCap').textContent;
-        showModal();
+        hienModal();
     });
 
-    function displayPharmacistProfile(pharmacistData) {
+    function hienThiHoSoDuocSi(pharmacistData) {
         if (!pharmacistData) return;
         document.getElementById('view_hoTen').textContent = "DS. " + pharmacistData.hoTen;
         document.getElementById('view_vaiTro').textContent = pharmacistData.vaiTroLabel;
-        document.getElementById('view_avatar').textContent = generateInitials(pharmacistData.hoTen);
+        document.getElementById('view_avatar').textContent = layChuCaiDau(pharmacistData.hoTen);
 
         document.getElementById('db_idNguoiDung').textContent = "USR-" + String(pharmacistData.idNguoiDung).padStart(6, '0');
         document.getElementById('db_trangThai').textContent = pharmacistData.trangThai == 1 ? 'Đang hoạt động' : 'Đã khóa';
@@ -186,14 +186,14 @@
             .then(res => {
                 if (res.status) {
                     document.getElementById('view_hoTen').textContent = "DS. " + updatedData.hoTen;
-                    document.getElementById('view_avatar').textContent = generateInitials(updatedData.hoTen);
+                    document.getElementById('view_avatar').textContent = layChuCaiDau(updatedData.hoTen);
                     document.getElementById('db_email').textContent = updatedData.email;
                     document.getElementById('db_soDienThoai').textContent = updatedData.soDienThoai;
                     document.getElementById('db_chungChiHanhNghe').textContent = updatedData.chungChiHanhNghe;
                     document.getElementById('db_trinhDo').textContent = updatedData.trinhDo;
                     document.getElementById('db_noiCap').textContent = updatedData.noiCap;
 
-                    hideModal();
+                    anModal();
                     if (typeof showToast === 'function') {
                         showToast('Cập nhật thông tin hồ sơ thành công!');
                     } else {
@@ -218,5 +218,5 @@
                             'trinhDo' => $thongTin['trinhDo'],
                             'noiCap' => $thongTin['noiCap']
                         ), JSON_UNESCAPED_UNICODE) : 'null'; ?>;
-    displayPharmacistProfile(initialData);
+    hienThiHoSoDuocSi(initialData);
 </script>

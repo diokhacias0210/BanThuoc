@@ -219,7 +219,7 @@
                             <div class="sec-title">Địa chỉ nhận hàng</div>
                         </div>
                         <!-- NÚT MỞ MODAL THÊM ĐỊA CHỈ MỚI -->
-                        <button type="button" class="btn-add-addr-modal" onclick="openAddressModal()">
+                        <button type="button" class="btn-add-addr-modal" onclick="moModalDiaChi()">
                             <i class="fa-solid fa-plus"></i> Thêm địa chỉ mới
                         </button>
                     </div>
@@ -378,7 +378,7 @@
     <div class="modal-box">
         <div class="modal-head">
             <h3>Thêm địa chỉ giao hàng mới</h3>
-            <button type="button" class="modal-close" onclick="closeAddressModal()">
+            <button type="button" class="modal-close" onclick="dongModalDiaChi()">
                 <i class="fa-solid fa-xmark"></i>
             </button>
         </div>
@@ -410,8 +410,8 @@
             </form>
         </div>
         <div class="modal-foot">
-            <button type="button" class="btn btn-ghost" style="padding: 8px 16px; border: 1px solid var(--border); border-radius: 8px; cursor: pointer;" onclick="closeAddressModal()">Hủy</button>
-            <button type="button" class="btn btn-primary" style="padding: 8px 16px; background: var(--green); color: #fff; border: none; border-radius: 8px; font-weight: 600; cursor: pointer;" onclick="submitAddress()">
+            <button type="button" class="btn btn-ghost" style="padding: 8px 16px; border: 1px solid var(--border); border-radius: 8px; cursor: pointer;" onclick="dongModalDiaChi()">Hủy</button>
+            <button type="button" class="btn btn-primary" style="padding: 8px 16px; background: var(--green); color: #fff; border: none; border-radius: 8px; font-weight: 600; cursor: pointer;" onclick="guiDiaChi()">
                 <i class="fa-solid fa-check"></i> Lưu & Chọn địa chỉ này
             </button>
         </div>
@@ -450,7 +450,7 @@
     // Modal địa chỉ
     const addrModalOverlay = document.getElementById('addrModalOverlay');
 
-    function openAddressModal() {
+    function moModalDiaChi() {
         document.getElementById('addrForm').reset();
         document.getElementById('mRecipient').value = fHoTen.value || '';
         document.getElementById('mPhone').value = fSdt.value || '';
@@ -458,17 +458,17 @@
         document.body.style.overflow = 'hidden';
     }
 
-    function closeAddressModal() {
+    function dongModalDiaChi() {
         addrModalOverlay.classList.remove('open');
         document.body.style.overflow = '';
     }
 
     addrModalOverlay.addEventListener('click', (e) => {
-        if (e.target === addrModalOverlay) closeAddressModal();
+        if (e.target === addrModalOverlay) dongModalDiaChi();
     });
 
     // Thêm địa chỉ mới qua AJAX tới API thongTinCaNhan/themDiaChi
-    function submitAddress() {
+    function guiDiaChi() {
         const recipient = document.getElementById('mRecipient').value.trim();
         const phone = document.getElementById('mPhone').value.trim();
         const detail = document.getElementById('mDetail').value.trim();
@@ -489,7 +489,7 @@
             .then(res => res.json())
             .then(res => {
                 if (res.status) {
-                    closeAddressModal();
+                    dongModalDiaChi();
                     // Tải lại trang để tự động cập nhật danh sách địa chỉ mới được thêm vào CSDL
                     window.location.reload();
                 } else {

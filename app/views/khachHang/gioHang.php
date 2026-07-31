@@ -37,7 +37,7 @@
                                 data-id="<?php echo $item['id']; ?>"
                                 data-price="<?php echo $item['donGia']; ?>"
                                 <?php echo $khongChoMua ? 'disabled' : 'checked'; ?>
-                                onchange="updateCartTotal()">
+                                onchange="capNhatTongTien()">
                             <div class="ci-img">
                                 <img src="<?php echo $item['hinhAnhUrl']; ?>" alt="<?php echo htmlspecialchars($item['tenThuoc']); ?>">
                             </div>
@@ -63,12 +63,12 @@
 
                         <div class="col-action-wrapper">
                             <div class="qty-box">
-                                <button type="button" class="qty-btn" <?php echo $khongChoMua ? 'disabled' : ''; ?> onclick="changeQuantity(<?php echo $item['id']; ?>, -1)"><i class="fa-solid fa-minus"></i></button>
+                                <button type="button" class="qty-btn" <?php echo $khongChoMua ? 'disabled' : ''; ?> onclick="thayDoiSoLuong(<?php echo $item['id']; ?>, -1)"><i class="fa-solid fa-minus"></i></button>
                                 <span class="qty-val" id="qty_<?php echo $item['id']; ?>"><?php echo $item['soLuong']; ?></span>
-                                <button type="button" class="qty-btn" <?php echo $khongChoMua ? 'disabled' : ''; ?> onclick="changeQuantity(<?php echo $item['id']; ?>, 1)"><i class="fa-solid fa-plus"></i></button>
+                                <button type="button" class="qty-btn" <?php echo $khongChoMua ? 'disabled' : ''; ?> onclick="thayDoiSoLuong(<?php echo $item['id']; ?>, 1)"><i class="fa-solid fa-plus"></i></button>
                             </div>
 
-                            <button type="button" class="ci-remove" onclick="removeCartItem(<?php echo $item['id']; ?>)" title="Xoá khỏi giỏ">
+                            <button type="button" class="ci-remove" onclick="xoaItemGioHang(<?php echo $item['id']; ?>)" title="Xoá khỏi giỏ">
                                 <i class="fa-solid fa-trash-can"></i>
                             </button>
                         </div>
@@ -91,11 +91,11 @@
 </div>
 
 <script>
-    function fmtMoney(n) {
+    function dinhDangTien(n) {
         return Number(n || 0).toLocaleString('vi-VN') + 'đ';
     }
 
-    function updateCartTotal() {
+    function capNhatTongTien() {
         let tongTien = 0;
         let countSelected = 0;
 
@@ -116,7 +116,7 @@
             }
         });
 
-        document.getElementById('totalValue').textContent = fmtMoney(tongTien);
+        document.getElementById('totalValue').textContent = dinhDangTien(tongTien);
         const checkoutBtn = document.getElementById('checkoutBtn');
         if (checkoutBtn) {
             checkoutBtn.disabled = (countSelected === 0);
@@ -131,7 +131,7 @@
         }
     }
 
-    function changeQuantity(idChiTiet, delta) {
+    function thayDoiSoLuong(idChiTiet, delta) {
         const qtyElem = document.getElementById(`qty_${idChiTiet}`);
         let currentQty = parseInt(qtyElem.textContent) || 1;
         let newQty = currentQty + delta;
@@ -158,15 +158,15 @@
                     qtyElem.textContent = newQty;
                     const cb = document.querySelector(`.ci-check[data-id="${idChiTiet}"]`);
                     const price = parseFloat(cb.dataset.price);
-                    document.getElementById(`total_${idChiTiet}`).textContent = fmtMoney(price * newQty);
-                    updateCartTotal();
+                    document.getElementById(`total_${idChiTiet}`).textContent = dinhDangTien(price * newQty);
+                    capNhatTongTien();
                 } else if (res.message) {
                     alert(res.message);
                 }
             });
     }
 
-    function removeCartItem(idChiTiet) {
+    function xoaItemGioHang(idChiTiet) {
         if (!confirm("Bạn có chắc chắn muốn xóa sản phẩm này khỏi giỏ hàng?")) return;
 
         fetch(`<?php echo URLROOT; ?>/khachHang/gioHang/xoaItem`, {
@@ -181,7 +181,7 @@
                 if (res.status) {
                     const itemRow = document.querySelector(`.cart-item[data-id="${idChiTiet}"]`);
                     if (itemRow) itemRow.remove();
-                    updateCartTotal();
+                    capNhatTongTien();
 
                     const badge = document.getElementById('cartCountBadge');
                     if (badge && res.cartCount !== undefined) {
@@ -202,11 +202,11 @@
             document.querySelectorAll('.ci-check:not([disabled])').forEach(cb => {
                 cb.checked = isChecked;
             });
-            updateCartTotal();
+            capNhatTongTien();
         });
     }
 
-    updateCartTotal();
+    capNhatTongTien();
 
     const checkoutBtn = document.getElementById('checkoutBtn');
     if (checkoutBtn) {

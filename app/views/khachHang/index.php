@@ -65,7 +65,7 @@
                                     <i class="fa-solid fa-ban"></i>
                                 </button>
                             <?php else: ?>
-                                <button type="button" class="add-btn" onclick="event.stopPropagation(); quickAddToCart(<?php echo $t['idThuoc']; ?>)" title="Thêm vào giỏ">
+                                <button type="button" class="add-btn" onclick="event.stopPropagation(); xuLyThemNhanh(<?php echo $t['idThuoc']; ?>)" title="Thêm vào giỏ">
                                     <i class="fa-solid fa-plus"></i>
                                 </button>
                             <?php endif; ?>
@@ -108,7 +108,7 @@
                                     <i class="fa-solid fa-ban"></i>
                                 </button>
                             <?php else: ?>
-                                <button type="button" class="add-btn" onclick="event.preventDefault(); event.stopPropagation(); quickAddToCart(<?php echo $t['idThuoc']; ?>)" title="Thêm vào giỏ">
+                                <button type="button" class="add-btn" onclick="event.preventDefault(); event.stopPropagation(); xuLyThemNhanh(<?php echo $t['idThuoc']; ?>)" title="Thêm vào giỏ">
                                     <i class="fa-solid fa-plus"></i>
                                 </button>
                             <?php endif; ?>
@@ -154,7 +154,7 @@
 </div>
 
 <script>
-    function quickAddToCart(idThuoc) {
+    function xuLyThemNhanh(idThuoc) {
         fetch(`<?php echo URLROOT; ?>/khachHang/gioHang/themVaoGio`, {
                 method: 'POST',
                 headers: {

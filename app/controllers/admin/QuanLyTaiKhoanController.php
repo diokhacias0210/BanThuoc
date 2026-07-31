@@ -25,7 +25,7 @@ class QuanLyTaiKhoanController extends Controller
     }
 
     // API: Lấy danh sách tài khoản kèm bộ lọc
-    public function getList()
+    public function layDanhSach()
     {
         header('Content-Type: application/json');
         $search = isset($_GET['search']) ? $_GET['search'] : '';
@@ -38,7 +38,7 @@ class QuanLyTaiKhoanController extends Controller
     }
 
     // API: Xem chi tiết tài khoản (Đảm bảo mật khẩu đã bị loại bỏ từ tầng Model)
-    public function detail($id)
+    public function chiTiet($id)
     {
         header('Content-Type: application/json');
         $user = $this->taiKhoanModel->getDetailById($id);
@@ -51,14 +51,13 @@ class QuanLyTaiKhoanController extends Controller
     }
 
     // API: Phân quyền vai trò mới (Đã thêm cơ chế chặn tự đổi quyền chính mình)
-    public function saveRole()
+    public function luuVaiTro()
     {
         header('Content-Type: application/json');
         if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             $id = isset($_POST['idNguoiDung']) ? $_POST['idNguoiDung'] : '';
             $newRole = isset($_POST['vaiTro']) ? $_POST['vaiTro'] : '';
 
-            // KIỂM TRA BẢO MẬT: Nếu ID cần sửa trùng với ID Admin trong Session
             if (isset($_SESSION['user_id']) && $id == $_SESSION['user_id']) {
                 echo json_encode(array('status' => false, 'message' => 'Quy tắc hệ thống: Bạn không thể tự hạ quyền hạn của chính tài khoản đang đăng nhập!'));
                 exit;
@@ -79,12 +78,11 @@ class QuanLyTaiKhoanController extends Controller
     }
 
     // API: Khóa / Mở khóa tài khoản (Đã thêm cơ chế chặn tự khóa chính mình)
-    public function toggleStatus($id)
+    public function doiTrangThai($id)
     {
         header('Content-Type: application/json');
         if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 
-            // KIỂM TRA BẢO MẬT: Nếu ID cần khóa trùng với ID Admin trong Session
             if (isset($_SESSION['user_id']) && $id == $_SESSION['user_id']) {
                 echo json_encode(array('status' => false, 'message' => 'Quy tắc an toàn: Bạn không thể tự khóa tài khoản quản trị của chính mình!'));
                 exit;

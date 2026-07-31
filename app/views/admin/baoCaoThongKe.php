@@ -84,11 +84,11 @@
 </div>
 
 <script>
-    function fmtMoney(n) {
+    function dinhDangTien(n) {
         return Number(n || 0).toLocaleString('vi-VN') + 'đ';
     }
 
-    function formatDateInput(date) {
+    function dinhDangNgayNhap(date) {
         let d = new Date(date),
             month = '' + (d.getMonth() + 1),
             day = '' + d.getDate(),
@@ -101,7 +101,7 @@
     const startDateInput = document.getElementById('startDate');
     const endDateInput = document.getElementById('endDate');
 
-    function setDateRange(type) {
+    function datKhoangNgay(type) {
         let start = new Date();
         let end = new Date();
 
@@ -117,8 +117,8 @@
             start = new Date(start.getFullYear(), 0, 1);
         }
 
-        startDateInput.value = formatDateInput(start);
-        endDateInput.value = formatDateInput(end);
+        startDateInput.value = dinhDangNgayNhap(start);
+        endDateInput.value = dinhDangNgayNhap(end);
 
         document.querySelectorAll('.btn-quick').forEach(b => b.classList.remove('active'));
         const quickBtn = document.querySelector(`.btn-quick[data-range="${type}"]`);
@@ -127,13 +127,13 @@
 
     document.querySelectorAll('.btn-quick').forEach(btn => {
         btn.addEventListener('click', (e) => {
-            setDateRange(e.target.dataset.range);
-            processData();
+            datKhoangNgay(e.target.dataset.range);
+            xuLyDuLieu();
         });
     });
 
     // KẾT NỐI API TRUY VẤN DỮ LIỆU ĐỘNG
-    function processData() {
+    function xuLyDuLieu() {
         let startStr = startDateInput.value;
         let endStr = endDateInput.value;
 
@@ -142,12 +142,12 @@
             return;
         }
 
-        fetch(`<?php echo URLROOT; ?>/admin/baoCaoThongKe/getData?startDate=${startStr}&endDate=${endStr}`)
+        fetch(`<?php echo URLROOT; ?>/admin/baoCaoThongKe/layDuLieu?startDate=${startStr}&endDate=${endStr}`)
             .then(res => res.json())
             .then(res => {
                 if (res.status) {
                     // Cập nhật các thẻ chỉ số tổng quan
-                    document.getElementById('valRevenue').textContent = fmtMoney(res.overview.totalRevenue);
+                    document.getElementById('valRevenue').textContent = dinhDangTien(res.overview.totalRevenue);
                     document.getElementById('valOrders').textContent = res.overview.totalCompleted.toLocaleString('vi-VN');
                     document.getElementById('valItems').textContent = res.overview.totalItems.toLocaleString('vi-VN');
                     document.getElementById('valCanceled').textContent = res.overview.totalCanceled.toLocaleString('vi-VN');
@@ -168,7 +168,7 @@
                             </td>
                             <td class="cell-strong">${m.tenDanhMuc || 'Chưa phân loại'}</td>
                             <td style="text-align: center;" class="cell-strong">${Number(m.luotBan).toLocaleString('vi-VN')}</td>
-                            <td style="text-align: right;" class="cell-strong" style="color:var(--green-700);">${fmtMoney(m.doanhThu)}</td>
+                            <td style="text-align: right;" class="cell-strong" style="color:var(--green-700);">${dinhDangTien(m.doanhThu)}</td>
                         </tr>
                     `).join('');
                 }
@@ -195,7 +195,7 @@
         let encodedUri = encodeURI(csvContent);
         let link = document.createElement("a");
         link.setAttribute("href", encodedUri);
-        link.setAttribute("download", `BaoCaoDoanhThu_${formatDateInput(new Date())}.csv`);
+        link.setAttribute("download", `BaoCaoDoanhThu_${dinhDangNgayNhap(new Date())}.csv`);
         document.body.appendChild(link);
         link.click();
         document.body.removeChild(link);
@@ -207,9 +207,9 @@
         }
     });
 
-    document.getElementById('btnFilterData').addEventListener('click', processData);
+    document.getElementById('btnFilterData').addEventListener('click', xuLyDuLieu);
 
     // Khởi tạo mặc định chọn "Tháng này"
-    setDateRange('month');
-    processData();
+    datKhoangNgay('month');
+    xuLyDuLieu();
 </script>

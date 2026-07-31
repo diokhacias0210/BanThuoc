@@ -4,12 +4,12 @@
 <script>
     var PLACEHOLDER_IMG = 'data:image/svg+xml;utf8,' + encodeURIComponent('<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100"><rect width="100" height="100" rx="14" fill="%23e9edf2"/><g fill="none" stroke="%237c869a" stroke-width="4" stroke-linecap="round" stroke-linejoin="round"><rect x="30" y="22" width="40" height="56" rx="8"/><path d="M42 40h16M42 50h16M42 60h10"/></g></svg>');
 
-    function fmtMoney(n) {
+    function dinhDangTien(n) {
         return Number(n || 0).toLocaleString('vi-VN') + 'đ';
     }
 
     // Chuẩn hóa đường dẫn ảnh từ CSDL (xử lý cả đường dẫn tương đối và tuyệt đối)
-    function normalizeImgPath(path) {
+    function chuanHoaDuongDanAnh(path) {
         if (!path) return PLACEHOLDER_IMG;
         if (path.indexOf('http') === 0) return path;
         if (path.indexOf('assets/') === 0) return '<?php echo URLROOT; ?>/' + path;
@@ -18,12 +18,12 @@
         return '<?php echo URLROOT; ?>/' + path;
     }
 
-    function fmtDateVN(str) {
+    function dinhDangNgayVN(str) {
         if (!str) return '—';
         return new Date(str).toLocaleDateString('vi-VN');
     }
 
-    function initials(name) {
+    function layChuCaiDau(name) {
         if (!name) return '?';
         var parts = name.replace(/^DS\.\s*/, '').split(' ');
         var result = '';
@@ -52,13 +52,13 @@
 
     var root = document.getElementById('contentRoot');
 
-    function loadDetail() {
+    function taiChiTiet() {
         if (!idThuoc || idThuoc <= 0) {
             root.innerHTML = '<div class="not-found"><div style="font-weight:700;color:var(--gray-700);margin-bottom:6px;">Không tìm thấy thuốc</div><div>Mã ID thuốc không hợp lệ.</div></div>';
             return;
         }
 
-        fetch('<?php echo URLROOT; ?>/admin/quanLyThuoc/getDetailData/' + idThuoc)
+        fetch('<?php echo URLROOT; ?>/admin/quanLyThuoc/layChiTietDuLieu/' + idThuoc)
             .then(function (res) { return res.json(); })
             .then(function (res) {
                 if (!res.status) {
@@ -74,10 +74,10 @@
                 var imageList = [];
                 if (images.length > 0) {
                     for (var i = 0; i < images.length; i++) {
-                        imageList.push(normalizeImgPath(images[i].duongDan));
+                        imageList.push(chuanHoaDuongDanAnh(images[i].duongDan));
                     }
                 } else if (thuoc.hinhAnh) {
-                    imageList.push(normalizeImgPath(thuoc.hinhAnh));
+                    imageList.push(chuanHoaDuongDanAnh(thuoc.hinhAnh));
                 }
 
                 var mainImg = imageList.length > 0 ? imageList[0] : PLACEHOLDER_IMG;
@@ -104,7 +104,7 @@
                 infoHtml += '<div class="info-card">';
                 infoHtml += '<span class="idthuoc-tag">Mã thuốc: TH' + String(thuoc.idThuoc).padStart(4, '0') + '</span>';
                 infoHtml += '<h1>' + thuoc.tenThuoc + '</h1>';
-                infoHtml += '<div class="price-row">' + fmtMoney(thuoc.giaBan) + ' <span class="unit">/ ' + thuoc.donViTinh + '</span></div>';
+                infoHtml += '<div class="price-row">' + dinhDangTien(thuoc.giaBan) + ' <span class="unit">/ ' + thuoc.donViTinh + '</span></div>';
                 infoHtml += '<div class="spec-grid">';
                 infoHtml += '<div class="spec-item"><div class="k">Danh mục</div><div class="v">' + (thuoc.tenDanhMuc || '—') + '</div></div>';
                 infoHtml += '<div class="spec-item"><div class="k">Phân loại</div><div class="v">' + thuoc.yeuCauKeDon + '</div></div>';
@@ -129,11 +129,11 @@
                 infoHtml += '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 20h9"/><path d="M16.5 3.5a2.1 2.1 0 0 1 3 3L7 19l-4 1 1-4Z"/></svg>';
                 infoHtml += 'Chỉnh sửa thuốc';
                 infoHtml += '</a>';
-                infoHtml += '<button class="btn btn-ghost" onclick="toggleStatus(' + thuoc.idThuoc + ')">';
+                infoHtml += '<button class="btn btn-ghost" onclick="doiTrangThai(' + thuoc.idThuoc + ')">';
                 infoHtml += '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="m4.9 4.9 14.2 14.2"/><path d="M9.9 4.24A10 10 0 0 1 21 12c-.6 1.1-1.3 2.1-2.1 3"/><path d="M6.1 6.1C4.3 7.4 2.9 9.5 2 12c1.6 4 5.5 7 10 7 1.2 0 2.4-.2 3.5-.6"/></svg>';
                 infoHtml += (trangThai ? 'Tạm ngưng bán' : 'Mở bán lại');
                 infoHtml += '</button>';
-                infoHtml += '<button class="btn btn-danger" onclick="if(confirm(\'Bạn có chắc muốn xóa thuốc này?\')) deleteThuoc(' + thuoc.idThuoc + ')">';
+                infoHtml += '<button class="btn btn-danger" onclick="if(confirm(\'Bạn có chắc muốn xóa thuốc này?\')) xoaThuoc(' + thuoc.idThuoc + ')">';
                 infoHtml += '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 6h18"/><path d="M8 6V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"/><path d="M19 6l-1 14a2 2 0 0 1-2 2H8a2 2 0 0 1-2-2L5 6"/></svg>';
                 infoHtml += 'Xóa thuốc';
                 infoHtml += '</button>';
@@ -182,15 +182,15 @@
 
                         lotsHtml += '<tr>';
                         lotsHtml += '<td class="cell-mono cell-strong">' + lo.maLo + '</td>';
-                        lotsHtml += '<td>' + fmtDateVN(lo.ngaySanXuat) + '</td>';
-                        lotsHtml += '<td><span class="hsd-pill ' + pillCls + '">' + fmtDateVN(lo.hanSuDung) + '</span></td>';
+                        lotsHtml += '<td>' + dinhDangNgayVN(lo.ngaySanXuat) + '</td>';
+                        lotsHtml += '<td><span class="hsd-pill ' + pillCls + '">' + dinhDangNgayVN(lo.hanSuDung) + '</span></td>';
                         lotsHtml += '<td class="cell-strong">' + (parseInt(lo.soLuongTon) || 0).toLocaleString('vi-VN') + '</td>';
-                        lotsHtml += '<td>' + fmtMoney(lo.giaNhap) + '</td>';
+                        lotsHtml += '<td>' + dinhDangTien(lo.giaNhap) + '</td>';
                         lotsHtml += '<td><span class="badge ' + bd[0] + '">' + bd[1] + '</span></td>';
                         lotsHtml += '<td>';
                         // Dược sĩ - lấy từ dữ liệu nếu có
                         if (lo.idDuocSi && lo.hoTen) {
-                            lotsHtml += '<div class="ds-chip"><div class="ds-avatar">' + initials(lo.hoTen) + '</div>';
+                            lotsHtml += '<div class="ds-chip"><div class="ds-avatar">' + layChuCaiDau(lo.hoTen) + '</div>';
                             lotsHtml += '<div><div class="cell-strong" style="font-size:12.8px;">' + lo.hoTen + '</div>';
                             lotsHtml += '<div class="cell-sub">' + (lo.chungChiHanhNghe || '') + '</div></div></div>';
                         } else {
@@ -212,12 +212,12 @@
     }
 
     // Tải dữ liệu chi tiết khi trang load
-    loadDetail();
+    taiChiTiet();
 
     // Hàm đổi trạng thái nhanh
-    function toggleStatus(id) {
+    function doiTrangThai(id) {
         if (confirm('Xác nhận thay đổi trạng thái mở bán / tạm ngưng của mặt hàng thuốc này?')) {
-            fetch('<?php echo URLROOT; ?>/admin/quanLyThuoc/toggleStatus/' + id, {
+            fetch('<?php echo URLROOT; ?>/admin/quanLyThuoc/doiTrangThai/' + id, {
                 method: 'POST',
                 headers: { 'Cache-Control': 'no-cache' }
             })
@@ -226,7 +226,7 @@
                     if (res.status) {
                         alert(res.message);
                         // Cập nhật lại giao diện ngay mà không cần reload trang
-                        loadDetail();
+                        taiChiTiet();
                     } else {
                         alert(res.message || 'Thay đổi trạng thái thất bại!');
                     }
@@ -239,7 +239,7 @@
     }
 
     // Hàm xóa thuốc
-    function deleteThuoc(id) {
+    function xoaThuoc(id) {
         alert('Chức năng xóa thuốc đang phát triển.');
     }
 </script>

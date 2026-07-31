@@ -25,7 +25,7 @@ class BaoCaoThongKeController extends Controller
     }
 
     // API: Trả về JSON tổng quan và chi tiết danh sách bán hàng theo ngày
-    public function getData()
+    public function layDuLieu()
     {
         header('Content-Type: application/json');
         $startDate = isset($_GET['startDate']) ? $_GET['startDate'] : date('Y-m-01');

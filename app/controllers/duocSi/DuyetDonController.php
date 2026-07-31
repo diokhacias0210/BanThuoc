@@ -35,7 +35,7 @@ class DuyetDonController extends Controller
         $this->view('layouts/duocSiLayout', $data);
     }
 
-    public function getList()
+    public function layDanhSach()
     {
         $this->ensureAllowedRole();
         header('Content-Type: application/json');
@@ -63,7 +63,7 @@ class DuyetDonController extends Controller
         exit;
     }
 
-    public function detail($id)
+    public function layChiTiet($id)
     {
         $this->ensureAllowedRole();
         header('Content-Type: application/json');
@@ -81,7 +81,7 @@ class DuyetDonController extends Controller
         exit;
     }
 
-    public function approve($id)
+    public function duyet($id)
     {
         $this->ensureAllowedRole();
         header('Content-Type: application/json');
@@ -104,7 +104,7 @@ class DuyetDonController extends Controller
         exit;
     }
 
-    public function approveAll()
+    public function duyetTatCa()
     {
         $this->ensureAllowedRole();
         header('Content-Type: application/json');
@@ -127,7 +127,7 @@ class DuyetDonController extends Controller
         exit;
     }
 
-    public function reject($id)
+    public function tuChoi($id)
     {
         $this->ensureAllowedRole();
         header('Content-Type: application/json');

@@ -17,17 +17,15 @@ class QuanLyDanhMucController extends Controller
         $data['active_tab'] = "danhmuc";
         $data['page_css'] = "quanLyDanhMuc";
 
-        // Sử dụng APPROOT để định vị chính xác file view
         ob_start();
         require_once APPROOT . '/views/admin/quanLyDanhMuc.php';
         $data['content'] = ob_get_clean();
 
-        // Sử dụng APPROOT cho file layout chính
         $this->view('layouts/adminLayout', $data);
     }
 
     // API: Lấy danh sách danh mục (JSON)
-    public function getList()
+    public function layDanhSach()
     {
         header('Content-Type: application/json');
         $search = isset($_GET['search']) ? $_GET['search'] : '';
@@ -37,7 +35,7 @@ class QuanLyDanhMucController extends Controller
     }
 
     // API: Lấy chi tiết một danh mục
-    public function detail($id)
+    public function chiTiet($id)
     {
         header('Content-Type: application/json');
         $detail = $this->danhMucModel->getById($id);
@@ -50,7 +48,7 @@ class QuanLyDanhMucController extends Controller
     }
 
     // API: Xử lý Lưu dữ liệu (Thêm mới hoặc Cập nhật)
-    public function save()
+    public function luu()
     {
         header('Content-Type: application/json');
         if ($_SERVER['REQUEST_METHOD'] === 'POST') {
@@ -64,11 +62,9 @@ class QuanLyDanhMucController extends Controller
             }
 
             if (!empty($id)) {
-                // Thực hiện cập nhật
                 $result = $this->danhMucModel->update($id, $ten, $moTa);
                 $msg = "Đã cập nhật danh mục thuốc thành công!";
             } else {
-                // Thực hiện thêm mới
                 $result = $this->danhMucModel->create($ten, $moTa);
                 $msg = "Đã thêm danh mục mới thành công!";
             }
@@ -83,7 +79,7 @@ class QuanLyDanhMucController extends Controller
     }
 
     // API: XỬ LÝ XÓA DANH MỤC VÀ TRẢ VỀ THÔNG BÁO ĐỒNG BỘ CHO CLIENT
-    public function delete($id)
+    public function xoa($id)
     {
         header('Content-Type: application/json');
         if ($this->danhMucModel->delete($id)) {

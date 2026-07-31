@@ -30,7 +30,7 @@ class QuanLyLoController extends Controller
     }
 
     // API: Lấy danh sách thuốc cho dropdown (dược sĩ dùng)
-    public function getListThuoc()
+    public function layDanhSachThuoc()
     {
         header('Content-Type: application/json');
         $list = $this->thuocModel->getAll();
@@ -39,7 +39,7 @@ class QuanLyLoController extends Controller
     }
 
     // API: Lấy danh sách lô thuốc + thống kê
-    public function getList()
+    public function layDanhSach()
     {
         header('Content-Type: application/json');
         $search = isset($_GET['search']) ? $_GET['search'] : '';
@@ -66,7 +66,7 @@ class QuanLyLoController extends Controller
     }
 
     // API: Lấy chi tiết 1 lô thuốc
-    public function detail($id)
+    public function layChiTiet($id)
     {
         header('Content-Type: application/json');
         $lo = $this->loThuocModel->getById($id);
@@ -79,7 +79,7 @@ class QuanLyLoController extends Controller
     }
 
     // API: Thêm mới hoặc Cập nhật lô thuốc
-    public function save()
+    public function luu()
     {
         if (ob_get_length()) ob_clean();
         header('Content-Type: application/json');
@@ -114,7 +114,7 @@ class QuanLyLoController extends Controller
     }
 
     // API: Xóa lô thuốc
-    public function delete($id)
+    public function xoa($id)
     {
         header('Content-Type: application/json');
         if ($_SERVER['REQUEST_METHOD'] === 'POST') {

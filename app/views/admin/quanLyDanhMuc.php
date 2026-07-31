@@ -79,34 +79,34 @@
 
     const modalForm = document.getElementById('modalForm');
 
-    function openModal(el) {
+    function moModal(el) {
         el.classList.remove('hidden');
         document.body.style.overflow = 'hidden';
     }
 
-    function closeModal(el) {
+    function dongModal(el) {
         el.classList.add('hidden');
         document.body.style.overflow = '';
     }
 
     document.querySelectorAll('[data-close]').forEach(btn => {
-        btn.addEventListener('click', () => closeModal(document.getElementById(btn.dataset.close)));
+        btn.addEventListener('click', () => dongModal(document.getElementById(btn.dataset.close)));
     });
 
-    function setFieldError(id, hasError) {
+    function datLoiTruong(id, hasError) {
         const field = document.getElementById(id).closest('.form-field');
         if (field) field.classList.toggle('has-error', hasError);
     }
 
     document.getElementById('btnAddCategory').addEventListener('click', () => {
-        setFieldError('f_tenDanhMuc', false);
+        datLoiTruong('f_tenDanhMuc', false);
         document.getElementById('formModalTitle').textContent = 'Thêm danh mục thuốc mới';
         document.getElementById('categoryForm').reset();
         document.getElementById('f_idDanhMuc').value = '';
-        openModal(modalForm);
+        moModal(modalForm);
     });
 
-    function showLocalToast(msg) {
+    function hienThongBao(msg) {
         const toast = document.getElementById('localToast');
         document.getElementById('localToastMsg').textContent = msg;
         toast.classList.add('show');
@@ -114,16 +114,16 @@
         toastTimer = setTimeout(() => toast.classList.remove('show'), 3000);
     }
 
-    function fetchAndRenderTable(searchKeyword = '') {
-        fetch(`<?php echo URLROOT; ?>/admin/quanLyDanhMuc/getList?search=${encodeURIComponent(searchKeyword)}`)
+    function taiVaHienThiBang(searchKeyword = '') {
+        fetch(`<?php echo URLROOT; ?>/admin/quanLyDanhMuc/layDanhSach?search=${encodeURIComponent(searchKeyword)}`)
             .then(res => res.json())
             .then(res => {
-                if (res.status) renderTable(res.data);
+                if (res.status) hienThiBang(res.data);
             })
             .catch(err => console.error("Lỗi lấy danh sách:", err));
     }
 
-    function renderTable(danhMucList) {
+    function hienThiBang(danhMucList) {
         const tbody = document.getElementById('tableBody');
         const emptyState = document.getElementById('emptyState');
         document.getElementById('resultCount').textContent = danhMucList.length;
@@ -146,10 +146,10 @@
                     <td class="desc-cell">${item.moTa || '—'}</td>
                     <td style="text-align: center;">${badgeHTML}</td>
                     <td class="actions-cell">
-                        <button class="action-btn edit" onclick="openEditForm(${item.idDanhMuc})" title="Chỉnh sửa">
+                        <button class="action-btn edit" onclick="moFormSua(${item.idDanhMuc})" title="Chỉnh sửa">
                             <i class="fa-solid fa-pen-to-square"></i>
                         </button>
-                        <button class="action-btn delete" onclick="deleteCategory(${item.idDanhMuc}, '${item.tenDanhMuc}')" title="Xóa danh mục">
+                        <button class="action-btn delete" onclick="xoaDanhMuc(${item.idDanhMuc}, '${item.tenDanhMuc}')" title="Xóa danh mục">
                             <i class="fa-solid fa-trash-can"></i>
                         </button>
                     </td>
@@ -158,17 +158,17 @@
         }).join('');
     }
 
-    function openEditForm(id) {
-        fetch(`<?php echo URLROOT; ?>/admin/quanLyDanhMuc/detail/${id}`)
+    function moFormSua(id) {
+        fetch(`<?php echo URLROOT; ?>/admin/quanLyDanhMuc/chiTiet/${id}`)
             .then(res => res.json())
             .then(res => {
                 if (res.status) {
-                    setFieldError('f_tenDanhMuc', false);
+                    datLoiTruong('f_tenDanhMuc', false);
                     document.getElementById('formModalTitle').textContent = `Sửa danh mục — CAT-${String(id).padStart(4, '0')}`;
                     document.getElementById('f_idDanhMuc').value = res.data.idDanhMuc;
                     document.getElementById('f_tenDanhMuc').value = res.data.tenDanhMuc;
                     document.getElementById('f_moTa').value = res.data.moTa || '';
-                    openModal(modalForm);
+                    moModal(modalForm);
                 } else {
                     alert(res.message);
                 }
@@ -179,21 +179,21 @@
     document.getElementById('btnSaveCategory').addEventListener('click', () => {
         const tenInput = document.getElementById('f_tenDanhMuc');
         if (!tenInput.value.trim()) {
-            setFieldError('f_tenDanhMuc', true);
+            datLoiTruong('f_tenDanhMuc', true);
             return;
         }
 
         const formData = new FormData(document.getElementById('categoryForm'));
-        fetch('<?php echo URLROOT; ?>/admin/quanLyDanhMuc/save', {
+        fetch('<?php echo URLROOT; ?>/admin/quanLyDanhMuc/luu', {
                 method: 'POST',
                 body: formData
             })
             .then(res => res.json())
             .then(res => {
                 if (res.status) {
-                    closeModal(modalForm);
-                    showLocalToast(res.message);
-                    fetchAndRenderTable(document.getElementById('searchInput').value);
+                    dongModal(modalForm);
+                    hienThongBao(res.message);
+                    taiVaHienThiBang(document.getElementById('searchInput').value);
                 } else {
                     alert(res.message);
                 }
@@ -201,20 +201,20 @@
             .catch(err => console.error("Lỗi lưu danh mục:", err));
     });
 
-    function deleteCategory(id, name) {
+    function xoaDanhMuc(id, name) {
         if (name === 'Chưa phân loại') {
             alert("Đây là danh mục mặc định bảo vệ của hệ thống, không được phép xóa.");
             return;
         }
         if (confirm(`Bạn có chắc chắn muốn xóa danh mục "${name}"?\n\nToàn bộ sản phẩm thuốc thuộc danh mục này sẽ tự động chuyển sang nhóm "Chưa phân loại".`)) {
-            fetch(`<?php echo URLROOT; ?>/admin/quanLyDanhMuc/delete/${id}`, {
+            fetch(`<?php echo URLROOT; ?>/admin/quanLyDanhMuc/xoa/${id}`, {
                     method: 'POST'
                 })
                 .then(res => res.json())
                 .then(res => {
                     if (res.status) {
-                        showLocalToast(res.message);
-                        fetchAndRenderTable(document.getElementById('searchInput').value);
+                        hienThongBao(res.message);
+                        taiVaHienThiBang(document.getElementById('searchInput').value);
                     } else {
                         alert(res.message);
                     }
@@ -226,14 +226,14 @@
     document.getElementById('searchInput').addEventListener('input', (e) => {
         clearTimeout(searchTimeout);
         searchTimeout = setTimeout(() => {
-            fetchAndRenderTable(e.target.value.trim());
+            taiVaHienThiBang(e.target.value.trim());
         }, 300);
     });
 
     document.getElementById('btnResetFilter').addEventListener('click', () => {
         document.getElementById('searchInput').value = '';
-        fetchAndRenderTable();
+        taiVaHienThiBang();
     });
 
-    fetchAndRenderTable();
+    taiVaHienThiBang();
 </script>

@@ -27,7 +27,7 @@ class QuanLyThuocController extends Controller
     }
 
     // Giao diện chi tiết thông tin thuốc (Xem chi tiết)
-    public function chitiet($id)
+    public function chiTiet($id)
     {
         $data['title'] = "Chi Tiết Thuốc";
         $data['page_title'] = "Thông tin chi tiết thuốc";
@@ -50,7 +50,7 @@ class QuanLyThuocController extends Controller
     }
 
     // API: Lấy danh sách JSON thuốc phối hợp bộ lọc
-    public function getList()
+    public function layDanhSach()
     {
         header('Content-Type: application/json');
         $search = isset($_GET['search']) ? $_GET['search'] : '';
@@ -66,7 +66,7 @@ class QuanLyThuocController extends Controller
     }
 
     // API: Lấy chi tiết thông tin thuốc & danh sách lô kho vận phục vụ trang chi tiết
-    public function getDetailData($id)
+    public function layChiTietDuLieu($id)
     {
         header('Content-Type: application/json');
         $thuoc = $this->thuocModel->getById($id);
@@ -87,9 +87,8 @@ class QuanLyThuocController extends Controller
     }
 
     // API: Thêm mới hoặc Cập nhật thông tin thuốc
-    public function save()
+    public function luu()
     {
-        // Xóa mọi output thừa trước đó nếu có
         if (ob_get_length()) ob_clean();
         header('Content-Type: application/json');
 
@@ -114,9 +113,7 @@ class QuanLyThuocController extends Controller
                 foreach ($_POST['deleteImages'] as $duongDanXoa) {
                     $duongDanXoa = trim($duongDanXoa);
                     if (!empty($duongDanXoa)) {
-                        // Xóa trong DB
                         $this->thuocModel->deleteImageByPath($duongDanXoa);
-                        // Xóa file vật lý
                         $filePath = APPROOT . '/../public/' . str_replace(URLROOT . '/', '', $duongDanXoa);
                         if (file_exists($filePath)) {
                             @unlink($filePath);
@@ -151,7 +148,6 @@ class QuanLyThuocController extends Controller
 
             if (!empty($id)) {
                 $result = $this->thuocModel->update($id, $payload);
-                // Thêm ảnh mới (nếu có)
                 if ($result && !empty($uploadedImages)) {
                     foreach ($uploadedImages as $imgPath) {
                         $this->thuocModel->addImage($id, $imgPath);
@@ -179,7 +175,7 @@ class QuanLyThuocController extends Controller
     }
 
     // API: Tạm ngưng / Mở bán lại nhanh sản phẩm
-    public function toggleStatus($id)
+    public function doiTrangThai($id)
     {
         header('Content-Type: application/json');
         if ($_SERVER['REQUEST_METHOD'] === 'POST') {

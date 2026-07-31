@@ -56,9 +56,9 @@ $maxAllowedVal = isset($maxAllowed) ? intval($maxAllowed) : 0;
                 <?php if ($maxAllowedVal > 0): ?>
                     <div class="qty-row">
                         <div class="qty-box">
-                            <button type="button" onclick="adjustQuantity(-1)"><i class="fa-solid fa-minus"></i></button>
+                            <button type="button" onclick="xuLyThayDoiSoLuong(-1)"><i class="fa-solid fa-minus"></i></button>
                             <span class="qty-val" id="qtyVal">1</span>
-                            <button type="button" onclick="adjustQuantity(1)"><i class="fa-solid fa-plus"></i></button>
+                            <button type="button" onclick="xuLyThayDoiSoLuong(1)"><i class="fa-solid fa-plus"></i></button>
                         </div>
                         <span style="font-size:13px; color:var(--muted);">Đơn vị: <?php echo htmlspecialchars(isset($thuoc['donViTinh']) ? $thuoc['donViTinh'] : ''); ?> (Tối đa <?php echo $maxAllowedVal; ?>)</span>
                     </div>
@@ -69,7 +69,7 @@ $maxAllowedVal = isset($maxAllowed) ? intval($maxAllowed) : 0;
                                 <i class="fa-solid fa-file-prescription"></i> Đăng kê toa thuốc
                             </button>
                         <?php else: ?>
-                            <button class="btn btn-solid" onclick="addToCart(<?php echo isset($thuoc['idThuoc']) ? $thuoc['idThuoc'] : 0; ?>)">
+                            <button class="btn btn-solid" onclick="xuLyThemGioHang(<?php echo isset($thuoc['idThuoc']) ? $thuoc['idThuoc'] : 0; ?>)">
                                 <i class="fa-solid fa-cart-plus"></i> Thêm vào giỏ hàng
                             </button>
                         <?php endif; ?>
@@ -114,7 +114,7 @@ $maxAllowedVal = isset($maxAllowed) ? intval($maxAllowed) : 0;
     let soLuongHienTai = 1;
     const maxAllowed = <?php echo $maxAllowedVal; ?>;
 
-    function adjustQuantity(delta) {
+    function xuLyThayDoiSoLuong(delta) {
         let n = soLuongHienTai + delta;
         if (n < 1) n = 1;
         if (maxAllowed > 0 && n > maxAllowed) {
@@ -126,7 +126,7 @@ $maxAllowedVal = isset($maxAllowed) ? intval($maxAllowed) : 0;
         if (qtyElem) qtyElem.textContent = soLuongHienTai;
     }
 
-    function displayToastMessage(msg) {
+    function hienThiThongBao(msg) {
         const toast = document.getElementById('toast');
         const toastMsg = document.getElementById('toastMsg');
         if (toastMsg) toastMsg.textContent = msg;
@@ -134,7 +134,7 @@ $maxAllowedVal = isset($maxAllowed) ? intval($maxAllowed) : 0;
         setTimeout(() => toast.classList.remove('show'), 3000);
     }
 
-    function addToCart(idThuoc) {
+    function xuLyThemGioHang(idThuoc) {
         const qty = parseInt(document.getElementById('qtyVal').textContent) || 1;
 
         fetch(`<?php echo URLROOT; ?>/khachHang/gioHang/themVaoGio`, {
@@ -147,7 +147,7 @@ $maxAllowedVal = isset($maxAllowed) ? intval($maxAllowed) : 0;
             .then(res => res.json())
             .then(res => {
                 if (res.status) {
-                    displayToastMessage(res.message);
+                    hienThiThongBao(res.message);
                     const badge = document.getElementById('cartCountBadge');
                     if (badge && res.cartCount !== undefined) {
                         badge.textContent = res.cartCount;

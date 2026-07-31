@@ -102,19 +102,19 @@
 
     const LOGGED_IN_ADMIN_ID = <?php echo isset($_SESSION['user_id']) ? $_SESSION['user_id'] : 0; ?>;
 
-    function openModal(id) {
+    function moModal(id) {
         document.getElementById(id).classList.remove('hidden');
     }
 
-    function closeModal(id) {
+    function dongModal(id) {
         document.getElementById(id).classList.add('hidden');
     }
 
     document.querySelectorAll('[data-close]').forEach(btn => {
-        btn.addEventListener('click', () => closeModal(btn.dataset.close));
+        btn.addEventListener('click', () => dongModal(btn.dataset.close));
     });
 
-    function showLocalToast(msg) {
+    function hienThongBao(msg) {
         const toast = document.getElementById('localToast');
         document.getElementById('localToastMsg').textContent = msg;
         toast.classList.add('show');
@@ -122,25 +122,25 @@
         toastTimer = setTimeout(() => toast.classList.remove('show'), 3000);
     }
 
-    function getInitials(name) {
+    function layChuCaiDau(name) {
         return name.split(' ').map(w => w[0]).slice(-2).join('').toUpperCase();
     }
 
-    function fetchUserList() {
+    function taiDanhSachTaiKhoan() {
         const search = document.getElementById('searchInput').value.trim();
         const vaiTro = document.getElementById('filterRole').value;
         const trangThai = document.getElementById('filterStatus').value;
-        const url = `<?php echo URLROOT; ?>/admin/quanLyTaiKhoan/getList?search=${encodeURIComponent(search)}&vaiTro=${vaiTro}&trangThai=${trangThai}`;
+        const url = `<?php echo URLROOT; ?>/admin/quanLyTaiKhoan/layDanhSach?search=${encodeURIComponent(search)}&vaiTro=${vaiTro}&trangThai=${trangThai}`;
 
         fetch(url)
             .then(res => res.json())
             .then(res => {
-                if (res.status) renderTable(res.data);
+                if (res.status) hienThiBang(res.data);
             })
             .catch(err => console.error("Lỗi lấy danh sách tài khoản:", err));
     }
 
-    function renderTable(list) {
+    function hienThiBang(list) {
         const tbody = document.getElementById('tableBody');
         const emptyState = document.getElementById('emptyState');
 
@@ -169,7 +169,7 @@
                     <td class="cell-mono cell-strong">USR-${String(user.idNguoiDung).padStart(6, '0')}</td>
                     <td>
                         <div class="user-cell">
-                            <div class="user-avatar">${getInitials(user.hoTen)}</div>
+                            <div class="user-avatar">${layChuCaiDau(user.hoTen)}</div>
                             <div class="cell-strong">${user.hoTen} ${isSelf ? '<small style="color:var(--green-700); font-weight:700;">(Bạn)</small>' : ''}</div>
                         </div>
                     </td>
@@ -179,13 +179,13 @@
                     <td><span class="badge ${statusClass}">${statusLabel}</span></td>
                     <td>
                         <div class="actions-cell">
-                            <button class="action-btn view" onclick="openDetailModal(${user.idNguoiDung})" title="Xem hồ sơ chi tiết">
+                            <button class="action-btn view" onclick="moModalChiTiet(${user.idNguoiDung})" title="Xem hồ sơ chi tiết">
                                 <i class="fa-solid fa-eye"></i>
                             </button>
-                            <button class="action-btn edit" onclick="openRoleModal(${user.idNguoiDung}, '${user.hoTen}', '${user.vaiTro}')" ${disabledAttr}>
+                            <button class="action-btn edit" onclick="moModalPhanQuyen(${user.idNguoiDung}, '${user.hoTen}', '${user.vaiTro}')" ${disabledAttr}>
                                 <i class="fa-solid fa-sliders"></i>
                             </button>
-                            <button class="action-btn lock" onclick="toggleAccountStatus(${user.idNguoiDung}, '${user.hoTen}')" ${disabledAttr}>
+                            <button class="action-btn lock" onclick="doiTrangThaiTaiKhoan(${user.idNguoiDung}, '${user.hoTen}')" ${disabledAttr}>
                                 ${lockIcon}
                             </button>
                         </div>
@@ -195,8 +195,8 @@
         }).join('');
     }
 
-    function openDetailModal(id) {
-        fetch(`<?php echo URLROOT; ?>/admin/quanLyTaiKhoan/detail/${id}`)
+    function moModalChiTiet(id) {
+        fetch(`<?php echo URLROOT; ?>/admin/quanLyTaiKhoan/chiTiet/${id}`)
             .then(res => res.json())
             .then(res => {
                 if (res.status) {
@@ -226,7 +226,7 @@
                         <div class="detail-item"><div class="k">Trạng thái đăng nhập</div><div class="v">${u.trangThai ? 'Đang hoạt động' : 'Đang bị khóa'}</div></div>
                         ${extHTML}
                     `;
-                    openModal('modalDetail');
+                    moModal('modalDetail');
                 } else {
                     alert(res.message);
                 }
@@ -234,7 +234,7 @@
             .catch(err => console.error("Lỗi lấy chi tiết người dùng:", err));
     }
 
-    function openRoleModal(id, name, currentRole) {
+    function moModalPhanQuyen(id, name, currentRole) {
         if (id == LOGGED_IN_ADMIN_ID) {
             alert("Hệ thống chặn: Bạn không thể tự thay đổi vai trò của chính mình!");
             return;
@@ -242,21 +242,21 @@
         document.getElementById('f_role_id').value = id;
         document.getElementById('f_role_name').value = name;
         document.getElementById('f_role_select').value = currentRole;
-        openModal('modalRole');
+        moModal('modalRole');
     }
 
     document.getElementById('btnSaveRole').addEventListener('click', () => {
         const formData = new FormData(document.getElementById('roleForm'));
-        fetch(`<?php echo URLROOT; ?>/admin/quanLyTaiKhoan/saveRole`, {
+        fetch(`<?php echo URLROOT; ?>/admin/quanLyTaiKhoan/luuVaiTro`, {
                 method: 'POST',
                 body: formData
             })
             .then(res => res.json())
             .then(res => {
                 if (res.status) {
-                    closeModal('modalRole');
-                    showLocalToast(res.message);
-                    fetchUserList();
+                    dongModal('modalRole');
+                    hienThongBao(res.message);
+                    taiDanhSachTaiKhoan();
                 } else {
                     alert(res.message);
                 }
@@ -264,20 +264,20 @@
             .catch(err => console.error("Lỗi lưu quyền hạn tài khoản:", err));
     });
 
-    function toggleAccountStatus(id, name) {
+    function doiTrangThaiTaiKhoan(id, name) {
         if (id == LOGGED_IN_ADMIN_ID) {
             alert("Quy tắc an toàn: Bạn không được phép tự khóa chính tài khoản Admin của mình!");
             return;
         }
         if (confirm(`Xác nhận chuyển đổi trạng thái hoạt động (Khóa/Mở khóa) của tài khoản "${name}"?`)) {
-            fetch(`<?php echo URLROOT; ?>/admin/quanLyTaiKhoan/toggleStatus/${id}`, {
+            fetch(`<?php echo URLROOT; ?>/admin/quanLyTaiKhoan/doiTrangThai/${id}`, {
                     method: 'POST'
                 })
                 .then(res => res.json())
                 .then(res => {
                     if (res.status) {
-                        showLocalToast(res.message);
-                        fetchUserList();
+                        hienThongBao(res.message);
+                        taiDanhSachTaiKhoan();
                     } else {
                         alert(res.message);
                     }
@@ -288,17 +288,17 @@
 
     document.getElementById('searchInput').addEventListener('input', () => {
         clearTimeout(searchTimeout);
-        searchTimeout = setTimeout(fetchUserList, 350);
+        searchTimeout = setTimeout(taiDanhSachTaiKhoan, 350);
     });
-    document.getElementById('filterRole').addEventListener('change', fetchUserList);
-    document.getElementById('filterStatus').addEventListener('change', fetchUserList);
+    document.getElementById('filterRole').addEventListener('change', taiDanhSachTaiKhoan);
+    document.getElementById('filterStatus').addEventListener('change', taiDanhSachTaiKhoan);
 
     document.getElementById('btnResetFilter').addEventListener('click', () => {
         document.getElementById('searchInput').value = '';
         document.getElementById('filterRole').value = 'all';
         document.getElementById('filterStatus').value = 'all';
-        fetchUserList();
+        taiDanhSachTaiKhoan();
     });
 
-    fetchUserList();
+    taiDanhSachTaiKhoan();
 </script>

@@ -191,26 +191,26 @@
     let searchTimeout;
     const modalForm = document.getElementById('modalForm');
 
-    function openModal(el) {
+    function moModal(el) {
         el.classList.remove('hidden');
         document.body.style.overflow = 'hidden';
     }
 
-    function closeModal(el) {
+    function dongModal(el) {
         el.classList.add('hidden');
         document.body.style.overflow = '';
     }
 
     document.querySelectorAll('[data-close]').forEach(btn => {
-        btn.addEventListener('click', () => closeModal(document.getElementById(btn.dataset.close)));
+        btn.addEventListener('click', () => dongModal(document.getElementById(btn.dataset.close)));
     });
 
-    function fmtMoney(n) {
+    function dinhDangTien(n) {
         return Number(n || 0).toLocaleString('vi-VN') + 'đ';
     }
 
     // Chuẩn hóa đường dẫn ảnh từ CSDL (xử lý cả đường dẫn tương đối và tuyệt đối)
-    function normalizeImgPath(path) {
+    function chuanHoaDuongDanAnh(path) {
         if (!path) return PLACEHOLDER_IMG;
         if (path.indexOf('http') === 0) return path;
         if (path.indexOf('assets/') === 0) return '<?php echo URLROOT; ?>/' + path;
@@ -220,7 +220,7 @@
     }
 
     // ===== TOAST NOTIFICATION =====
-    function showToast(msg) {
+    function hienThongBao(msg) {
         const toast = document.getElementById('toast');
         const toastMsg = document.getElementById('toastMsg');
         toastMsg.textContent = msg;
@@ -232,11 +232,11 @@
     }
 
     // ===== FORM VALIDATION =====
-    function clearFormErrors() {
+    function xoaLoiForm() {
         document.querySelectorAll('.form-field.has-error').forEach(el => el.classList.remove('has-error'));
     }
 
-    function setFieldError(fieldId, message) {
+    function datLoiTruong(fieldId, message) {
         const field = document.getElementById(fieldId);
         if (!field) return;
         const formField = field.closest('.form-field');
@@ -251,58 +251,51 @@
         errorEl.textContent = message;
     }
 
-    function validateForm() {
-        clearFormErrors();
+    function kiemTraForm() {
+        xoaLoiForm();
         let isValid = true;
 
-        // Tên thuốc
         const tenThuoc = document.getElementById('f_tenThuoc').value.trim();
         if (!tenThuoc) {
-            setFieldError('f_tenThuoc', 'Vui lòng nhập tên thương mại thuốc');
+            datLoiTruong('f_tenThuoc', 'Vui lòng nhập tên thương mại thuốc');
             isValid = false;
         }
 
-        // Danh mục
         const idDanhMuc = document.getElementById('f_idDanhMuc').value;
         if (!idDanhMuc) {
-            setFieldError('f_idDanhMuc', 'Vui lòng chọn danh mục phân nhóm');
+            datLoiTruong('f_idDanhMuc', 'Vui lòng chọn danh mục phân nhóm');
             isValid = false;
         }
 
-        // Đơn vị tính
         const donViTinh = document.getElementById('f_donViTinh').value.trim();
         if (!donViTinh) {
-            setFieldError('f_donViTinh', 'Vui lòng nhập đơn vị tính');
+            datLoiTruong('f_donViTinh', 'Vui lòng nhập đơn vị tính');
             isValid = false;
         }
 
-        // Hoạt chất
         const thanhPhan = document.getElementById('f_thanhPhan').value.trim();
         if (!thanhPhan) {
-            setFieldError('f_thanhPhan', 'Vui lòng nhập hoạt chất chính');
+            datLoiTruong('f_thanhPhan', 'Vui lòng nhập hoạt chất chính');
             isValid = false;
         }
 
-        // Công dụng
         const congDung = document.getElementById('f_congDung').value.trim();
         if (!congDung) {
-            setFieldError('f_congDung', 'Vui lòng nhập mô tả công dụng thuốc');
+            datLoiTruong('f_congDung', 'Vui lòng nhập mô tả công dụng thuốc');
             isValid = false;
         }
 
-        // Giá bán
         const giaBan = document.getElementById('f_giaBan').value;
         if (!giaBan || Number(giaBan) <= 0) {
-            setFieldError('f_giaBan', 'Giá bán phải lớn hơn 0');
+            datLoiTruong('f_giaBan', 'Giá bán phải lớn hơn 0');
             isValid = false;
         }
 
-        // Giới hạn mua nếu không check "Không giới hạn"
         const khongGioiHan = document.getElementById('f_khongGioiHan').checked;
         if (!khongGioiHan) {
             const gioiHanMua = document.getElementById('f_gioiHanMua').value;
             if (!gioiHanMua || Number(gioiHanMua) <= 0) {
-                setFieldError('f_gioiHanMua', 'Giới hạn mua phải lớn hơn 0');
+                datLoiTruong('f_gioiHanMua', 'Giới hạn mua phải lớn hơn 0');
                 isValid = false;
             }
         }
@@ -310,8 +303,7 @@
         return isValid;
     }
 
-    // Logic toggle phân loại dược
-    function setKedonToggle(value) {
+    function datCheDoKeDon(value) {
         document.querySelectorAll('.kedon-option').forEach(opt => {
             const isMatch = opt.dataset.value === value;
             opt.classList.toggle('selected', isMatch);
@@ -319,7 +311,7 @@
         });
     }
     document.querySelectorAll('.kedon-option').forEach(opt => {
-        opt.addEventListener('click', () => setKedonToggle(opt.dataset.value));
+        opt.addEventListener('click', () => datCheDoKeDon(opt.dataset.value));
     });
 
     document.getElementById('f_khongGioiHan').addEventListener('change', (e) => {
@@ -330,10 +322,8 @@
         document.getElementById('trangThaiLabel').textContent = e.target.checked ? 'Đang bán' : 'Tạm ngưng';
     });
 
-    // Preview nhiều ảnh khi chọn file
     document.getElementById('f_hinhAnh').addEventListener('change', (e) => {
         const previewsContainer = document.getElementById('f_hinhAnhPreviews');
-        // Chỉ xóa previews cũ (không xóa ảnh đang có từ edit)
         const newPreviews = previewsContainer.querySelectorAll('.preview-new');
         newPreviews.forEach(el => el.remove());
 
@@ -354,23 +344,23 @@
     });
 
     // ===== TRUY XUẤT DỮ LIỆU ĐỘNG =====
-    function fetchThuocList() {
+    function taiDanhSachThuoc() {
         const search = document.getElementById('searchInput').value.trim();
         const idDanhMuc = document.getElementById('filterDanhMuc').value;
         const phanLoai = document.getElementById('filterPhanLoai').value;
         const trangThai = document.getElementById('filterTrangThai').value;
 
-        fetch(`<?php echo URLROOT; ?>/admin/quanLyThuoc/getList?search=${encodeURIComponent(search)}&idDanhMuc=${idDanhMuc}&phanLoai=${phanLoai}&trangThai=${trangThai}&_=${Date.now()}`)
+        fetch(`<?php echo URLROOT; ?>/admin/quanLyThuoc/layDanhSach?search=${encodeURIComponent(search)}&idDanhMuc=${idDanhMuc}&phanLoai=${phanLoai}&trangThai=${trangThai}&_=${Date.now()}`)
             .then(res => res.json())
             .then(res => {
                 if (res.status) {
-                    renderTable(res.data);
-                    renderCategoryFilter(res.categories);
+                    hienThiBang(res.data);
+                    hienThiBoLocDanhMuc(res.categories);
                 }
             });
     }
 
-    function renderCategoryFilter(categories) {
+    function hienThiBoLocDanhMuc(categories) {
         const select = document.getElementById('filterDanhMuc');
         const formSelect = document.getElementById('f_idDanhMuc');
         const currentFilterVal = select.value;
@@ -381,7 +371,7 @@
         select.value = currentFilterVal;
     }
 
-    function renderPagination() {
+    function hienThiPhanTrang() {
         const paginationEl = document.getElementById('pagination');
         const totalPages = Math.ceil(currentData.length / PAGE_SIZE);
         if (totalPages <= 1) {
@@ -390,42 +380,39 @@
         }
 
         let html = '';
-        // Prev button
-        html += `<button class="page-btn" onclick="goToPage(${currentPage - 1})" ${currentPage <= 1 ? 'disabled' : ''}><i class="fa-solid fa-chevron-left"></i></button>`;
+        html += `<button class="page-btn" onclick="chuyenTrang(${currentPage - 1})" ${currentPage <= 1 ? 'disabled' : ''}><i class="fa-solid fa-chevron-left"></i></button>`;
 
-        // Page numbers
         const range = 2;
         const startPage = Math.max(1, currentPage - range);
         const endPage = Math.min(totalPages, currentPage + range);
 
         if (startPage > 1) {
-            html += `<button class="page-btn" onclick="goToPage(1)">1</button>`;
+            html += `<button class="page-btn" onclick="chuyenTrang(1)">1</button>`;
             if (startPage > 2) html += `<span class="page-dots">...</span>`;
         }
 
         for (let i = startPage; i <= endPage; i++) {
-            html += `<button class="page-btn ${i === currentPage ? 'active' : ''}" onclick="goToPage(${i})">${i}</button>`;
+            html += `<button class="page-btn ${i === currentPage ? 'active' : ''}" onclick="chuyenTrang(${i})">${i}</button>`;
         }
 
         if (endPage < totalPages) {
             if (endPage < totalPages - 1) html += `<span class="page-dots">...</span>`;
-            html += `<button class="page-btn" onclick="goToPage(${totalPages})">${totalPages}</button>`;
+            html += `<button class="page-btn" onclick="chuyenTrang(${totalPages})">${totalPages}</button>`;
         }
 
-        // Next button
-        html += `<button class="page-btn" onclick="goToPage(${currentPage + 1})" ${currentPage >= totalPages ? 'disabled' : ''}><i class="fa-solid fa-chevron-right"></i></button>`;
+        html += `<button class="page-btn" onclick="chuyenTrang(${currentPage + 1})" ${currentPage >= totalPages ? 'disabled' : ''}><i class="fa-solid fa-chevron-right"></i></button>`;
 
         paginationEl.innerHTML = html;
     }
 
-    function goToPage(page) {
+    function chuyenTrang(page) {
         const totalPages = Math.ceil(currentData.length / PAGE_SIZE);
         if (page < 1 || page > totalPages) return;
         currentPage = page;
-        renderCurrentPage();
+        hienThiTrangHienTai();
     }
 
-    function renderCurrentPage() {
+    function hienThiTrangHienTai() {
         const tbody = document.getElementById('tableBody');
         const emptyState = document.getElementById('emptyState');
         const start = (currentPage - 1) * PAGE_SIZE;
@@ -441,30 +428,30 @@
 
             return `
                 <tr class="${trangThai ? '' : 'row-inactive'}">
-                    <td style="text-align:center;"><img class="thumb" src="${normalizeImgPath(item.hinhAnh)}" alt=""></td>
+                    <td style="text-align:center;"><img class="thumb" src="${chuanHoaDuongDanAnh(item.hinhAnh)}" alt=""></td>
                     <td>
                         <div class="cell-strong">${item.tenThuoc}</div>
                     </td>
                     <td class="cell-strong">${item.tenDanhMuc || 'Chưa phân loại'}</td>
                     <td><span class="badge ${badgeClass}">${item.yeuCauKeDon}</span></td>
-                    <td class="cell-strong" style="color:var(--green-700);">${fmtMoney(item.giaBan)}</td>
+                    <td class="cell-strong" style="color:var(--green-700);">${dinhDangTien(item.giaBan)}</td>
                     <td class="cell-strong">${Number(item.tongTon).toLocaleString('vi-VN')} ${item.donViTinh}${lowStockHTML}</td>
                     <td><span class="badge ${statusClass}">${statusLabel}</span></td>
                     <td>
                         <div class="actions-cell">
-                            <button class="action-btn view" onclick="openDetail(${item.idThuoc})" title="Chi tiết"><i class="fa-solid fa-eye"></i></button>
-                            <button class="action-btn edit" onclick="openEditForm(${item.idThuoc})" title="Sửa thông tin"><i class="fa-solid fa-pen-to-square"></i></button>
-                            <button class="action-btn delete" onclick="toggleStatus(${item.idThuoc})" title="Đổi trạng thái kinh doanh"><i class="fa-solid fa-toggle-on"></i></button>
+                            <button class="action-btn view" onclick="moChiTiet(${item.idThuoc})" title="Chi tiết"><i class="fa-solid fa-eye"></i></button>
+                            <button class="action-btn edit" onclick="moFormSua(${item.idThuoc})" title="Sửa thông tin"><i class="fa-solid fa-pen-to-square"></i></button>
+                            <button class="action-btn delete" onclick="doiTrangThai(${item.idThuoc})" title="Đổi trạng thái kinh doanh"><i class="fa-solid fa-toggle-on"></i></button>
                         </div>
                     </td>
                 </tr>
             `;
         }).join('');
 
-        renderPagination();
+        hienThiPhanTrang();
     }
 
-    function renderTable(list) {
+    function hienThiBang(list) {
         currentData = list;
         currentPage = 1;
         const tbody = document.getElementById('tableBody');
@@ -479,24 +466,23 @@
         }
         emptyState.style.display = 'none';
 
-        renderCurrentPage();
+        hienThiTrangHienTai();
     }
 
-    function openAddForm() {
+    function moFormThem() {
         document.getElementById('formModalTitle').textContent = 'Thêm ';
         document.getElementById('thuocForm').reset();
         document.getElementById('f_idThuoc').value = '';
-        // Xóa toàn bộ previews
         document.getElementById('f_hinhAnhPreviews').innerHTML = '';
         document.getElementById('f_gioiHanMua').disabled = true;
         document.getElementById('f_trangThai').checked = true;
         document.getElementById('trangThaiLabel').textContent = 'Đang bán';
-        setKedonToggle('Không kê đơn');
-        openModal(modalForm);
+        datCheDoKeDon('Không kê đơn');
+        moModal(modalForm);
     }
 
-    function openEditForm(id) {
-        fetch(`<?php echo URLROOT; ?>/admin/quanLyThuoc/getDetailData/${id}`)
+    function moFormSua(id) {
+        fetch(`<?php echo URLROOT; ?>/admin/quanLyThuoc/layChiTietDuLieu/${id}`)
             .then(res => res.json())
             .then(res => {
                 if (res.status) {
@@ -511,7 +497,7 @@
                     document.getElementById('f_congDung').value = t.congDung;
                     document.getElementById('f_giaBan').value = t.giaBan;
 
-                    setKedonToggle(t.yeuCauKeDon);
+                    datCheDoKeDon(t.yeuCauKeDon);
 
                     const noLimit = t.gioiHanMua == -1;
                     document.getElementById('f_khongGioiHan').checked = noLimit;
@@ -521,7 +507,6 @@
                     document.getElementById('f_trangThai').checked = t.trangThai == 1;
                     document.getElementById('trangThaiLabel').textContent = t.trangThai == 1 ? 'Đang bán' : 'Tạm ngưng';
 
-                    // Hiển thị danh sách ảnh hiện có kèm nút xóa
                     const previewsContainer = document.getElementById('f_hinhAnhPreviews');
                     previewsContainer.innerHTML = '';
                     if (res.images && res.images.length > 0) {
@@ -529,16 +514,14 @@
                             const div = document.createElement('div');
                             div.className = 'preview-item preview-existing';
                             div.innerHTML = `
-                                <img class="preview-thumb" src="${normalizeImgPath(img.duongDan)}" alt="">
+                                <img class="preview-thumb" src="${chuanHoaDuongDanAnh(img.duongDan)}" alt="">
                                 <button class="preview-delete-btn" type="button" title="Xóa ảnh" data-img="${img.duongDan}">&times;</button>
                             `;
                             previewsContainer.appendChild(div);
                         });
 
-                        // Gắn sự kiện xóa cho từng nút
                         previewsContainer.querySelectorAll('.preview-delete-btn').forEach(btn => {
                             btn.addEventListener('click', function() {
-                                // Thêm đường dẫn ảnh cần xóa vào hidden input
                                 const imgPath = this.dataset.img;
                                 let deleteInput = document.getElementById('f_deleteImages');
                                 if (!deleteInput) {
@@ -546,19 +529,17 @@
                                     deleteInput.id = 'f_deleteImages';
                                     document.getElementById('thuocForm').appendChild(deleteInput);
                                 }
-                                // Tạo hidden input cho mỗi ảnh cần xóa
                                 const hidden = document.createElement('input');
                                 hidden.type = 'hidden';
                                 hidden.name = 'deleteImages[]';
                                 hidden.value = imgPath;
                                 deleteInput.appendChild(hidden);
-                                // Ẩn item preview
                                 this.closest('.preview-item').style.display = 'none';
                             });
                         });
                     }
 
-                    openModal(modalForm);
+                    moModal(modalForm);
                 }
             });
     }
@@ -573,12 +554,12 @@
 
         var formData = new FormData(form);
 
-        fetch('<?php echo URLROOT; ?>/admin/quanLyThuoc/save', {
+        fetch('<?php echo URLROOT; ?>/admin/quanLyThuoc/luu', {
             method: 'POST',
             body: formData
         })
         .then(function (res) {
-            return res.text(); // Lấy dạng chuỗi thô để tránh crash khi PHP có Warning
+            return res.text();
         })
         .then(function (text) {
             var res;
@@ -591,16 +572,14 @@
             }
 
             if (res.status) {
-                // Đóng Modal ngay lập tức
                 var modal = document.getElementById('modalForm');
                 if (modal) {
                     modal.classList.add('hidden');
                     document.body.style.overflow = '';
                 }
                 alert(res.message);
-                
-                // Cập nhật lại danh sách trực tiếp không cần reload toàn bộ trang
-                fetchThuocList();
+
+                taiDanhSachThuoc();
             } else {
                 alert(res.message || 'Có lỗi xảy ra, không thể lưu dữ liệu!');
             }
@@ -611,9 +590,9 @@
         });
     });
 
-    function toggleStatus(id) {
+    function doiTrangThai(id) {
         if (confirm('Xác nhận thay đổi trạng thái mở bán / tạm ngưng của mặt hàng thuốc này?')) {
-            fetch(`<?php echo URLROOT; ?>/admin/quanLyThuoc/toggleStatus/${id}`, {
+            fetch(`<?php echo URLROOT; ?>/admin/quanLyThuoc/doiTrangThai/${id}`, {
                 method: 'POST',
                 headers: {
                     'Cache-Control': 'no-cache'
@@ -624,17 +603,15 @@
             })
             .then(function (res) {
                 if (res.status) {
-                    if (typeof showToast === 'function') {
-                        showToast(res.message);
+                    if (typeof hienThongBao === 'function') {
+                        hienThongBao(res.message);
                     } else {
                         alert(res.message);
                     }
-                    
-                    // Chuyển bộ lọc về "Tất cả trạng thái" để thấy thay đổi ngay trên màn hình
+
                     document.getElementById('filterTrangThai').value = 'all';
-                    
-                    // Cập nhật lại danh sách
-                    fetchThuocList();
+
+                    taiDanhSachThuoc();
                 } else {
                     alert(res.message || 'Thay đổi trạng thái thất bại!');
                 }
@@ -648,24 +625,24 @@
 
     document.getElementById('searchInput').addEventListener('input', () => {
         clearTimeout(searchTimeout);
-        searchTimeout = setTimeout(fetchThuocList, 300);
+        searchTimeout = setTimeout(taiDanhSachThuoc, 300);
     });
-    document.getElementById('filterDanhMuc').addEventListener('change', fetchThuocList);
-    document.getElementById('filterPhanLoai').addEventListener('change', fetchThuocList);
-    document.getElementById('filterTrangThai').addEventListener('change', fetchThuocList);
+    document.getElementById('filterDanhMuc').addEventListener('change', taiDanhSachThuoc);
+    document.getElementById('filterPhanLoai').addEventListener('change', taiDanhSachThuoc);
+    document.getElementById('filterTrangThai').addEventListener('change', taiDanhSachThuoc);
     document.getElementById('btnResetFilter').addEventListener('click', () => {
         document.getElementById('searchInput').value = '';
         document.getElementById('filterDanhMuc').value = 'all';
         document.getElementById('filterPhanLoai').value = 'all';
         document.getElementById('filterTrangThai').value = 'all';
-        fetchThuocList();
+        taiDanhSachThuoc();
     });
 
-    document.getElementById('btnAddThuoc').addEventListener('click', openAddForm);
+    document.getElementById('btnAddThuoc').addEventListener('click', moFormThem);
 
-    fetchThuocList();
+    taiDanhSachThuoc();
 
-    function openDetail(id) {
-        window.location.href = '<?php echo URLROOT; ?>/admin/quanLyThuoc/chitiet/' + id;
+    function moChiTiet(id) {
+        window.location.href = '<?php echo URLROOT; ?>/admin/quanLyThuoc/chiTiet/' + id;
     }
 </script>

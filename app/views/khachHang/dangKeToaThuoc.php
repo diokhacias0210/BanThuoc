@@ -24,7 +24,7 @@
                 </div>
                 <div style="font-weight: 600; color: var(--text);">Nhấn vào đây để tải ảnh đơn thuốc từ thiết bị</div>
                 <div style="font-size: 12px; color: var(--muted2);">Hỗ trợ định dạng: JPG, PNG, WEBP</div>
-                <input type="file" id="file-in" name="hinhAnhFiles[]" class="hidden-input" multiple accept="image/*" onchange="previewMultipleFiles(this)">
+                <input type="file" id="file-in" name="hinhAnhFiles[]" class="hidden-input" multiple accept="image/*" onchange="xemTruocNhieuAnh(this)">
             </div>
             <div class="preview-grid" id="preview-grid"></div>
 
@@ -39,10 +39,10 @@
             <div id="drug-list"></div>
 
             <div class="add-row">
-                <button type="button" class="add-drug-btn" onclick="addDrugRow()">
+                <button type="button" class="add-drug-btn" onclick="themDongThuoc()">
                     <i class="fa-solid fa-plus"></i> Thêm dòng thuốc khác
                 </button>
-                <button type="button" class="pick-btn" onclick="openDrugModal('global')">
+                <button type="button" class="pick-btn" onclick="moModalChonThuoc('global')">
                     <i class="fa-solid fa-list-check"></i> Chọn từ danh mục
                 </button>
             </div>
@@ -57,7 +57,7 @@
             <textarea name="ghiChu" class="note-ta" rows="3" placeholder="Nhập tiền sử dị ứng thuốc, triệu chứng sức khỏe hoặc yêu cầu thêm..."></textarea>
 
             <!-- NÚT GỬI -->
-            <button type="button" class="send-btn" onclick="submitPrescription()">
+            <button type="button" class="send-btn" onclick="guiDonThuoc()">
                 <i class="fa-solid fa-paper-plane"></i> Gửi đơn thuốc cho Dược sĩ
             </button>
         </form>
@@ -69,13 +69,13 @@
     <div class="modal">
         <div class="modal-head">
             <div class="modal-title" id="modal-title">Chọn danh sách thuốc kê đơn hệ thống</div>
-            <button type="button" class="close-btn" onclick="closeDrugModal()">&times;</button>
+            <button type="button" class="close-btn" onclick="dongModalChonThuoc()">&times;</button>
         </div>
-        <input type="text" id="modal-search" class="search-in" placeholder="Tìm kiếm tên thuốc..." oninput="filterModalDrugs()">
+        <input type="text" id="modal-search" class="search-in" placeholder="Tìm kiếm tên thuốc..." oninput="locThuocTrongModal()">
         <div class="drug-list-m" id="drug-list-m"></div>
         <div class="modal-footer">
-            <button type="button" class="m-cancel" onclick="closeDrugModal()">Hủy</button>
-            <button type="button" class="m-ok" onclick="confirmModalPick()">Xác nhận chọn</button>
+            <button type="button" class="m-cancel" onclick="dongModalChonThuoc()">Hủy</button>
+            <button type="button" class="m-ok" onclick="xacNhanChonThuoc()">Xác nhận chọn</button>
         </div>
     </div>
 </div>
@@ -95,7 +95,7 @@
     let modalMode = 'global';
     let targetRowId = null;
 
-    function previewMultipleFiles(input) {
+    function xemTruocNhieuAnh(input) {
         const grid = document.getElementById('preview-grid');
         grid.innerHTML = '';
         if (input.files && input.files.length > 0) {
@@ -112,7 +112,7 @@
         }
     }
 
-    function addDrugRow(val = '') {
+    function themDongThuoc(val = '') {
         drugRowCount++;
         const id = 'row_' + drugRowCount;
         const list = document.getElementById('drug-list');
@@ -123,8 +123,8 @@
         const cleanVal = val.replace(/"/g, '&quot;');
 
         div.innerHTML = `
-            <input type="text" class="drug-input" name="danhSachThuoc[]" value="${cleanVal}" placeholder="Nhấn để chọn thuốc từ danh mục..." readonly onclick="openDrugModal('row', '${id}')" style="cursor:pointer;">
-            <button type="button" class="icon-btn green" onclick="openDrugModal('row', '${id}')" title="Chọn thuốc">
+            <input type="text" class="drug-input" name="danhSachThuoc[]" value="${cleanVal}" placeholder="Nhấn để chọn thuốc từ danh mục..." readonly onclick="moModalChonThuoc('row', '${id}')" style="cursor:pointer;">
+            <button type="button" class="icon-btn green" onclick="moModalChonThuoc('row', '${id}')" title="Chọn thuốc">
                 <i class="fa-solid fa-plus"></i>
             </button>
             <button type="button" class="icon-btn red" onclick="document.getElementById('${id}').remove()" title="Xóa dòng">
@@ -134,7 +134,7 @@
         list.appendChild(div);
     }
 
-    function openDrugModal(mode = 'global', rowId = null) {
+    function moModalChonThuoc(mode = 'global', rowId = null) {
         modalMode = mode;
         targetRowId = rowId;
         tempPicked.clear();
@@ -155,14 +155,14 @@
 
         document.getElementById('modal-search').value = '';
         document.getElementById('modal-bg').classList.add('open');
-        filterModalDrugs();
+        locThuocTrongModal();
     }
 
-    function closeDrugModal() {
+    function dongModalChonThuoc() {
         document.getElementById('modal-bg').classList.remove('open');
     }
 
-    function filterModalDrugs() {
+    function locThuocTrongModal() {
         const q = document.getElementById('modal-search').value.toLowerCase();
         const container = document.getElementById('drug-list-m');
         container.innerHTML = '';
@@ -180,13 +180,13 @@
                     if (tempPicked.has(d)) tempPicked.delete(d);
                     else tempPicked.add(d);
                 }
-                filterModalDrugs();
+                locThuocTrongModal();
             };
             container.appendChild(div);
         });
     }
 
-    function confirmModalPick() {
+    function xacNhanChonThuoc() {
         if (modalMode === 'row' && targetRowId) {
             const input = document.querySelector(`#${targetRowId} .drug-input`);
             if (input) {
@@ -197,15 +197,15 @@
             listContainer.innerHTML = '';
 
             if (tempPicked.size > 0) {
-                tempPicked.forEach(drugName => addDrugRow(drugName));
+                tempPicked.forEach(drugName => themDongThuoc(drugName));
             } else {
-                addDrugRow();
+                themDongThuoc();
             }
         }
-        closeDrugModal();
+        dongModalChonThuoc();
     }
 
-    function submitPrescription() {
+    function guiDonThuoc() {
         const fileInput = document.getElementById('file-in');
         if (!fileInput.files || fileInput.files.length === 0) {
             alert('Vui lòng đính kèm ít nhất 1 hình ảnh đơn thuốc!');
@@ -250,8 +250,8 @@
     }
 
     if (TEN_THUOC_CHON_SAN) {
-        addDrugRow(TEN_THUOC_CHON_SAN);
+        themDongThuoc(TEN_THUOC_CHON_SAN);
     } else {
-        addDrugRow();
+        themDongThuoc();
     }
 </script>

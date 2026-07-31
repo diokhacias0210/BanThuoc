@@ -39,8 +39,8 @@
             <p class="modal-desc">Vui lòng chọn lý do huỷ đơn hàng này để hệ thống ghi nhận.</p>
             <div class="reason-options" id="reasonOptions"></div>
             <div class="modal-actions">
-                <button class="btn-close" onclick="closeCancelModal()">Đóng</button>
-                <button class="btn-confirm" onclick="confirmCancelOrder()">Xác nhận huỷ</button>
+                <button class="btn-close" onclick="dongModalHuy()">Đóng</button>
+                <button class="btn-confirm" onclick="xacNhanHuyDon()">Xác nhận huỷ</button>
             </div>
         </div>
     </div>
@@ -50,7 +50,7 @@
          từ QuanLyDonHangController::chiTietAjax() -->
     <div class="modal-overlay" id="detailModal">
         <div class="modal-box">
-            <button class="dhd-close-x" onclick="closeDetailModal()" aria-label="Đóng">
+            <button class="dhd-close-x" onclick="dongModalChiTiet()" aria-label="Đóng">
                 <i class="fa-solid fa-xmark"></i>
             </button>
             <div id="dhdBody">
@@ -74,7 +74,7 @@
         // Dữ liệu đơn hàng thật lấy từ CSDL (bảng DonHang) qua Controller
         let orders = <?php echo json_encode($donHangList, JSON_UNESCAPED_UNICODE); ?>;
 
-        function formatMaDon(id) {
+        function dinhDangMaDon(id) {
             return 'DH' + String(id).padStart(5, '0');
         }
 
@@ -92,7 +92,7 @@
             "Không còn nhu cầu mua nữa"
         ];
 
-        function renderStatusTabs() {
+        function hienThiTabTrangThai() {
             const counts = { all: orders.length };
             Object.keys(statusMeta).forEach(k => counts[k] = orders.filter(o => o.status === k).length);
             const tabs = [
@@ -104,24 +104,24 @@
                 { key: "DA_HUY", label: "Đã huỷ" }
             ];
             document.getElementById('statusTabs').innerHTML = tabs.map(t => `
-    <button class="status-tab ${currentFilter === t.key ? 'active' : ''}" onclick="filterStatus('${t.key}')">
+    <button class="status-tab ${currentFilter === t.key ? 'active' : ''}" onclick="locTheoTrangThai('${t.key}')">
       ${t.label} <span class="count">(${counts[t.key]})</span>
     </button>
   `).join('');
         }
 
-        function filterStatus(status) {
+        function locTheoTrangThai(status) {
             currentFilter = status;
             currentPage = 1;
-            renderStatusTabs();
-            renderTable();
+            hienThiTabTrangThai();
+            hienThiBang();
         }
 
-        function renderTable() {
+        function hienThiBang() {
             const search = document.getElementById('searchInput').value.trim().toLowerCase();
             let filtered = orders.filter(o => {
                 const matchesStatus = currentFilter === "all" || o.status === currentFilter;
-                const matchesSearch = !search || formatMaDon(o.id).toLowerCase().includes(search);
+                const matchesSearch = !search || dinhDangMaDon(o.id).toLowerCase().includes(search);
                 return matchesStatus && matchesSearch;
             });
 
@@ -137,44 +137,44 @@
             }
 
             tbody.innerHTML = paginated.map(o => `
-    <tr onclick="navigateToDetail(${o.id})">
-      <td class="order-code">#${formatMaDon(o.id)}</td>
+    <tr onclick="chuyenDenChiTiet(${o.id})">
+      <td class="order-code">#${dinhDangMaDon(o.id)}</td>
       <td>${o.date}</td>
       <td class="amount">${Number(o.total).toLocaleString('vi-VN')}đ</td>
       <td><span class="status-badge ${statusMeta[o.status].cls}"><span class="dot"></span>${statusMeta[o.status].label}</span></td>
       <td style="text-align: center;">
-        <button class="btn-cancel-action" ${o.status !== 'CHO_XAC_NHAN' ? 'disabled' : ''} onclick="openCancelModal(${o.id}, event)">
+        <button class="btn-cancel-action" ${o.status !== 'CHO_XAC_NHAN' ? 'disabled' : ''} onclick="moModalHuy(${o.id}, event)">
           <i class="fa-solid fa-rectangle-xmark"></i> Hủy đơn
         </button>
       </td>
     </tr>
   `).join('');
 
-            renderPagination(totalPages, filtered.length);
+            hienThiPhanTrang(totalPages, filtered.length);
         }
 
-        function renderPagination(totalPages, totalItems) {
+        function hienThiPhanTrang(totalPages, totalItems) {
             const controls = document.getElementById('paginationControls');
             if (totalItems <= 8) {
                 controls.innerHTML = '';
                 return;
             }
-            let html = `<button class="page-btn" ${currentPage === 1 ? 'disabled' : ''} onclick="changePage(${currentPage - 1})"><i class="fa-solid fa-angle-left"></i></button>`;
+            let html = `<button class="page-btn" ${currentPage === 1 ? 'disabled' : ''} onclick="chuyenTrang(${currentPage - 1})"><i class="fa-solid fa-angle-left"></i></button>`;
             for (let i = 1; i <= totalPages; i++) {
-                html += `<button class="page-btn ${i === currentPage ? 'active' : ''}" onclick="changePage(${i})">${i}</button>`;
+                html += `<button class="page-btn ${i === currentPage ? 'active' : ''}" onclick="chuyenTrang(${i})">${i}</button>`;
             }
-            html += `<button class="page-btn" ${currentPage === totalPages ? 'disabled' : ''} onclick="changePage(${currentPage + 1})"><i class="fa-solid fa-angle-right"></i></button>`;
+            html += `<button class="page-btn" ${currentPage === totalPages ? 'disabled' : ''} onclick="chuyenTrang(${currentPage + 1})"><i class="fa-solid fa-angle-right"></i></button>`;
             controls.innerHTML = html;
         }
 
-        function changePage(page) { currentPage = page; renderTable(); }
+        function chuyenTrang(page) { currentPage = page; hienThiBang(); }
 
         // ĐÃ SỬA THEO YÊU CẦU: không chuyển trang / không reload nữa.
         // Bấm vào 1 dòng đơn hàng -> mở POPUP chi tiết, lấy dữ liệu qua AJAX
         // từ QuanLyDonHangController::chiTietAjax($id) (trả JSON).
-        function navigateToDetail(id) { openDetailModal(id); }
+        function chuyenDenChiTiet(id) { moModalChiTiet(id); }
 
-        function openDetailModal(id) {
+        function moModalChiTiet(id) {
             currentDetailId = id;
             document.getElementById('dhdBody').innerHTML = `<div class="dhd-loading"><i class="fa-solid fa-spinner fa-spin"></i> Đang tải chi tiết đơn hàng...</div>`;
             document.getElementById('detailModal').classList.add('show');
@@ -183,7 +183,7 @@
                 .then(res => res.json())
                 .then(res => {
                     if (res.status) {
-                        renderDetailModal(res.donHangInfo, res.sanPhamList);
+                        hienThiModalChiTiet(res.donHangInfo, res.sanPhamList);
                     } else {
                         document.getElementById('dhdBody').innerHTML =
                             `<div class="dhd-loading">${res.message || 'Không tải được chi tiết đơn hàng.'}</div>`;
@@ -195,14 +195,14 @@
                 });
         }
 
-        function closeDetailModal() {
+        function dongModalChiTiet() {
             document.getElementById('detailModal').classList.remove('show');
             currentDetailId = null;
         }
 
         // Render nội dung popup chi tiết đơn hàng (tương đương views/khachHang/chiTietDonHang.php,
         // nhưng render bằng JS để không phải load lại trang)
-        function renderDetailModal(donHangInfo, sanPhamList) {
+        function hienThiModalChiTiet(donHangInfo, sanPhamList) {
             const trangThai = donHangInfo.trangThai;
             const meta = statusMeta[trangThai] || { label: trangThai, cls: '' };
             const phiVanChuyen = donHangInfo.phiVanChuyen != null ? Number(donHangInfo.phiVanChuyen) : 15000;
@@ -254,7 +254,7 @@
                 : '';
 
             const cancelBtn = trangThai === 'CHO_XAC_NHAN'
-                ? `<button class="btn-cancel-order" onclick="openCancelModal(${donHangInfo.idDonHang}, event)">
+                ? `<button class="btn-cancel-order" onclick="moModalHuy(${donHangInfo.idDonHang}, event)">
                        <i class="fa-solid fa-rectangle-xmark"></i> Huỷ đơn hàng
                    </button>`
                 : '';
@@ -269,7 +269,7 @@
 
             document.getElementById('dhdBody').innerHTML = `
                 <div class="detail-header">
-                    <h3>Chi tiết đơn hàng #${formatMaDon(donHangInfo.idDonHang)}</h3>
+                    <h3>Chi tiết đơn hàng #${dinhDangMaDon(donHangInfo.idDonHang)}</h3>
                     ${cancelBtn}
                 </div>
                 ${cancelledBanner}
@@ -351,28 +351,28 @@
             `;
         }
 
-        function openCancelModal(id, event) {
+        function moModalHuy(id, event) {
             event.stopPropagation();
             cancelTargetId = id;
             selectedReason = cancelReasons[0];
-            renderReasonOptions();
+            hienThiLyDo();
             document.getElementById('cancelModal').classList.add('show');
         }
-        function closeCancelModal() { document.getElementById('cancelModal').classList.remove('show'); }
+        function dongModalHuy() { document.getElementById('cancelModal').classList.remove('show'); }
 
-        function renderReasonOptions() {
+        function hienThiLyDo() {
             document.getElementById('reasonOptions').innerHTML = cancelReasons.map(r => `
-    <div class="reason-option ${selectedReason === r ? 'selected' : ''}" onclick="selectReason('${r}')">
+    <div class="reason-option ${selectedReason === r ? 'selected' : ''}" onclick="chonLyDo('${r}')">
       <div class="reason-radio"></div>
       <span>${r}</span>
     </div>
   `).join('');
         }
-        function selectReason(r) { selectedReason = r; renderReasonOptions(); }
+        function chonLyDo(r) { selectedReason = r; hienThiLyDo(); }
 
         // Gọi API huỷ đơn thật xuống CSDL (bảng DonHang: trangThai + lyDoHuy)
         // ĐÃ SỬA: route đúng là Controller "QuanLyDonHang", action "huyDonHang"
-        function confirmCancelOrder() {
+        function xacNhanHuyDon() {
             fetch(`<?php echo URLROOT; ?>/QuanLyDonHang/huyDonHang/${cancelTargetId}`, {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
@@ -383,13 +383,13 @@
                     if (res.status) {
                         const o = orders.find(x => x.id === cancelTargetId);
                         if (o) o.status = "DA_HUY";
-                        alert(`Đã hủy thành công đơn hàng #${formatMaDon(cancelTargetId)}`);
-                        closeCancelModal();
-                        renderStatusTabs();
-                        renderTable();
+                        alert(`Đã hủy thành công đơn hàng #${dinhDangMaDon(cancelTargetId)}`);
+                        dongModalHuy();
+                        hienThiTabTrangThai();
+                        hienThiBang();
                         // Nếu popup chi tiết đang mở đúng đơn hàng vừa huỷ -> tải lại để hiện trạng thái "Đã huỷ"
                         if (currentDetailId === cancelTargetId) {
-                            openDetailModal(cancelTargetId);
+                            moModalChiTiet(cancelTargetId);
                         }
                     } else {
                         alert(res.message || 'Huỷ đơn hàng thất bại, vui lòng thử lại.');
@@ -398,9 +398,9 @@
                 .catch(() => alert('Lỗi kết nối máy chủ.'));
         }
 
-        document.getElementById('searchInput').addEventListener('input', () => { currentPage = 1; renderTable(); });
+        document.getElementById('searchInput').addEventListener('input', () => { currentPage = 1; hienThiBang(); });
 
-        renderStatusTabs();
-        renderTable();
+        hienThiTabTrangThai();
+        hienThiBang();
 </script>
     

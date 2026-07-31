@@ -134,14 +134,14 @@
 
     const baseUrl = '<?php echo URLROOT; ?>/duocSi/duyetDon';
 
-    function formatDate(value) {
+    function dinhDangNgay(value) {
         if (!value) return '—';
         const d = new Date(value);
         if (Number.isNaN(d.getTime())) return value;
         return d.toLocaleString('vi-VN', { hour: '2-digit', minute: '2-digit', day: '2-digit', month: '2-digit', year: 'numeric' });
     }
 
-    function renderTable() {
+    function hienThiBang() {
         const tbody = document.getElementById('tableBody');
         const emptyState = document.getElementById('emptyState');
 
@@ -160,8 +160,8 @@
             if (item.trangThai === 'CHO_DUYET') {
                 statusBadge = '<span class="badge badge-pending">Chờ duyệt</span>';
                 actionButtons = `
-                    <button class="action-btn approve" onclick="approveSingle(${item.idDonThuoc})">Duyệt đơn</button>
-                    <button class="action-btn reject" onclick="openRejectReasonModal(${item.idDonThuoc})">Từ chối</button>
+                    <button class="action-btn approve" onclick="duyetDonLe(${item.idDonThuoc})">Duyệt đơn</button>
+                    <button class="action-btn reject" onclick="moModalLyDoTuChoi(${item.idDonThuoc})">Từ chối</button>
                 `;
             } else if (item.trangThai === 'DA_DUYET') {
                 statusBadge = '<span class="badge badge-approved">Đã duyệt</span>';
@@ -173,12 +173,12 @@
                 <tr>
                     <td class="cell-strong cell-mono">REQ-${item.idDonThuoc}</td>
                     <td><div class="cell-strong">${item.tenKhachHang || '—'}</div></td>
-                    <td>${formatDate(item.ngayGui)}</td>
+                    <td>${dinhDangNgay(item.ngayGui)}</td>
                     <td style="max-width:300px; white-space:nowrap; overflow:hidden; text-overflow:ellipsis;">${item.ghiChu || '—'}</td>
                     <td>${statusBadge}</td>
                     <td>
                         <div class="actions-cell" style="justify-content:flex-end;">
-                            <button class="action-btn view" onclick="openDetailModal(${item.idDonThuoc})">Xem chi tiết đơn</button>
+                            <button class="action-btn view" onclick="moModalChiTiet(${item.idDonThuoc})">Xem chi tiết đơn</button>
                             ${actionButtons}
                         </div>
                     </td>
@@ -186,10 +186,10 @@
             `;
         }).join('');
 
-        renderPagination(state.totalItems);
+        hienThiPhanTrang(state.totalItems);
     }
 
-    function renderPagination(totalItems) {
+    function hienThiPhanTrang(totalItems) {
         const totalPages = Math.ceil(totalItems / state.pageSize);
         const box = document.getElementById('pagination');
         if (totalPages <= 1) {
@@ -199,29 +199,29 @@
 
         let html = '';
         for (let i = 1; i <= totalPages; i++) {
-            html += `<button class="page-btn ${i === state.page ? 'active' : ''}" onclick="goToPage(${i})">${i}</button>`;
+            html += `<button class="page-btn ${i === state.page ? 'active' : ''}" onclick="chuyenTrang(${i})">${i}</button>`;
         }
         box.innerHTML = html;
     }
 
-    function goToPage(page) {
+    function chuyenTrang(page) {
         state.page = page;
-        loadData();
+        taiDuLieu();
     }
 
-    function openModal(id) {
+    function moModal(id) {
         document.getElementById(id).classList.remove('hidden');
     }
 
-    function closeModal(id) {
+    function dongModal(id) {
         document.getElementById(id).classList.add('hidden');
     }
 
     document.querySelectorAll('[data-close]').forEach(btn => {
-        btn.addEventListener('click', () => closeModal(btn.dataset.close));
+        btn.addEventListener('click', () => dongModal(btn.dataset.close));
     });
 
-    function updatePendingBadge(count) {
+    function capNhatBadgeChoXuLy(count) {
         const badge = document.getElementById('sidebarBadge');
         if (badge) {
             badge.textContent = count;
@@ -229,38 +229,38 @@
         }
     }
 
-    function loadData() {
+    function taiDuLieu() {
         const params = new URLSearchParams({
             search: state.search,
             status: state.status,
             page: state.page
         });
 
-        fetch(`${baseUrl}/getList?${params.toString()}`)
+        fetch(`${baseUrl}/layDanhSach?${params.toString()}`)
             .then(response => response.json())
             .then(result => {
                 if (!result.status) {
-                    showToast(result.message || 'Không thể tải danh sách đơn thuốc.');
+                    hienThongBao(result.message || 'Không thể tải danh sách đơn thuốc.');
                     return;
                 }
 
                 donThuocList = result.data || [];
                 state.totalItems = result.total || 0;
-                updatePendingBadge(result.pendingCount || 0);
-                renderTable();
+                capNhatBadgeChoXuLy(result.pendingCount || 0);
+                hienThiBang();
             })
             .catch(() => {
-                showToast('Không thể kết nối máy chủ.');
+                hienThongBao('Không thể kết nối máy chủ.');
             });
     }
 
-    function populateDetailModal(item) {
+    function dienDuLieuModalChiTiet(item) {
         currentDetail = item;
         state.activeId = item.idDonThuoc;
 
         document.getElementById('view_maDon').textContent = `REQ-${item.idDonThuoc}`;
         document.getElementById('view_tenKhach').textContent = item.tenKhachHang || '—';
-        document.getElementById('view_ngayGui').textContent = formatDate(item.ngayGui);
+        document.getElementById('view_ngayGui').textContent = dinhDangNgay(item.ngayGui);
         document.getElementById('view_ghiChu').textContent = item.ghiChu || 'Không có';
 
         const imageUrl = item.hinhAnhDonThuoc
@@ -287,47 +287,47 @@
         const foot = document.getElementById('modalDetailFoot');
         if (item.trangThai === 'CHO_DUYET') {
             foot.innerHTML = `
-                <button class="btn btn-ghost" onclick="closeModal('modalDetail')">Đóng</button>
-                <button class="btn btn-primary" onclick="approveFromDetail()">Duyệt yêu cầu này</button>
-                <button class="btn btn-primary" style="background:var(--red-600); border-color:var(--red-700);" onclick="rejectFromDetail()">Từ chối</button>
+                <button class="btn btn-ghost" onclick="dongModal('modalDetail')">Đóng</button>
+                <button class="btn btn-primary" onclick="duyetTuChiTiet()">Duyệt yêu cầu này</button>
+                <button class="btn btn-primary" style="background:var(--red-600); border-color:var(--red-700);" onclick="tuChoiTuChiTiet()">Từ chối</button>
             `;
         } else {
-            foot.innerHTML = '<button class="btn btn-ghost" onclick="closeModal(\'modalDetail\')">Đóng</button>';
+            foot.innerHTML = '<button class="btn btn-ghost" onclick="dongModal(\'modalDetail\')">Đóng</button>';
         }
     }
 
-    function openDetailModal(id) {
-        fetch(`${baseUrl}/detail/${id}`)
+    function moModalChiTiet(id) {
+        fetch(`${baseUrl}/layChiTiet/${id}`)
             .then(response => response.json())
             .then(result => {
                 if (!result.status) {
-                    showToast(result.message || 'Không thể mở chi tiết đơn.');
+                    hienThongBao(result.message || 'Không thể mở chi tiết đơn.');
                     return;
                 }
-                populateDetailModal(result.data);
-                openModal('modalDetail');
+                dienDuLieuModalChiTiet(result.data);
+                moModal('modalDetail');
             })
-            .catch(() => showToast('Không thể tải chi tiết đơn.'));
+            .catch(() => hienThongBao('Không thể tải chi tiết đơn.'));
     }
 
-    function approveSingle(id) {
+    function duyetDonLe(id) {
         if (!confirm('Xác nhận duyệt đơn thuốc này?')) return;
-        fetch(`${baseUrl}/approve/${id}`, { method: 'POST' })
+        fetch(`${baseUrl}/duyet/${id}`, { method: 'POST' })
             .then(response => response.json())
             .then(result => {
                 if (result.status) {
-                    showToast(result.message || 'Đã duyệt đơn thuốc.');
-                    loadData();
+                    hienThongBao(result.message || 'Đã duyệt đơn thuốc.');
+                    taiDuLieu();
                 } else {
-                    showToast(result.message || 'Không thể duyệt đơn thuốc.');
+                    hienThongBao(result.message || 'Không thể duyệt đơn thuốc.');
                 }
             })
-            .catch(() => showToast('Không thể duyệt đơn thuốc.'));
+            .catch(() => hienThongBao('Không thể duyệt đơn thuốc.'));
     }
 
-    function approveFromDetail() {
-        approveSingle(state.activeId);
-        closeModal('modalDetail');
+    function duyetTuChiTiet() {
+        duyetDonLe(state.activeId);
+        dongModal('modalDetail');
     }
 
     document.getElementById('btnApproveAll').addEventListener('click', () => {
@@ -337,29 +337,29 @@
             return;
         }
         if (confirm(`Xác nhận duyệt nhanh toàn bộ ${pendingUnits.length} yêu cầu đang chờ?`)) {
-            fetch(`${baseUrl}/approveAll`, { method: 'POST' })
+            fetch(`${baseUrl}/duyetTatCa`, { method: 'POST' })
                 .then(response => response.json())
                 .then(result => {
                     if (result.status) {
-                        showToast(result.message || 'Đã duyệt toàn bộ đơn thuốc.');
-                        loadData();
+                        hienThongBao(result.message || 'Đã duyệt toàn bộ đơn thuốc.');
+                        taiDuLieu();
                     } else {
-                        showToast(result.message || 'Không thể duyệt tất cả.');
+                        hienThongBao(result.message || 'Không thể duyệt tất cả.');
                     }
                 })
-                .catch(() => showToast('Không thể duyệt tất cả.'));
+                .catch(() => hienThongBao('Không thể duyệt tất cả.'));
         }
     });
 
-    function openRejectReasonModal(id) {
+    function moModalLyDoTuChoi(id) {
         state.activeId = id;
         document.getElementById('txtRejectReason').value = '';
-        openModal('modalRejectReason');
+        moModal('modalRejectReason');
     }
 
-    function rejectFromDetail() {
-        closeModal('modalDetail');
-        openRejectReasonModal(state.activeId);
+    function tuChoiTuChiTiet() {
+        dongModal('modalDetail');
+        moModalLyDoTuChoi(state.activeId);
     }
 
     document.getElementById('btnConfirmReject').addEventListener('click', () => {
@@ -369,7 +369,7 @@
             return;
         }
 
-        fetch(`${baseUrl}/reject/${state.activeId}`, {
+        fetch(`${baseUrl}/tuChoi/${state.activeId}`, {
             method: 'POST',
             headers: { 'Content-Type': 'application/x-www-form-urlencoded;charset=UTF-8' },
             body: `reason=${encodeURIComponent(reason)}`
@@ -377,17 +377,17 @@
             .then(response => response.json())
             .then(result => {
                 if (result.status) {
-                    closeModal('modalRejectReason');
-                    showToast(result.message || 'Đã từ chối đơn thuốc.');
-                    loadData();
+                    dongModal('modalRejectReason');
+                    hienThongBao(result.message || 'Đã từ chối đơn thuốc.');
+                    taiDuLieu();
                 } else {
-                    showToast(result.message || 'Không thể từ chối đơn thuốc.');
+                    hienThongBao(result.message || 'Không thể từ chối đơn thuốc.');
                 }
             })
-            .catch(() => showToast('Không thể từ chối đơn thuốc.'));
+            .catch(() => hienThongBao('Không thể từ chối đơn thuốc.'));
     });
 
-    function showToast(msg) {
+    function hienThongBao(msg) {
         const toast = document.getElementById('toast');
         const msgSpan = document.getElementById('toastMsg');
         if (msgSpan) {
@@ -402,13 +402,13 @@
     document.getElementById('searchInput').addEventListener('input', (e) => {
         state.search = e.target.value;
         state.page = 1;
-        loadData();
+        taiDuLieu();
     });
 
     document.getElementById('filterStatus').addEventListener('change', (e) => {
         state.status = e.target.value;
         state.page = 1;
-        loadData();
+        taiDuLieu();
     });
 
     document.getElementById('btnResetFilter').addEventListener('click', () => {
@@ -417,7 +417,7 @@
         state.search = '';
         state.status = 'all';
         state.page = 1;
-        loadData();
+        taiDuLieu();
     });
 
     const logoutButton = document.getElementById('btnLogout');
@@ -438,24 +438,24 @@
         lightboxOverlay.classList.add('show');
     });
 
-    function closeLightbox() {
+    function dongLightbox() {
         lightboxOverlay.classList.remove('show');
     }
 
     document.addEventListener('keydown', function(e) {
         if (e.key === 'Escape') {
-            closeModal('modalDetail');
-            closeModal('modalRejectReason');
-            closeLightbox();
+            dongModal('modalDetail');
+            dongModal('modalRejectReason');
+            dongLightbox();
         }
     });
 
-    document.getElementById('btnLightboxClose').addEventListener('click', closeLightbox);
+    document.getElementById('btnLightboxClose').addEventListener('click', dongLightbox);
     lightboxOverlay.addEventListener('click', function(e) {
         if (e.target === lightboxOverlay) {
-            closeLightbox();
+            dongLightbox();
         }
     });
 
-    loadData();
+    taiDuLieu();
 </script>

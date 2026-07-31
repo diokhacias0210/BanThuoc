@@ -159,11 +159,11 @@
 </div>
 
 <script>
-function fmtMoney(n) {
+function dinhDangTien(n) {
     return Number(n || 0).toLocaleString('vi-VN') + 'đ';
 }
 
-function fmtDateVN(str) {
+function dinhDangNgayVN(str) {
     if (!str) return '—';
     const parts = str.split('-');
     if (parts.length === 3) return parts[2] + '/' + parts[1] + '/' + parts[0];
@@ -194,34 +194,34 @@ let searchTimeout;
 const modalForm = document.getElementById('modalForm');
 const modalDetail = document.getElementById('modalDetail');
 
-function openModal(el) {
+function moModal(el) {
     el.classList.remove('hidden');
     document.body.style.overflow = 'hidden';
 }
 
-function closeModal(el) {
+function dongModal(el) {
     el.classList.add('hidden');
     document.body.style.overflow = '';
 }
 
 document.querySelectorAll('[data-close]').forEach(function(btn) {
     btn.addEventListener('click', function() {
-        closeModal(document.getElementById(btn.dataset.close));
+        dongModal(document.getElementById(btn.dataset.close));
     });
 });
 [modalForm, modalDetail].forEach(function(m) {
     m.addEventListener('click', function(e) {
-        if (e.target === m) closeModal(m);
+        if (e.target === m) dongModal(m);
     });
 });
 
-function clearFormErrors() {
+function xoaLoiForm() {
     document.querySelectorAll('#loThuocForm .form-field').forEach(function(f) {
         f.classList.remove('has-error');
     });
 }
 
-function setFieldError(id, hasError) {
+function datLoiTruong(id, hasError) {
     const field = document.getElementById(id);
     if (!field) return;
     const formField = field.closest('.form-field');
@@ -231,13 +231,13 @@ function setFieldError(id, hasError) {
 function updateThanhTien() {
     const sl = Number(document.getElementById('f_soLuongTon').value) || 0;
     const gia = Number(document.getElementById('f_giaNhap').value) || 0;
-    document.getElementById('f_thanhTien').value = fmtMoney(sl * gia);
+    document.getElementById('f_thanhTien').value = dinhDangTien(sl * gia);
 }
 document.getElementById('f_soLuongTon').addEventListener('input', updateThanhTien);
 document.getElementById('f_giaNhap').addEventListener('input', updateThanhTien);
 
 let toastTimer;
-function showToast(msg) {
+function hienThongBao(msg) {
     const toast = document.getElementById('toast');
     document.getElementById('toastMsg').textContent = msg;
     toast.classList.add('show');
@@ -247,7 +247,7 @@ function showToast(msg) {
     }, 2600);
 }
 
-function fetchData() {
+function taiDuLieu() {
     const params = new URLSearchParams({
         search: state.search,
         status: state.status,
@@ -257,14 +257,14 @@ function fetchData() {
         _: Date.now()
     });
 
-    fetch('<?php echo URLROOT; ?>/duocSi/quanLyLo/getList?' + params.toString())
+    fetch('<?php echo URLROOT; ?>/duocSi/quanLyLo/layDanhSach?' + params.toString())
         .then(function(res) { return res.json(); })
         .then(function(res) {
             if (res.status) {
-                renderTable(res.data, res.total);
-                renderStats(res.stats);
-                renderCategoryFilter(res.categories);
-                renderPagination(res.total);
+                hienThiBang(res.data, res.total);
+                hienThiThongKe(res.stats);
+                hienThiBoLocDanhMuc(res.categories);
+                hienThiPhanTrang(res.total);
             }
         })
         .catch(function(err) {
@@ -272,7 +272,7 @@ function fetchData() {
         });
 }
 
-function renderCategoryFilter(categories) {
+function hienThiBoLocDanhMuc(categories) {
     const filterSelect = document.getElementById('filterDanhMuc');
     const currentVal = filterSelect.value;
     let opts = '<option value="all">Tất cả danh mục</option>';
@@ -283,14 +283,14 @@ function renderCategoryFilter(categories) {
     if (currentVal) filterSelect.value = currentVal;
 }
 
-function renderStats(stats) {
+function hienThiThongKe(stats) {
     if (!stats) return;
     document.getElementById('statTotal').textContent = Number(stats.tongSo || 0).toLocaleString('vi-VN');
     document.getElementById('statWarn').textContent = Number(stats.sapHetHan || 0).toLocaleString('vi-VN');
     document.getElementById('statDisabled').textContent = Number(stats.voHieuHoa || 0).toLocaleString('vi-VN');
 }
 
-function renderTable(list, total) {
+function hienThiBang(list, total) {
     const tbody = document.getElementById('tableBody');
     const emptyState = document.getElementById('emptyState');
     state.total = total || list.length;
@@ -308,10 +308,10 @@ function renderTable(list, total) {
         return '<tr>' +
             '<td><div class="cell-strong cell-mono">' + (item.maLo || '—') + '</div><div class="cell-sub">ID lô: ' + item.idLo + '</div></td>' +
             '<td><div class="cell-strong">' + (item.tenThuoc || '—') + '</div></td>' +
-            '<td>' + fmtDateVN(item.ngaySanXuat) + '</td>' +
-            '<td><div class="hsd-cell"><span class="hsd-pill">' + fmtDateVN(item.hanSuDung) + '</span><div class="cell-sub">' + (Number(item.soNgayConLai || 0) >= 0 ? 'còn ' + (item.soNgayConLai || 0) + ' ngày' : 'quá hạn ' + Math.abs(item.soNgayConLai || 0) + ' ngày') + '</div></div></td>' +
+            '<td>' + dinhDangNgayVN(item.ngaySanXuat) + '</td>' +
+            '<td><div class="hsd-cell"><span class="hsd-pill">' + dinhDangNgayVN(item.hanSuDung) + '</span><div class="cell-sub">' + (Number(item.soNgayConLai || 0) >= 0 ? 'còn ' + (item.soNgayConLai || 0) + ' ngày' : 'quá hạn ' + Math.abs(item.soNgayConLai || 0) + ' ngày') + '</div></div></td>' +
             '<td class="cell-strong">' + Number(item.soLuongTon || 0).toLocaleString('vi-VN') + '</td>' +
-            '<td class="cell-strong" style="color:var(--green-700);">' + fmtMoney(item.giaNhap) + '</td>' +
+            '<td class="cell-strong" style="color:var(--green-700);">' + dinhDangTien(item.giaNhap) + '</td>' +
             '<td><span class="badge ' + tt.class + '">' + tt.label + '</span></td>' +
             '<td><div class="actions-cell" style="justify-content:flex-end;">' +
                 '<button class="action-btn view" data-view="' + item.idLo + '" title="Xem chi tiết"><i class="fa-solid fa-eye"></i></button>' +
@@ -321,7 +321,7 @@ function renderTable(list, total) {
     }).join('');
 }
 
-function renderPagination(total) {
+function hienThiPhanTrang(total) {
     var paginationEl = document.getElementById('pagination');
     var totalPages = Math.ceil(total / state.pageSize);
     if (totalPages <= 1) {
@@ -330,40 +330,40 @@ function renderPagination(total) {
     }
 
     var html = '';
-    html += '<button class="page-btn" onclick="goToPage(' + (state.page - 1) + ')" ' + (state.page <= 1 ? 'disabled' : '') + '><i class="fa-solid fa-chevron-left"></i></button>';
+    html += '<button class="page-btn" onclick="chuyenTrang(' + (state.page - 1) + ')" ' + (state.page <= 1 ? 'disabled' : '') + '><i class="fa-solid fa-chevron-left"></i></button>';
 
     var range = 2;
     var startPage = Math.max(1, state.page - range);
     var endPage = Math.min(totalPages, state.page + range);
 
     if (startPage > 1) {
-        html += '<button class="page-btn" onclick="goToPage(1)">1</button>';
+        html += '<button class="page-btn" onclick="chuyenTrang(1)">1</button>';
         if (startPage > 2) html += '<span class="page-dots">...</span>';
     }
 
     for (var i = startPage; i <= endPage; i++) {
-        html += '<button class="page-btn ' + (i === state.page ? 'active' : '') + '" onclick="goToPage(' + i + ')">' + i + '</button>';
+        html += '<button class="page-btn ' + (i === state.page ? 'active' : '') + '" onclick="chuyenTrang(' + i + ')">' + i + '</button>';
     }
 
     if (endPage < totalPages) {
         if (endPage < totalPages - 1) html += '<span class="page-dots">...</span>';
-        html += '<button class="page-btn" onclick="goToPage(' + totalPages + ')">' + totalPages + '</button>';
+        html += '<button class="page-btn" onclick="chuyenTrang(' + totalPages + ')">' + totalPages + '</button>';
     }
 
-    html += '<button class="page-btn" onclick="goToPage(' + (state.page + 1) + ')" ' + (state.page >= totalPages ? 'disabled' : '') + '><i class="fa-solid fa-chevron-right"></i></button>';
+    html += '<button class="page-btn" onclick="chuyenTrang(' + (state.page + 1) + ')" ' + (state.page >= totalPages ? 'disabled' : '') + '><i class="fa-solid fa-chevron-right"></i></button>';
 
     paginationEl.innerHTML = html;
 }
 
-function goToPage(page) {
+function chuyenTrang(page) {
     var totalPages = Math.ceil(state.total / state.pageSize);
     if (page < 1 || page > totalPages) return;
     state.page = page;
-    fetchData();
+    taiDuLieu();
 }
 
-function loadThuocList(callback) {
-    fetch('<?php echo URLROOT; ?>/duocSi/quanLyLo/getListThuoc?_=' + Date.now())
+function taiDanhSachThuoc(callback) {
+    fetch('<?php echo URLROOT; ?>/duocSi/quanLyLo/layDanhSachThuoc?_=' + Date.now())
         .then(function(res) { return res.json(); })
         .then(function(res) {
             if (res.status && res.data) {
@@ -383,26 +383,26 @@ function loadThuocList(callback) {
 
 document.getElementById('btnAddLo').addEventListener('click', function() {
     state.editingId = null;
-    clearFormErrors();
+    xoaLoiForm();
     document.getElementById('loThuocForm').reset();
     document.getElementById('f_idLo').value = '';
     document.getElementById('formModalTitle').textContent = 'Thêm lô thuốc mới';
     document.getElementById('f_thanhTien').value = '';
-    loadThuocList();
-    openModal(modalForm);
+    taiDanhSachThuoc();
+    moModal(modalForm);
 });
 
-function openEditForm(idLo) {
+function moFormSua(idLo) {
     state.editingId = idLo;
-    clearFormErrors();
+    xoaLoiForm();
     document.getElementById('formModalTitle').textContent = 'Sửa lô thuốc';
 
-    fetch('<?php echo URLROOT; ?>/duocSi/quanLyLo/detail/' + idLo)
+    fetch('<?php echo URLROOT; ?>/duocSi/quanLyLo/layChiTiet/' + idLo)
         .then(function(res) { return res.json(); })
         .then(function(res) {
             if (res.status) {
                 var d = res.data;
-                loadThuocList(function() {
+                taiDanhSachThuoc(function() {
                     document.getElementById('f_idLo').value = d.idLo;
                     document.getElementById('f_idThuoc').value = d.idThuoc;
                     document.getElementById('f_maLo').value = d.maLo;
@@ -411,7 +411,7 @@ function openEditForm(idLo) {
                     document.getElementById('f_soLuongTon').value = d.soLuongTon;
                     document.getElementById('f_giaNhap').value = d.giaNhap;
                     updateThanhTien();
-                    openModal(modalForm);
+                    moModal(modalForm);
                 });
             } else {
                 alert(res.message);
@@ -422,9 +422,9 @@ function openEditForm(idLo) {
         });
 }
 
-function openDetailModal(idLo) {
+function moModalChiTiet(idLo) {
     state.detailId = idLo;
-    fetch('<?php echo URLROOT; ?>/duocSi/quanLyLo/detail/' + idLo)
+    fetch('<?php echo URLROOT; ?>/duocSi/quanLyLo/layChiTiet/' + idLo)
         .then(function(res) { return res.json(); })
         .then(function(res) {
             if (res.status) {
@@ -434,15 +434,15 @@ function openDetailModal(idLo) {
                     '<div class="detail-row"><span class="detail-label">Mã lô</span><span class="detail-value cell-mono">' + (d.maLo || '—') + '</span></div>' +
                     '<div class="detail-row"><span class="detail-label">Thuốc</span><span class="detail-value">' + (d.tenThuoc || '—') + '</span></div>' +
                     '<div class="detail-row"><span class="detail-label">Danh mục</span><span class="detail-value">' + (d.tenDanhMuc || '—') + '</span></div>' +
-                    '<div class="detail-row"><span class="detail-label">Ngày sản xuất</span><span class="detail-value">' + fmtDateVN(d.ngaySanXuat) + '</span></div>' +
-                    '<div class="detail-row"><span class="detail-label">Hạn sử dụng</span><span class="detail-value">' + fmtDateVN(d.hanSuDung) + '</span></div>' +
+                    '<div class="detail-row"><span class="detail-label">Ngày sản xuất</span><span class="detail-value">' + dinhDangNgayVN(d.ngaySanXuat) + '</span></div>' +
+                    '<div class="detail-row"><span class="detail-label">Hạn sử dụng</span><span class="detail-value">' + dinhDangNgayVN(d.hanSuDung) + '</span></div>' +
                     '<div class="detail-row"><span class="detail-label">Số lượng tồn</span><span class="detail-value">' + Number(d.soLuongTon || 0).toLocaleString('vi-VN') + '</span></div>' +
-                    '<div class="detail-row"><span class="detail-label">Giá nhập</span><span class="detail-value" style="color:var(--green-700);">' + fmtMoney(d.giaNhap) + '</span></div>' +
+                    '<div class="detail-row"><span class="detail-label">Giá nhập</span><span class="detail-value" style="color:var(--green-700);">' + dinhDangTien(d.giaNhap) + '</span></div>' +
                     '<div class="detail-row"><span class="detail-label">Trạng thái</span><span class="detail-value"><span class="badge ' + tt.class + '">' + tt.label + '</span></span></div>' +
                     '<div class="detail-row"><span class="detail-label">Số ngày còn lại</span><span class="detail-value">' + (Number(d.soNgayConLai || 0) >= 0 ? (d.soNgayConLai || 0) + ' ngày' : 'Đã quá hạn ' + Math.abs(d.soNgayConLai || 0) + ' ngày') + '</span></div>' +
                 '</div>';
                 document.getElementById('detailBody').innerHTML = detailHtml;
-                openModal(modalDetail);
+                moModal(modalDetail);
             } else {
                 alert(res.message);
             }
@@ -453,8 +453,8 @@ function openDetailModal(idLo) {
 }
 
 document.getElementById('btnEditFromDetail').addEventListener('click', function() {
-    closeModal(modalDetail);
-    if (state.detailId) openEditForm(state.detailId);
+    dongModal(modalDetail);
+    if (state.detailId) moFormSua(state.detailId);
 });
 
 document.getElementById('btnSaveLo').addEventListener('click', function() {
@@ -465,32 +465,32 @@ document.getElementById('btnSaveLo').addEventListener('click', function() {
     var sl = document.getElementById('f_soLuongTon').value;
     var gia = document.getElementById('f_giaNhap').value;
 
-    setFieldError('f_idThuoc', !idThuoc);
+    datLoiTruong('f_idThuoc', !idThuoc);
     if (!idThuoc) ok = false;
-    setFieldError('f_maLo', !maLo);
+    datLoiTruong('f_maLo', !maLo);
     if (!maLo) ok = false;
-    setFieldError('f_hanSuDung', !hsd);
+    datLoiTruong('f_hanSuDung', !hsd);
     if (!hsd) ok = false;
-    setFieldError('f_soLuongTon', sl === '' || Number(sl) < 0);
+    datLoiTruong('f_soLuongTon', sl === '' || Number(sl) < 0);
     if (sl === '' || Number(sl) < 0) ok = false;
-    setFieldError('f_giaNhap', gia === '' || Number(gia) <= 0);
+    datLoiTruong('f_giaNhap', gia === '' || Number(gia) <= 0);
     if (gia === '' || Number(gia) <= 0) ok = false;
 
     if (!ok) return;
 
     var formData = new FormData(document.getElementById('loThuocForm'));
 
-    fetch('<?php echo URLROOT; ?>/duocSi/quanLyLo/save', {
+    fetch('<?php echo URLROOT; ?>/duocSi/quanLyLo/luu', {
         method: 'POST',
         body: formData
     })
     .then(function(res) { return res.json(); })
     .then(function(res) {
         if (res.status) {
-            showToast(res.message);
-            closeModal(modalForm);
+            hienThongBao(res.message);
+            dongModal(modalForm);
             state.page = 1;
-            fetchData();
+            taiDuLieu();
         } else {
             alert(res.message || 'Lỗi lưu dữ liệu!');
         }
@@ -506,27 +506,27 @@ document.getElementById('btnSaveLo').addEventListener('click', function() {
 document.getElementById('tableBody').addEventListener('click', function(e) {
     var editBtn = e.target.closest('[data-edit]');
     var viewBtn = e.target.closest('[data-view]');
-    if (editBtn) openEditForm(Number(editBtn.dataset.edit));
-    if (viewBtn) openDetailModal(Number(viewBtn.dataset.view));
+    if (editBtn) moFormSua(Number(editBtn.dataset.edit));
+    if (viewBtn) moModalChiTiet(Number(viewBtn.dataset.view));
 });
 
 document.getElementById('searchInput').addEventListener('input', function(e) {
     state.search = e.target.value;
     state.page = 1;
     clearTimeout(searchTimeout);
-    searchTimeout = setTimeout(fetchData, 300);
+    searchTimeout = setTimeout(taiDuLieu, 300);
 });
 
 document.getElementById('filterStatus').addEventListener('change', function(e) {
     state.status = e.target.value;
     state.page = 1;
-    fetchData();
+    taiDuLieu();
 });
 
 document.getElementById('filterDanhMuc').addEventListener('change', function(e) {
     state.danhMuc = e.target.value;
     state.page = 1;
-    fetchData();
+    taiDuLieu();
 });
 
 document.getElementById('btnResetFilter').addEventListener('click', function() {
@@ -538,7 +538,7 @@ document.getElementById('btnResetFilter').addEventListener('click', function() {
     document.getElementById('filterStatus').value = 'all';
     document.getElementById('filterDanhMuc').value = 'all';
     document.querySelectorAll('.stat-card').forEach(function(c) { c.classList.remove('is-active'); });
-    fetchData();
+    taiDuLieu();
 });
 
 document.querySelectorAll('.stat-grid .stat-card[data-quickfilter]').forEach(function(card) {
@@ -548,9 +548,9 @@ document.querySelectorAll('.stat-grid .stat-card[data-quickfilter]').forEach(fun
         state.status = card.dataset.quickfilter;
         document.getElementById('filterStatus').value = state.status;
         state.page = 1;
-        fetchData();
+        taiDuLieu();
     });
 });
 
-fetchData();
+taiDuLieu();
 </script>

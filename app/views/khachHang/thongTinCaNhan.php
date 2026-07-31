@@ -1,7 +1,7 @@
 <?php
 // Hàm phụ lấy chữ cái đầu tên hiển thị avatar (không liên quan CSDL, chỉ xử lý chuỗi)
-if (!function_exists("getInitials")) {
-    function getInitials($name)
+if (!function_exists("layChuCaiDau")) {
+    function layChuCaiDau($name)
     {
         $parts = array_filter(explode(" ", trim($name)));
         if (empty($parts)) return "";
@@ -22,7 +22,7 @@ if (!function_exists("getInitials")) {
 
     <div class="card">
         <div class="profile-row">
-            <div class="avatar" id="avatarInitials"><?php echo htmlspecialchars(getInitials(isset($thongTin['hoTen']) ? $thongTin['hoTen'] : '')); ?></div>
+            <div class="avatar" id="avatarInitials"><?php echo htmlspecialchars(layChuCaiDau(isset($thongTin['hoTen']) ? $thongTin['hoTen'] : '')); ?></div>
             <div class="profile-info">
                 <div class="name" id="displayName"><?php echo htmlspecialchars(isset($thongTin['hoTen']) ? $thongTin['hoTen'] : ''); ?></div>
                 <div class="verified">
@@ -62,18 +62,18 @@ if (!function_exists("getInitials")) {
         </div>
 
         <div class="actions">
-            <button class="btn btn-outline" id="btnEdit" onclick="toggleEdit(true)"><i class="fa-solid fa-pen"></i>
+            <button class="btn btn-outline" id="btnEdit" onclick="chuyenCheDoSua(true)"><i class="fa-solid fa-pen"></i>
                 Sửa thông tin</button>
-            <button class="btn btn-primary" id="btnSave" onclick="saveInfo()" disabled><i
+            <button class="btn btn-primary" id="btnSave" onclick="luuThongTin()" disabled><i
                     class="fa-solid fa-check"></i> Lưu thay đổi</button>
-            <button class="btn btn-ghost" id="btnCancel" onclick="toggleEdit(false)" disabled>Hủy</button>
+            <button class="btn btn-ghost" id="btnCancel" onclick="chuyenCheDoSua(false)" disabled>Hủy</button>
         </div>
     </div>
 
     <div class="card">
         <div class="addr-header">
             <h2 class="section-title" style="margin:0;">Địa chỉ giao hàng</h2>
-            <button class="btn-add" onclick="openAddressModal()"><i class="fa-solid fa-plus"></i> Thêm địa
+            <button class="btn-add" onclick="moModalDiaChi()"><i class="fa-solid fa-plus"></i> Thêm địa
                 chỉ</button>
         </div>
 
@@ -119,7 +119,7 @@ if (!function_exists("getInitials")) {
     <div class="modal-box">
         <div class="modal-head">
             <h3>Thêm địa chỉ giao hàng</h3>
-            <button class="modal-close" onclick="closeAddressModal()">
+            <button class="modal-close" onclick="dongModalDiaChi()">
                 <i class="fa-solid fa-xmark"></i>
             </button>
         </div>
@@ -173,8 +173,8 @@ if (!function_exists("getInitials")) {
             </form>
         </div>
         <div class="modal-foot">
-            <button type="button" class="btn btn-ghost" onclick="closeAddressModal()">Hủy</button>
-            <button type="button" class="btn btn-primary" onclick="submitAddress()"><i
+            <button type="button" class="btn btn-ghost" onclick="dongModalDiaChi()">Hủy</button>
+            <button type="button" class="btn btn-primary" onclick="guiDiaChi()"><i
                     class="fa-solid fa-check"></i> Lưu địa chỉ</button>
         </div>
     </div>
@@ -185,7 +185,7 @@ if (!function_exists("getInitials")) {
     // Lưu ý: "diaChi" (Địa chỉ thường trú) vẫn cho sửa trên giao diện như bản gốc,
     // nhưng KHÔNG được gửi lên server / lưu CSDL vì chưa có cột tương ứng.
 
-    function toggleEdit(editing) {
+    function chuyenCheDoSua(editing) {
         editableIds.forEach(id => {
             document.getElementById(id).disabled = !editing;
         });
@@ -194,7 +194,7 @@ if (!function_exists("getInitials")) {
         document.getElementById('btnCancel').disabled = !editing;
     }
 
-    function getInitials(name) {
+    function layChuCaiDau(name) {
         const parts = name.split(' ').filter(Boolean);
         if (parts.length === 0) return '';
         const last = parts[parts.length - 1][0] || '';
@@ -203,7 +203,7 @@ if (!function_exists("getInitials")) {
     }
 
     // Lưu Họ tên + Email thật xuống CSDL (bảng NguoiDung)
-    function saveInfo() {
+    function luuThongTin() {
         const fullName = document.getElementById('hoVaTen').value.trim();
         const email = document.getElementById('emailChinh').value.trim();
 
@@ -218,8 +218,8 @@ if (!function_exists("getInitials")) {
             .then(res => {
                 if (res.status) {
                     document.getElementById('displayName').textContent = fullName;
-                    document.getElementById('avatarInitials').textContent = getInitials(fullName);
-                    toggleEdit(false);
+                    document.getElementById('avatarInitials').textContent = layChuCaiDau(fullName);
+                    chuyenCheDoSua(false);
                 } else {
                     alert(res.message || 'Cập nhật thất bại, vui lòng thử lại.');
                 }
@@ -230,7 +230,7 @@ if (!function_exists("getInitials")) {
     // ══ MODAL ĐỊA CHỈ ══
     const addrModalOverlay = document.getElementById('addrModalOverlay');
 
-    function openAddressModal() {
+    function moModalDiaChi() {
         document.getElementById('addrForm').reset();
         document.getElementById('mRecipient').value = document.getElementById('hoVaTen').value;
         document.getElementById('mPhone').value = document.getElementById('soDienThoai').value;
@@ -238,18 +238,18 @@ if (!function_exists("getInitials")) {
         document.body.style.overflow = 'hidden';
     }
 
-    function closeAddressModal() {
+    function dongModalDiaChi() {
         addrModalOverlay.classList.remove('open');
         document.body.style.overflow = '';
     }
     addrModalOverlay.addEventListener('click', (e) => {
-        if (e.target === addrModalOverlay) closeAddressModal();
+        if (e.target === addrModalOverlay) dongModalDiaChi();
     });
 
     // Thêm địa chỉ giao hàng thật xuống CSDL (bảng DiaChiGiaoHang)
     // "Nhãn tên địa chỉ" và "Ghi chú giao hàng" vẫn bắt buộc nhập trên form như cũ,
     // nhưng KHÔNG gửi lên server vì bảng chưa có cột lưu 2 trường này.
-    function submitAddress() {
+    function guiDiaChi() {
         const addrLabel = document.getElementById('mLabel').value.trim();
         const recipient = document.getElementById('mRecipient').value.trim();
         const phone = document.getElementById('mPhone').value.trim();
@@ -271,7 +271,7 @@ if (!function_exists("getInitials")) {
             .then(res => res.json())
             .then(res => {
                 if (res.status) {
-                    closeAddressModal();
+                    dongModalDiaChi();
                     window.location.reload();
                 } else {
                     alert(res.message || 'Thêm địa chỉ thất bại, vui lòng thử lại.');

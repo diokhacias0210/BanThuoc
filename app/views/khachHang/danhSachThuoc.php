@@ -53,7 +53,7 @@
             </div>
         </div>
 
-        <button class="filter-apply" onclick="applyFilters()">Lọc sản phẩm</button>
+        <button class="filter-apply" onclick="apDungBoLoc()">Lọc sản phẩm</button>
     </aside>
 
     <!-- ══ MAIN CONTENT ══ -->
@@ -67,7 +67,7 @@
 
         <div class="content-search-bar">
             <i class="fa-solid fa-magnifying-glass"></i>
-            <input type="text" id="localSearchInput" placeholder="Tìm kiếm nhanh tên thuốc..." oninput="handleLocalSearch()">
+            <input type="text" id="localSearchInput" placeholder="Tìm kiếm nhanh tên thuốc..." oninput="xuLyTimKiem()">
         </div>
 
         <div class="pgrid" id="productGrid"></div>
@@ -90,7 +90,7 @@
     const categoryCheckboxes = document.querySelectorAll('.fg-item input[data-catid]');
     const paginationElement = document.getElementById('pagination');
 
-    function renderProducts(items) {
+    function hienThiSanPham(items) {
         if (!items || items.length === 0) {
             grid.innerHTML = `<div style="grid-column: 1/-1; text-align:center; padding:40px 0; color:var(--muted2);">Không tìm thấy sản phẩm thuốc nào phù hợp.</div>`;
             return;
@@ -116,7 +116,7 @@
                                 `<button type="button" class="btn-view-detail" onclick="event.stopPropagation(); window.location.href='${detailUrl}'">Xem chi tiết</button>` : 
                                 (hetHang ? 
                                     `<button type="button" class="add-btn" disabled style="opacity: 0.4; cursor: not-allowed; background: #888780;" title="Sản phẩm tạm hết hàng"><i class="fa-solid fa-ban"></i></button>` : 
-                                    `<button type="button" class="add-btn" onclick="event.stopPropagation(); quickAddToCart(${p.idThuoc})" title="Thêm vào giỏ"><i class="fa-solid fa-plus"></i></button>`
+                                    `<button type="button" class="add-btn" onclick="event.stopPropagation(); xuLyThemNhanh(${p.idThuoc})" title="Thêm vào giỏ"><i class="fa-solid fa-plus"></i></button>`
                                 )
                             }
                         </div>
@@ -126,7 +126,7 @@
         }).join('');
     }
 
-    function executeFiltering() {
+    function locSanPham() {
         const query = document.getElementById('localSearchInput').value.trim().toLowerCase();
 
         // 1. Lọc theo danh mục
@@ -164,37 +164,37 @@
         const startIndex = (currentPage - 1) * itemsPerPage;
         const paginatedItems = currentFilteredList.slice(startIndex, startIndex + itemsPerPage);
 
-        renderProducts(paginatedItems);
-        renderPagination(totalPages);
+        hienThiSanPham(paginatedItems);
+        hienThiPhanTrang(totalPages);
     }
 
-    function handleLocalSearch() {
+    function xuLyTimKiem() {
         currentPage = 1;
-        executeFiltering();
+        locSanPham();
     }
 
-    function applyFilters() {
+    function apDungBoLoc() {
         currentPage = 1;
-        executeFiltering();
+        locSanPham();
     }
 
-    function renderPagination(totalPages) {
+    function hienThiPhanTrang(totalPages) {
         if (totalPages <= 1) {
             paginationElement.innerHTML = '';
             return;
         }
 
-        let html = `<button class="page-btn" ${currentPage === 1 ? 'disabled' : ''} onclick="changePage(${currentPage - 1})"><i class="fa-solid fa-angle-left"></i></button>`;
+        let html = `<button class="page-btn" ${currentPage === 1 ? 'disabled' : ''} onclick="chuyenTrang(${currentPage - 1})"><i class="fa-solid fa-angle-left"></i></button>`;
         for (let i = 1; i <= totalPages; i++) {
-            html += `<button class="page-btn ${i === currentPage ? 'active' : ''}" onclick="changePage(${i})">${i}</button>`;
+            html += `<button class="page-btn ${i === currentPage ? 'active' : ''}" onclick="chuyenTrang(${i})">${i}</button>`;
         }
-        html += `<button class="page-btn" ${currentPage === totalPages ? 'disabled' : ''} onclick="changePage(${currentPage + 1})"><i class="fa-solid fa-angle-right"></i></button>`;
+        html += `<button class="page-btn" ${currentPage === totalPages ? 'disabled' : ''} onclick="chuyenTrang(${currentPage + 1})"><i class="fa-solid fa-angle-right"></i></button>`;
         paginationElement.innerHTML = html;
     }
 
-    function changePage(p) {
+    function chuyenTrang(p) {
         currentPage = p;
-        executeFiltering();
+        locSanPham();
         window.scrollTo({
             top: 0,
             behavior: 'smooth'
@@ -211,14 +211,14 @@
                 document.getElementById('c0').checked = true;
             }
             currentPage = 1;
-            executeFiltering();
+            locSanPham();
         });
     });
 
     document.querySelectorAll('.fg-item input[data-rxtype]').forEach(cb => {
         cb.addEventListener('change', () => {
             currentPage = 1;
-            executeFiltering();
+            locSanPham();
         });
     });
 
@@ -231,7 +231,7 @@
     const PRICE_SLIDER_MAX = 200000;
     const PRICE_GAP = 2000;
 
-    function updatePriceRangeFill() {
+    function capNhatThanhTruotGia() {
         const minPct = (parseInt(priceMin.value) / PRICE_SLIDER_MAX) * 100;
         const maxPct = (parseInt(priceMax.value) / PRICE_SLIDER_MAX) * 100;
         priceRangeFill.style.left = minPct + '%';
@@ -243,7 +243,7 @@
             priceMin.value = parseInt(priceMax.value) - PRICE_GAP;
         }
         priceInputMin.value = parseInt(priceMin.value).toLocaleString('vi-VN') + 'đ';
-        updatePriceRangeFill();
+        capNhatThanhTruotGia();
     });
 
     priceMax.addEventListener('input', () => {
@@ -251,7 +251,7 @@
             priceMax.value = parseInt(priceMin.value) + PRICE_GAP;
         }
         priceInputMax.value = parseInt(priceMax.value).toLocaleString('vi-VN') + 'đ';
-        updatePriceRangeFill();
+        capNhatThanhTruotGia();
     });
 
     document.querySelectorAll('.price-tag').forEach(tag => {
@@ -264,13 +264,13 @@
             priceMax.value = max;
             priceInputMin.value = min.toLocaleString('vi-VN') + 'đ';
             priceInputMax.value = max.toLocaleString('vi-VN') + 'đ';
-            updatePriceRangeFill();
+            capNhatThanhTruotGia();
             currentPage = 1;
-            executeFiltering();
+            locSanPham();
         });
     });
 
-    function quickAddToCart(idThuoc) {
+    function xuLyThemNhanh(idThuoc) {
         fetch(`${urlRoot}/khachHang/gioHang/themVaoGio`, {
                 method: 'POST',
                 headers: {
@@ -300,6 +300,6 @@
     }
 
     // Chạy đồng bộ hóa dữ liệu ban đầu
-    updatePriceRangeFill();
-    executeFiltering();
+    capNhatThanhTruotGia();
+    locSanPham();
 </script>

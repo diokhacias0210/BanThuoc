@@ -164,7 +164,7 @@
         activeId: null
     };
 
-    function statusLabel(trangThai) {
+    function nhanTrangThai(trangThai) {
         if (trangThai === 'DANG_GIAO') {
             return { text: 'Đã đóng gói (Đang giao)', cls: 'st-dang-giao' };
         }
@@ -174,18 +174,18 @@
         return { text: 'Chờ đóng gói', cls: 'st-cho-dong-goi' };
     }
 
-    function fmtMoney(n) {
+    function dinhDangTien(n) {
         return Number(n || 0).toLocaleString('vi-VN') + 'đ';
     }
 
-    function fmtDate(str) {
+    function dinhDangNgay(str) {
         if (!str) return '—';
         const d = new Date(str.replace(' ', 'T'));
         if (isNaN(d)) return str;
         return d.toLocaleDateString('vi-VN') + ' ' + d.toLocaleTimeString('vi-VN', { hour: '2-digit', minute: '2-digit' });
     }
 
-    function getFilteredOrders() {
+    function layDonHangDaLoc() {
         const search = state.search.trim().toLowerCase();
         return allOrders.filter(o => {
             const matchesStatus = state.status === 'all' || o.trangThai === state.status;
@@ -197,12 +197,12 @@
     }
 
     // 1. Hàm render danh sách đơn đóng gói chính lên bảng dữ liệu
-    function renderTable() {
+    function hienThiBang() {
         const tbody = document.getElementById('tableBody');
         const emptyState = document.getElementById('emptyState');
         const badge = document.getElementById('sidebarBadge');
 
-        const filtered = getFilteredOrders();
+        const filtered = layDonHangDaLoc();
 
         const pendingCount = allOrders.filter(o => o.trangThai === 'CHO_XAC_NHAN' || o.trangThai === 'DA_XAC_NHAN').length;
         if (badge) {
@@ -213,7 +213,7 @@
         if (filtered.length === 0) {
             tbody.innerHTML = '';
             emptyState.style.display = 'block';
-            renderPagination(0);
+            hienThiPhanTrang(0);
             return;
         }
         emptyState.style.display = 'none';
@@ -222,18 +222,18 @@
         const paginated = filtered.slice(startIndex, startIndex + state.pageSize);
 
         tbody.innerHTML = paginated.map(o => {
-            const st = statusLabel(o.trangThai);
+            const st = nhanTrangThai(o.trangThai);
             let actionBtn = '';
             if (o.trangThai === 'CHO_XAC_NHAN') {
-                actionBtn = `<button class="btn btn-ghost" onclick="openViewConfirmModalById(${o.idDonHang})">
+                actionBtn = `<button class="btn btn-ghost" onclick="moModalXacNhanTheoId(${o.idDonHang})">
                                 <i class="fa-solid fa-eye"></i> Xem &amp; Xác nhận
                              </button>`;
             } else if (o.trangThai === 'DA_XAC_NHAN') {
-                actionBtn = `<button class="btn btn-ghost" onclick="openPackingModalById(${o.idDonHang})">
+                actionBtn = `<button class="btn btn-ghost" onclick="moModalDongGoiTheoId(${o.idDonHang})">
                                 <i class="fa-solid fa-box-open"></i> Đóng gói - Chọn giao hàng
                              </button>`;
             } else {
-                actionBtn = `<button class="btn btn-ghost" onclick="openPackingModalById(${o.idDonHang})">
+                actionBtn = `<button class="btn btn-ghost" onclick="moModalDongGoiTheoId(${o.idDonHang})">
                                 <i class="fa-solid fa-box-open"></i> Xuất phiếu chuẩn bị
                              </button>`;
             }
@@ -241,8 +241,8 @@
                 <tr>
                     <td class="order-code">#ORD-${o.idDonHang}</td>
                     <td>${o.hoTen}</td>
-                    <td>${fmtDate(o.ngayDat)}</td>
-                    <td class="amount">${fmtMoney(o.tongTien)}</td>
+                    <td>${dinhDangNgay(o.ngayDat)}</td>
+                    <td class="amount">${dinhDangTien(o.tongTien)}</td>
                     <td>${o.tongSoThuoc} viên/hộp (${o.soLoaiThuoc} loại)</td>
                     <td><span class="status-badge ${st.cls}">${st.text}</span></td>
                     <td style="text-align:right;">${actionBtn}</td>
@@ -250,11 +250,11 @@
             `;
         }).join('');
 
-        renderPagination(filtered.length);
+        hienThiPhanTrang(filtered.length);
     }
 
     // Phân trang
-    function renderPagination(totalItems) {
+    function hienThiPhanTrang(totalItems) {
         let totalPages = Math.ceil(totalItems / state.pageSize);
         let box = document.getElementById('pagination');
         if (totalPages <= 1) {
@@ -264,19 +264,19 @@
 
         let html = '';
         for (let i = 1; i <= totalPages; i++) {
-            html += `<button class="page-btn ${i === state.page ? 'active' : ''}" onclick="changePage(${i})">${i}</button>`;
+            html += `<button class="page-btn ${i === state.page ? 'active' : ''}" onclick="chuyenTrang(${i})">${i}</button>`;
         }
         box.innerHTML = html;
     }
 
-    function changePage(page) {
+    function chuyenTrang(page) {
         state.page = page;
-        renderTable();
+        hienThiBang();
     }
 
     // 2. Mở popup Xem & Xác nhận đơn (BƯỚC 1 - dành cho đơn CHO_XAC_NHAN)
     //    Gọi API thật DongGoiController::layChiTietDon($idDonHang)
-    function openViewConfirmModalById(idDonHang) {
+    function moModalXacNhanTheoId(idDonHang) {
         state.activeId = idDonHang;
 
         fetch(`<?php echo URLROOT; ?>/duocSi/dongGoi/layChiTietDon/${idDonHang}`)
@@ -286,12 +286,12 @@
                     alert(res.message || 'Không tải được chi tiết đơn hàng.');
                     return;
                 }
-                renderViewConfirmModal(res.donHang, res.chiTiet);
+                hienThiModalXacNhan(res.donHang, res.chiTiet);
             })
             .catch(() => alert('Lỗi kết nối máy chủ.'));
     }
 
-    function renderViewConfirmModal(donHang, chiTiet) {
+    function hienThiModalXacNhan(donHang, chiTiet) {
         document.getElementById('view_idDonHang').textContent = `#ORD-${donHang.idDonHang}`;
         document.getElementById('view_hoTen').textContent = donHang.tenNguoiNhan || donHang.hoTen;
         document.getElementById('view_diaChi').textContent = donHang.diaChiGiaoHang;
@@ -316,7 +316,7 @@
                         <div class="pack-item-sub">${item.tenThuoc}</div>
                     </td>
                     <td>${item.soLuong} ${item.donViTinh || ''}</td>
-                    <td>${fmtMoney(item.donGia)}</td>
+                    <td>${dinhDangTien(item.donGia)}</td>
                     <td style="text-align:center;">
                         ${conKho
                             ? '<span class="batch-suggestion-pill"><i class="fa-solid fa-check"></i> Còn hàng</span>'
@@ -358,7 +358,7 @@
                     toast.querySelector('span').textContent = 'Đã xác nhận đóng gói và bàn giao vận chuyển!';
                 }, 2500);
 
-                renderTable();
+                hienThiBang();
             })
             .catch(() => alert('Lỗi kết nối máy chủ.'));
     });
@@ -400,14 +400,14 @@
                     toast.querySelector('span').textContent = 'Đã xác nhận đóng gói và bàn giao vận chuyển!';
                 }, 2500);
 
-                renderTable();
+                hienThiBang();
             })
             .catch(() => alert('Lỗi kết nối máy chủ.'));
     });
 
     // 3. Mở popup hiển thị phiếu chuẩn bị thuốc & danh sách chi tiết (Nhặt kho FEFO) - BƯỚC 2
     //    Gọi API thật DongGoiController::layChiTietDon($idDonHang)
-    function openPackingModalById(idDonHang) {
+    function moModalDongGoiTheoId(idDonHang) {
         state.activeId = idDonHang;
 
         fetch(`<?php echo URLROOT; ?>/duocSi/dongGoi/layChiTietDon/${idDonHang}`)
@@ -417,12 +417,12 @@
                     alert(res.message || 'Không tải được chi tiết đơn hàng.');
                     return;
                 }
-                renderPackingModal(res.donHang, res.chiTiet);
+                hienThiModalDongGoi(res.donHang, res.chiTiet);
             })
             .catch(() => alert('Lỗi kết nối máy chủ.'));
     }
 
-    function renderPackingModal(donHang, chiTiet) {
+    function hienThiModalDongGoi(donHang, chiTiet) {
         document.getElementById('ship_idDonHang').textContent = `#ORD-${donHang.idDonHang}`;
         document.getElementById('ship_hoTen').textContent = donHang.tenNguoiNhan || donHang.hoTen;
         document.getElementById('ship_diaChi').textContent = donHang.diaChiGiaoHang;
@@ -455,7 +455,7 @@
                     <td>${lo ? `<span class="batch-suggestion-pill"><i class="fa-solid fa-layer-group"></i> ${lo.maLo}</span>` : '<span class="pack-out-of-stock">Hết hàng trong kho</span>'}</td>
                     <td>${heetDate}</td>
                     <td style="text-align:center;">
-                        <input type="checkbox" class="item-check check-box-large" onchange="evaluateChecklistStatus()" ${daHoanTat ? 'checked disabled' : (lo ? '' : 'disabled')}>
+                        <input type="checkbox" class="item-check check-box-large" onchange="kiemTraTrangThaiChecklist()" ${daHoanTat ? 'checked disabled' : (lo ? '' : 'disabled')}>
                     </td>
                 </tr>
             `;
@@ -473,7 +473,7 @@
     }
 
     // 3. Kiểm tra điều kiện: Tất cả các dòng thuốc trong phiếu đều được tích chọn nhặt kho đầy đủ mới mở khóa nút "Xác nhận"
-    function evaluateChecklistStatus() {
+    function kiemTraTrangThaiChecklist() {
         let checkboxes = document.querySelectorAll('.item-check');
         let allChecked = Array.from(checkboxes).every(cb => cb.checked);
         document.getElementById('btnConfirmPackComplete').disabled = !allChecked;
@@ -504,7 +504,7 @@
                 toast.classList.add('show');
                 setTimeout(() => toast.classList.remove('show'), 2500);
 
-                renderTable();
+                hienThiBang();
             })
             .catch(() => alert('Lỗi kết nối máy chủ.'));
     });
@@ -520,13 +520,13 @@
     document.getElementById('searchInput').addEventListener('input', (e) => {
         state.search = e.target.value;
         state.page = 1;
-        renderTable();
+        hienThiBang();
     });
 
     document.getElementById('filterStatus').addEventListener('change', (e) => {
         state.status = e.target.value;
         state.page = 1;
-        renderTable();
+        hienThiBang();
     });
 
     document.getElementById('btnResetFilter').addEventListener('click', () => {
@@ -535,9 +535,9 @@
         state.page = 1;
         document.getElementById('searchInput').value = '';
         document.getElementById('filterStatus').value = 'all';
-        renderTable();
+        hienThiBang();
     });
 
     // Khởi tạo lần đầu
-    renderTable();
+    hienThiBang();
 </script>
