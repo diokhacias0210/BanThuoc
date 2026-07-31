@@ -116,7 +116,7 @@
                                 `<button type="button" class="btn-view-detail" onclick="event.stopPropagation(); window.location.href='${detailUrl}'">Xem chi tiết</button>` : 
                                 (hetHang ? 
                                     `<button type="button" class="add-btn" disabled style="opacity: 0.4; cursor: not-allowed; background: #888780;" title="Sản phẩm tạm hết hàng"><i class="fa-solid fa-ban"></i></button>` : 
-                                    `<button type="button" class="add-btn" onclick="event.stopPropagation(); xuLyThemNhanh(${p.idThuoc})" title="Thêm vào giỏ"><i class="fa-solid fa-plus"></i></button>`
+                                    `<button type="button" class="add-btn" onclick="event.stopPropagation(); quickAddToCart(${p.idThuoc})" title="Thêm vào giỏ"><i class="fa-solid fa-plus"></i></button>`
                                 )
                             }
                         </div>
@@ -270,7 +270,7 @@
         });
     });
 
-    function xuLyThemNhanh(idThuoc) {
+    function quickAddToCart(idThuoc) {
         fetch(`${urlRoot}/khachHang/gioHang/themVaoGio`, {
                 method: 'POST',
                 headers: {
