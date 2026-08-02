@@ -97,39 +97,65 @@
 </div>
 
 <script>
+    // Biến dùng để debounce ô tìm kiếm (tránh gọi API liên tục khi gõ)
     let searchTimeout;
+    // Biến lưu timer của toast, dùng để reset thời gian ẩn toast mỗi khi hiển thị mới
     let toastTimer;
 
+    // idNguoiDung của admin đang đăng nhập, lấy từ session PHP (dùng để chặn tự thao tác lên chính mình)
     const LOGGED_IN_ADMIN_ID = <?php echo isset($_SESSION['user_id']) ? $_SESSION['user_id'] : 0; ?>;
 
+    /**
+     * Mở một modal theo id bằng cách gỡ class "hidden".
+     * @param {string} id - id của phần tử modal-overlay cần mở
+     */
     function moModal(id) {
         document.getElementById(id).classList.remove('hidden');
     }
 
+    /**
+     * Đóng một modal theo id bằng cách thêm lại class "hidden".
+     * @param {string} id - id của phần tử modal-overlay cần đóng
+     */
     function dongModal(id) {
         document.getElementById(id).classList.add('hidden');
     }
 
+    // Gắn sự kiện đóng modal cho tất cả các nút có thuộc tính data-close (nút X, nút Đóng/Hủy)
     document.querySelectorAll('[data-close]').forEach(btn => {
         btn.addEventListener('click', () => dongModal(btn.dataset.close));
     });
 
+    /**
+     * Hiển thị thông báo toast tạm thời ở góc màn hình trong 3 giây.
+     * @param {string} msg - Nội dung thông báo cần hiển thị
+     */
     function hienThongBao(msg) {
         const toast = document.getElementById('localToast');
         document.getElementById('localToastMsg').textContent = msg;
         toast.classList.add('show');
-        clearTimeout(toastTimer);
+        clearTimeout(toastTimer); // Hủy timer cũ nếu toast đang hiển thị, tránh ẩn sai lúc
         toastTimer = setTimeout(() => toast.classList.remove('show'), 3000);
     }
 
+    /**
+     * Lấy chữ cái đầu đại diện cho họ tên (dùng để hiển thị avatar chữ trong bảng).
+     * @param {string} name - Họ và tên đầy đủ của người dùng
+     * @returns {string} Tối đa 2 chữ cái viết hoa lấy từ 2 từ cuối của tên
+     */
     function layChuCaiDau(name) {
+        // Tách theo khoảng trắng, lấy chữ cái đầu mỗi từ, giữ lại 2 từ cuối cùng
         return name.split(' ').map(w => w[0]).slice(-2).join('').toUpperCase();
     }
 
+    /**
+     * Gọi API lấy danh sách tài khoản theo bộ lọc hiện tại (từ khóa tìm kiếm, vai trò, trạng thái)
+     * và render lại bảng dữ liệu.
+     */
     function taiDanhSachTaiKhoan() {
-        const search = document.getElementById('searchInput').value.trim();
-        const vaiTro = document.getElementById('filterRole').value;
-        const trangThai = document.getElementById('filterStatus').value;
+        const search = document.getElementById('searchInput').value.trim(); // Từ khóa tìm kiếm (tên/email/sđt)
+        const vaiTro = document.getElementById('filterRole').value; // Bộ lọc vai trò (all/admin/dược sĩ/khách hàng)
+        const trangThai = document.getElementById('filterStatus').value; // Bộ lọc trạng thái (all/active/locked)
         const url = `<?php echo URLROOT; ?>/admin/quanLyTaiKhoan/layDanhSach?search=${encodeURIComponent(search)}&vaiTro=${vaiTro}&trangThai=${trangThai}`;
 
         fetch(url)
@@ -140,10 +166,16 @@
             .catch(err => console.error("Lỗi lấy danh sách tài khoản:", err));
     }
 
+    /**
+     * Render danh sách tài khoản ra bảng HTML (#tableBody), bao gồm badge vai trò,
+     * badge trạng thái, và các nút thao tác (xem/phân quyền/khóa-mở khóa).
+     * @param {Array<Object>} list - Danh sách tài khoản trả về từ API
+     */
     function hienThiBang(list) {
         const tbody = document.getElementById('tableBody');
         const emptyState = document.getElementById('emptyState');
 
+        // Không có tài khoản nào khớp bộ lọc -> xóa bảng và hiện trạng thái rỗng
         if (list.length === 0) {
             tbody.innerHTML = '';
             emptyState.style.display = 'block';
@@ -152,16 +184,22 @@
 
         emptyState.style.display = 'none';
         tbody.innerHTML = list.map(user => {
+            // Xác định class/nhãn badge vai trò dựa trên giá trị vaiTro
             const roleClass = user.vaiTro === 'QUAN_TRI_VIEN' ? 'badge-role-admin' : (user.vaiTro === 'DUOC_SI' ? 'badge-role-pharmacist' : 'badge-role-customer');
             const roleLabel = user.vaiTro === 'QUAN_TRI_VIEN' ? 'Quản trị viên' : (user.vaiTro === 'DUOC_SI' ? 'Dược sĩ' : 'Khách hàng');
+            // Xác định class/nhãn badge trạng thái hoạt động (true = đang hoạt động, false = đã khóa)
             const statusClass = user.trangThai ? 'badge-status-active' : 'badge-status-locked';
             const statusLabel = user.trangThai ? 'Hoạt động' : 'Đã khóa';
 
 
+            // Icon khóa/mở khóa hiển thị trên nút thao tác, đổi theo trạng thái hiện tại
             const lockIcon = user.trangThai ? `<i class="fa-solid fa-lock"></i>` : `<i class="fa-solid fa-lock-open"></i>`;
+            // Kiểm tra dòng hiện tại có phải là chính admin đang đăng nhập không
             const isSelf = user.idNguoiDung == LOGGED_IN_ADMIN_ID;
+            // Kiểm tra dòng hiện tại có phải là một tài khoản quản trị viên khác không
             const isAdminRow = user.vaiTro === 'QUAN_TRI_VIEN';
 
+            // Vô hiệu hóa nút phân quyền/khóa nếu là chính mình hoặc là admin khác (an toàn hệ thống)
             const disabledAttr = (isSelf || isAdminRow) ? 'disabled title="Bạn không được phép tự xử lý chính mình hoặc thao tác lên tài khoản quản trị viên khác!"' : '';
 
             return `
@@ -195,21 +233,28 @@
         }).join('');
     }
 
+    /**
+     * Mở modal xem chi tiết một tài khoản, gọi API lấy dữ liệu và render các trường
+     * thông tin mở rộng tùy theo vai trò (khách hàng / dược sĩ).
+     * @param {number} id - idNguoiDung cần xem chi tiết
+     */
     function moModalChiTiet(id) {
         fetch(`<?php echo URLROOT; ?>/admin/quanLyTaiKhoan/chiTiet/${id}`)
             .then(res => res.json())
             .then(res => {
                 if (res.status) {
                     const u = res.data;
-                    let extHTML = '';
+                    let extHTML = ''; // Phần thông tin mở rộng, khác nhau theo vai trò
 
                     if (u.vaiTro === 'KHACH_HANG') {
+                        // Khách hàng: hiển thị điểm tích lũy, ngày sinh, địa chỉ giao hàng mặc định
                         extHTML = `
                             <div class="detail-item"><div class="k">Điểm tích lũy</div><div class="v" style="color:var(--green-700);">${u.diemTichLuy || 0} điểm</div></div>
                             <div class="detail-item"><div class="k">Ngày sinh</div><div class="v">${u.ngaySinh || '—'}</div></div>
                             <div class="detail-item span-2"><div class="k">Địa chỉ giao hàng mặc định</div><div class="v">${u.diaChiGiaoHang || '—'}</div></div>
                         `;
                     } else if (u.vaiTro === 'DUOC_SI') {
+                        // Dược sĩ: hiển thị số chứng chỉ hành nghề, trình độ chuyên môn, nơi cấp bằng
                         extHTML = `
                             <div class="detail-item"><div class="k">Số chứng chỉ hành nghề</div><div class="v">${u.chungChiHanhNghe || '—'}</div></div>
                             <div class="detail-item"><div class="k">Trình độ chuyên môn</div><div class="v">${u.trinhDo || '—'}</div></div>
@@ -217,6 +262,7 @@
                         `;
                     }
 
+                    // Render thông tin chung + phần mở rộng vào modal chi tiết
                     document.getElementById('detailBody').innerHTML = `
                         <div class="detail-item"><div class="k">Mã số tài khoản</div><div class="v cell-mono">USR-${String(u.idNguoiDung).padStart(6, '0')}</div></div>
                         <div class="detail-item"><div class="k">Họ và tên</div><div class="v">${u.hoTen}</div></div>
@@ -234,7 +280,15 @@
             .catch(err => console.error("Lỗi lấy chi tiết người dùng:", err));
     }
 
+    /**
+     * Mở modal phân quyền cho một tài khoản, điền sẵn thông tin hiện tại vào form.
+     * Chặn thao tác nếu người dùng đang cố tự đổi vai trò của chính mình.
+     * @param {number} id - idNguoiDung cần phân quyền
+     * @param {string} name - Họ tên hiển thị (readonly) trong form
+     * @param {string} currentRole - Vai trò hiện tại, dùng để chọn sẵn trong dropdown
+     */
     function moModalPhanQuyen(id, name, currentRole) {
+        // Chặn admin tự đổi vai trò của chính mình để tránh tự khóa quyền truy cập
         if (id == LOGGED_IN_ADMIN_ID) {
             alert("Hệ thống chặn: Bạn không thể tự thay đổi vai trò của chính mình!");
             return;
@@ -245,6 +299,7 @@
         moModal('modalRole');
     }
 
+    // Sự kiện khi bấm nút "Xác nhận cấp quyền": gửi form phân quyền lên server
     document.getElementById('btnSaveRole').addEventListener('click', () => {
         const formData = new FormData(document.getElementById('roleForm'));
         fetch(`<?php echo URLROOT; ?>/admin/quanLyTaiKhoan/luuVaiTro`, {
@@ -256,7 +311,7 @@
                 if (res.status) {
                     dongModal('modalRole');
                     hienThongBao(res.message);
-                    taiDanhSachTaiKhoan();
+                    taiDanhSachTaiKhoan(); // Tải lại danh sách để cập nhật badge vai trò mới
                 } else {
                     alert(res.message);
                 }
@@ -264,7 +319,14 @@
             .catch(err => console.error("Lỗi lưu quyền hạn tài khoản:", err));
     });
 
+    /**
+     * Đổi trạng thái hoạt động (khóa/mở khóa) của một tài khoản, sau khi xác nhận.
+     * Chặn admin tự khóa chính tài khoản của mình.
+     * @param {number} id - idNguoiDung cần đổi trạng thái
+     * @param {string} name - Họ tên, dùng để hiển thị trong hộp thoại xác nhận
+     */
     function doiTrangThaiTaiKhoan(id, name) {
+        // Chặn admin tự khóa tài khoản của chính mình
         if (id == LOGGED_IN_ADMIN_ID) {
             alert("Quy tắc an toàn: Bạn không được phép tự khóa chính tài khoản Admin của mình!");
             return;
@@ -277,7 +339,7 @@
                 .then(res => {
                     if (res.status) {
                         hienThongBao(res.message);
-                        taiDanhSachTaiKhoan();
+                        taiDanhSachTaiKhoan(); // Tải lại danh sách để cập nhật badge trạng thái mới
                     } else {
                         alert(res.message);
                     }
@@ -286,13 +348,17 @@
         }
     }
 
+    // Gõ vào ô tìm kiếm -> debounce 350ms trước khi gọi lại API (tránh spam request)
     document.getElementById('searchInput').addEventListener('input', () => {
         clearTimeout(searchTimeout);
         searchTimeout = setTimeout(taiDanhSachTaiKhoan, 350);
     });
+    // Đổi bộ lọc vai trò -> tải lại danh sách ngay
     document.getElementById('filterRole').addEventListener('change', taiDanhSachTaiKhoan);
+    // Đổi bộ lọc trạng thái -> tải lại danh sách ngay
     document.getElementById('filterStatus').addEventListener('change', taiDanhSachTaiKhoan);
 
+    // Nút "Đặt lại": xóa từ khóa tìm kiếm, reset các bộ lọc về mặc định rồi tải lại danh sách
     document.getElementById('btnResetFilter').addEventListener('click', () => {
         document.getElementById('searchInput').value = '';
         document.getElementById('filterRole').value = 'all';
@@ -300,5 +366,6 @@
         taiDanhSachTaiKhoan();
     });
 
+    // Tải danh sách tài khoản ngay khi trang load lần đầu
     taiDanhSachTaiKhoan();
 </script>

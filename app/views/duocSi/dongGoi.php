@@ -156,14 +156,20 @@
     // Dữ liệu đơn hàng cần đóng gói lấy THẬT từ CSDL qua DongGoiController::index()
     let allOrders = <?php echo json_encode($donHangKhoList, JSON_UNESCAPED_UNICODE); ?>;
 
+    // Trạng thái (state) hiện tại của giao diện: bộ lọc, phân trang, đơn đang được thao tác
     let state = {
-        search: '',
-        status: 'all',
-        page: 1,
-        pageSize: 5,
-        activeId: null
+        search: '',      // Từ khoá tìm kiếm (mã đơn hoặc tên khách hàng)
+        status: 'all',   // Trạng thái đơn đang lọc: all | CHO_XAC_NHAN | DA_XAC_NHAN | DANG_GIAO
+        page: 1,         // Trang hiện tại đang xem trong bảng
+        pageSize: 5,      // Số dòng hiển thị trên mỗi trang
+        activeId: null   // idDonHang của đơn hàng đang mở trong modal (xem/đóng gói)
     };
 
+    /**
+     * Chuyển mã trạng thái đơn hàng (enum trong CSDL) thành text hiển thị + class CSS badge.
+     * @param {string} trangThai Mã trạng thái: 'CHO_XAC_NHAN' | 'DA_XAC_NHAN' | 'DANG_GIAO'
+     * @returns {{text: string, cls: string}} Object gồm nội dung hiển thị và class CSS tương ứng
+     */
     function nhanTrangThai(trangThai) {
         if (trangThai === 'DANG_GIAO') {
             return { text: 'Đã đóng gói (Đang giao)', cls: 'st-dang-giao' };
@@ -171,43 +177,62 @@
         if (trangThai === 'CHO_XAC_NHAN') {
             return { text: 'Chờ xử lý (Mới đặt)', cls: 'st-cho-dong-goi' };
         }
-        return { text: 'Chờ đóng gói', cls: 'st-cho-dong-goi' };
+        return { text: 'Chờ đóng gói', cls: 'st-cho-dong-goi' }; // Mặc định cho trạng thái DA_XAC_NHAN
     }
 
+    /**
+     * Định dạng một số tiền thành chuỗi tiền tệ Việt Nam (phân cách hàng nghìn + hậu tố "đ").
+     * @param {number} n Số tiền cần định dạng (có thể null/undefined -> coi như 0)
+     * @returns {string} Chuỗi tiền đã định dạng, VD: "1.000.000đ"
+     */
     function dinhDangTien(n) {
         return Number(n || 0).toLocaleString('vi-VN') + 'đ';
     }
 
+    /**
+     * Định dạng chuỗi ngày giờ từ CSDL (dạng "yyyy-MM-dd HH:mm:ss") sang định dạng Việt Nam để hiển thị.
+     * @param {string} str Chuỗi ngày giờ gốc từ server (có thể rỗng/null)
+     * @returns {string} Chuỗi ngày giờ đã định dạng (VD: "02/08/2026 14:30"), hoặc "—" nếu không có dữ liệu
+     */
     function dinhDangNgay(str) {
         if (!str) return '—';
-        const d = new Date(str.replace(' ', 'T'));
-        if (isNaN(d)) return str;
+        const d = new Date(str.replace(' ', 'T')); // Thay khoảng trắng bằng "T" để Date() parse đúng chuẩn ISO
+        if (isNaN(d)) return str; // Không parse được thì trả về chuỗi gốc, tránh hiển thị "Invalid Date"
         return d.toLocaleDateString('vi-VN') + ' ' + d.toLocaleTimeString('vi-VN', { hour: '2-digit', minute: '2-digit' });
     }
 
+    /**
+     * Lọc mảng allOrders (dữ liệu gốc) theo từ khoá tìm kiếm và trạng thái đang chọn trong state.
+     * @returns {Array<Object>} Danh sách đơn hàng đã lọc, khớp cả điều kiện trạng thái lẫn từ khoá
+     */
     function layDonHangDaLoc() {
         const search = state.search.trim().toLowerCase();
         return allOrders.filter(o => {
-            const matchesStatus = state.status === 'all' || o.trangThai === state.status;
+            const matchesStatus = state.status === 'all' || o.trangThai === state.status; // Khớp trạng thái đang lọc
             const matchesSearch = !search
-                || String(o.idDonHang).includes(search)
-                || (o.hoTen && o.hoTen.toLowerCase().includes(search));
+                || String(o.idDonHang).includes(search)                      // Khớp theo mã đơn hàng
+                || (o.hoTen && o.hoTen.toLowerCase().includes(search));      // Hoặc khớp theo tên khách hàng
             return matchesStatus && matchesSearch;
         });
     }
 
-    // 1. Hàm render danh sách đơn đóng gói chính lên bảng dữ liệu
+    /**
+     * 1. Hàm render danh sách đơn đóng gói chính lên bảng dữ liệu.
+     * Áp dụng bộ lọc + phân trang từ state, cập nhật badge số đơn đang chờ xử lý,
+     * và sinh nút hành động phù hợp theo từng trạng thái đơn hàng.
+     */
     function hienThiBang() {
         const tbody = document.getElementById('tableBody');
         const emptyState = document.getElementById('emptyState');
-        const badge = document.getElementById('sidebarBadge');
+        const badge = document.getElementById('sidebarBadge'); // Badge số lượng đơn chờ xử lý (nếu có trên sidebar)
 
-        const filtered = layDonHangDaLoc();
+        const filtered = layDonHangDaLoc(); // Danh sách đơn đã lọc theo state.search + state.status
 
+        // Đếm số đơn đang ở trạng thái cần xử lý (chờ xác nhận hoặc đã xác nhận chờ đóng gói)
         const pendingCount = allOrders.filter(o => o.trangThai === 'CHO_XAC_NHAN' || o.trangThai === 'DA_XAC_NHAN').length;
         if (badge) {
             badge.textContent = pendingCount;
-            badge.style.display = pendingCount > 0 ? 'inline-flex' : 'none';
+            badge.style.display = pendingCount > 0 ? 'inline-flex' : 'none'; // Ẩn badge nếu không có đơn nào cần xử lý
         }
 
         if (filtered.length === 0) {
@@ -218,12 +243,14 @@
         }
         emptyState.style.display = 'none';
 
+        // Cắt mảng theo trang hiện tại (client-side pagination)
         const startIndex = (state.page - 1) * state.pageSize;
         const paginated = filtered.slice(startIndex, startIndex + state.pageSize);
 
         tbody.innerHTML = paginated.map(o => {
             const st = nhanTrangThai(o.trangThai);
             let actionBtn = '';
+            // Nút hành động thay đổi theo từng bước quy trình: Xem & Xác nhận -> Đóng gói -> Xuất phiếu
             if (o.trangThai === 'CHO_XAC_NHAN') {
                 actionBtn = `<button class="btn btn-ghost" onclick="moModalXacNhanTheoId(${o.idDonHang})">
                                 <i class="fa-solid fa-eye"></i> Xem &amp; Xác nhận
@@ -233,6 +260,7 @@
                                 <i class="fa-solid fa-box-open"></i> Đóng gói - Chọn giao hàng
                              </button>`;
             } else {
+                // Trạng thái DANG_GIAO: chỉ còn xem lại phiếu chuẩn bị, không thao tác thêm
                 actionBtn = `<button class="btn btn-ghost" onclick="moModalDongGoiTheoId(${o.idDonHang})">
                                 <i class="fa-solid fa-box-open"></i> Xuất phiếu chuẩn bị
                              </button>`;
@@ -250,15 +278,18 @@
             `;
         }).join('');
 
-        hienThiPhanTrang(filtered.length);
+        hienThiPhanTrang(filtered.length); // Cập nhật lại thanh phân trang theo tổng số đơn đã lọc
     }
 
-    // Phân trang
+    /**
+     * Phân trang: sinh các nút số trang dựa trên tổng số bản ghi và pageSize trong state.
+     * @param {number} totalItems Tổng số đơn hàng sau khi lọc (chưa cắt trang)
+     */
     function hienThiPhanTrang(totalItems) {
         let totalPages = Math.ceil(totalItems / state.pageSize);
         let box = document.getElementById('pagination');
         if (totalPages <= 1) {
-            box.innerHTML = '';
+            box.innerHTML = ''; // Chỉ 1 trang trở xuống thì không cần hiển thị thanh phân trang
             return;
         }
 
@@ -269,15 +300,23 @@
         box.innerHTML = html;
     }
 
+    /**
+     * Chuyển sang trang khác và render lại bảng.
+     * @param {number} page Số trang muốn chuyển tới
+     */
     function chuyenTrang(page) {
         state.page = page;
         hienThiBang();
     }
 
-    // 2. Mở popup Xem & Xác nhận đơn (BƯỚC 1 - dành cho đơn CHO_XAC_NHAN)
-    //    Gọi API thật DongGoiController::layChiTietDon($idDonHang)
+    /**
+     * 2. Mở popup Xem & Xác nhận đơn (BƯỚC 1 - dành cho đơn CHO_XAC_NHAN).
+     * Gọi API thật DongGoiController::layChiTietDon($idDonHang) để lấy chi tiết đơn
+     * rồi render vào modal xác nhận.
+     * @param {number} idDonHang id đơn hàng cần xem chi tiết
+     */
     function moModalXacNhanTheoId(idDonHang) {
-        state.activeId = idDonHang;
+        state.activeId = idDonHang; // Lưu lại đơn đang thao tác để dùng ở các hàm xác nhận/từ chối sau này
 
         fetch(`<?php echo URLROOT; ?>/duocSi/dongGoi/layChiTietDon/${idDonHang}`)
             .then(res => res.json())
@@ -291,6 +330,11 @@
             .catch(() => alert('Lỗi kết nối máy chủ.'));
     }
 
+    /**
+     * Render dữ liệu chi tiết đơn hàng vào modal "Xem chi tiết & Xác nhận đơn hàng" rồi mở modal.
+     * @param {Object} donHang Thông tin đơn hàng (mã đơn, tên khách, địa chỉ giao hàng...)
+     * @param {Array<Object>} chiTiet Danh sách thuốc trong đơn (tên, số lượng, đơn giá, tồn kho...)
+     */
     function hienThiModalXacNhan(donHang, chiTiet) {
         document.getElementById('view_idDonHang').textContent = `#ORD-${donHang.idDonHang}`;
         document.getElementById('view_hoTen').textContent = donHang.tenNguoiNhan || donHang.hoTen;
@@ -298,15 +342,16 @@
 
         let viewTbody = document.getElementById('viewTableBody');
         viewTbody.innerHTML = chiTiet.map(item => {
+            // Tên hoạt chất / hàm lượng: ưu tiên thanhPhan + hamLuong, thiếu thì fallback tên thương mại
             const tenHoatChat = item.thanhPhan
                 ? `${item.thanhPhan}${item.hamLuong ? ' ' + item.hamLuong : ''}`
                 : item.tenThuoc;
 
             const imgSrc = item.hinhAnh
                 ? `<?php echo URLROOT; ?>/${item.hinhAnh}`
-                : `<?php echo URLROOT; ?>/assets/images/no-image.png`;
+                : `<?php echo URLROOT; ?>/assets/images/no-image.png`; // Ảnh mặc định khi thuốc chưa có hình
 
-            const conKho = !!item.loGoiY;
+            const conKho = !!item.loGoiY; // Có lô hàng được hệ thống gợi ý (FEFO) nghĩa là còn tồn kho
 
             return `
                 <tr>
@@ -329,10 +374,13 @@
         document.getElementById('modalXemXacNhan').classList.remove('hidden');
     }
 
-    // Xử lý sự kiện bấm nút "Xác nhận đơn hàng" (BƯỚC 1)
-    // Gọi API thật DongGoiController::xacNhanDon($idDonHang)
+    /**
+     * Xử lý sự kiện bấm nút "Xác nhận đơn hàng" (BƯỚC 1).
+     * Gọi API thật DongGoiController::xacNhanDon($idDonHang), cập nhật trạng thái đơn
+     * ngay trên danh sách client (không cần reload) rồi hiển thị toast thông báo.
+     */
     document.getElementById('btnConfirmDon').addEventListener('click', () => {
-        if (!state.activeId) return;
+        if (!state.activeId) return; // Chưa có đơn nào đang mở thì không làm gì
 
         fetch(`<?php echo URLROOT; ?>/duocSi/dongGoi/xacNhanDon/${state.activeId}`, {
             method: 'POST'
@@ -363,12 +411,15 @@
             .catch(() => alert('Lỗi kết nối máy chủ.'));
     });
 
-    // Xử lý sự kiện bấm nút "Từ chối đơn" (BƯỚC 1b)
-    // Gọi API thật DongGoiController::tuChoiDon($idDonHang)
+    /**
+     * Xử lý sự kiện bấm nút "Từ chối đơn" (BƯỚC 1b).
+     * Hỏi lý do từ chối qua prompt, gọi API thật DongGoiController::tuChoiDon($idDonHang),
+     * sau đó loại bỏ đơn khỏi danh sách hiển thị vì đơn đã huỷ không còn thuộc luồng đóng gói.
+     */
     document.getElementById('btnTuChoiDon').addEventListener('click', () => {
-        if (!state.activeId) return;
+        if (!state.activeId) return; // Chưa có đơn nào đang mở thì không làm gì
 
-        const lyDo = prompt('Nhập lý do từ chối đơn hàng:');
+        const lyDo = prompt('Nhập lý do từ chối đơn hàng:'); // Lý do từ chối, người dùng nhập trực tiếp
         if (lyDo === null) return; // người dùng bấm Cancel
         if (!lyDo.trim()) {
             alert('Vui lòng nhập lý do từ chối.');
@@ -405,10 +456,13 @@
             .catch(() => alert('Lỗi kết nối máy chủ.'));
     });
 
-    // 3. Mở popup hiển thị phiếu chuẩn bị thuốc & danh sách chi tiết (Nhặt kho FEFO) - BƯỚC 2
-    //    Gọi API thật DongGoiController::layChiTietDon($idDonHang)
+    /**
+     * 3. Mở popup hiển thị phiếu chuẩn bị thuốc & danh sách chi tiết (Nhặt kho FEFO) - BƯỚC 2.
+     * Gọi API thật DongGoiController::layChiTietDon($idDonHang) rồi render vào modal đóng gói.
+     * @param {number} idDonHang id đơn hàng cần xuất phiếu chuẩn bị / đóng gói
+     */
     function moModalDongGoiTheoId(idDonHang) {
-        state.activeId = idDonHang;
+        state.activeId = idDonHang; // Lưu lại đơn đang thao tác để dùng khi xác nhận đóng gói hoàn tất
 
         fetch(`<?php echo URLROOT; ?>/duocSi/dongGoi/layChiTietDon/${idDonHang}`)
             .then(res => res.json())
@@ -422,17 +476,23 @@
             .catch(() => alert('Lỗi kết nối máy chủ.'));
     }
 
+    /**
+     * Render phiếu chuẩn bị thuốc & đóng gói vào modal, kèm gợi ý lô hàng theo FEFO
+     * (First Expired First Out - hạn dùng gần nhất được ưu tiên lấy trước).
+     * @param {Object} donHang Thông tin đơn hàng (mã đơn, tên khách, địa chỉ giao hàng, trạng thái...)
+     * @param {Array<Object>} chiTiet Danh sách thuốc cần nhặt kho, mỗi item có thể kèm loGoiY (lô gợi ý)
+     */
     function hienThiModalDongGoi(donHang, chiTiet) {
         document.getElementById('ship_idDonHang').textContent = `#ORD-${donHang.idDonHang}`;
         document.getElementById('ship_hoTen').textContent = donHang.tenNguoiNhan || donHang.hoTen;
         document.getElementById('ship_diaChi').textContent = donHang.diaChiGiaoHang;
 
-        const daHoanTat = donHang.trangThai === 'DANG_GIAO';
+        const daHoanTat = donHang.trangThai === 'DANG_GIAO'; // Đơn đã đóng gói xong thì phiếu chỉ để xem lại, không cho tick nữa
 
         let packTbody = document.getElementById('packTableBody');
         packTbody.innerHTML = chiTiet.map(item => {
-            const lo = item.loGoiY;
-            const heetDate = lo ? new Date(lo.hanSuDung).toLocaleDateString('vi-VN') : '—';
+            const lo = item.loGoiY; // Lô hàng được hệ thống gợi ý theo nguyên tắc FEFO (hạn dùng gần nhất)
+            const heetDate = lo ? new Date(lo.hanSuDung).toLocaleDateString('vi-VN') : '—'; // Hạn dùng của lô gợi ý
 
             // Tên hoạt chất / hàm lượng: ưu tiên hiển thị thanhPhan + hamLuong (giống mẫu),
             // nếu thiếu dữ liệu thì fallback về tên thương mại của thuốc
@@ -463,26 +523,32 @@
 
         const btnConfirm = document.getElementById('btnConfirmPackComplete');
         if (daHoanTat) {
-            btnConfirm.style.display = 'none';
+            btnConfirm.style.display = 'none'; // Đơn đã đóng gói xong -> ẩn hẳn nút xác nhận
         } else {
             btnConfirm.style.display = '';
-            btnConfirm.disabled = true;
+            btnConfirm.disabled = true; // Khoá nút cho đến khi nhặt đủ tất cả các dòng thuốc (checklist đầy đủ)
         }
 
         document.getElementById('modalPacking').classList.remove('hidden');
     }
 
-    // 3. Kiểm tra điều kiện: Tất cả các dòng thuốc trong phiếu đều được tích chọn nhặt kho đầy đủ mới mở khóa nút "Xác nhận"
+    /**
+     * 3. Kiểm tra điều kiện: Tất cả các dòng thuốc trong phiếu đều được tích chọn nhặt kho đầy đủ
+     * mới mở khóa nút "Xác nhận đóng gói". Được gọi mỗi khi người dùng tick/bỏ tick 1 checkbox.
+     */
     function kiemTraTrangThaiChecklist() {
         let checkboxes = document.querySelectorAll('.item-check');
-        let allChecked = Array.from(checkboxes).every(cb => cb.checked);
+        let allChecked = Array.from(checkboxes).every(cb => cb.checked); // true chỉ khi tất cả ô đều được tick
         document.getElementById('btnConfirmPackComplete').disabled = !allChecked;
     }
 
-    // Xử lý sự kiện bấm nút hoàn tất đóng gói bàn giao xe vận chuyển
-    // Gọi API thật DongGoiController::xacNhanDongGoi($idDonHang)
+    /**
+     * Xử lý sự kiện bấm nút hoàn tất đóng gói, bàn giao xe vận chuyển.
+     * Gọi API thật DongGoiController::xacNhanDongGoi($idDonHang), cập nhật trạng thái đơn
+     * thành DANG_GIAO ngay trên danh sách client rồi hiển thị toast thông báo.
+     */
     document.getElementById('btnConfirmPackComplete').addEventListener('click', () => {
-        if (!state.activeId) return;
+        if (!state.activeId) return; // Chưa có đơn nào đang mở thì không làm gì
 
         fetch(`<?php echo URLROOT; ?>/duocSi/dongGoi/xacNhanDongGoi/${state.activeId}`, {
             method: 'POST'
@@ -509,7 +575,7 @@
             .catch(() => alert('Lỗi kết nối máy chủ.'));
     });
 
-    // Đóng cửa sổ modal phiếu
+    // Đóng cửa sổ modal phiếu: gắn chung cho mọi phần tử có thuộc tính data-close (xác nhận + đóng gói)
     document.querySelectorAll('[data-close]').forEach(btn => {
         btn.addEventListener('click', () => {
             document.getElementById(btn.dataset.close).classList.add('hidden');
@@ -517,18 +583,22 @@
     });
 
     // ===== ĐĂNG KÝ SỰ KIỆN TÌM KIẾM & BỘ LỌC =====
+
+    // Gõ từ khoá tìm kiếm -> lọc lại danh sách, reset về trang 1
     document.getElementById('searchInput').addEventListener('input', (e) => {
         state.search = e.target.value;
         state.page = 1;
         hienThiBang();
     });
 
+    // Đổi trạng thái lọc trong dropdown -> lọc lại danh sách, reset về trang 1
     document.getElementById('filterStatus').addEventListener('change', (e) => {
         state.status = e.target.value;
         state.page = 1;
         hienThiBang();
     });
 
+    // Nút "Đặt lại": xoá toàn bộ điều kiện lọc, trả về trạng thái mặc định
     document.getElementById('btnResetFilter').addEventListener('click', () => {
         state.search = '';
         state.status = 'all';
@@ -538,6 +608,6 @@
         hienThiBang();
     });
 
-    // Khởi tạo lần đầu
+    // Khởi tạo lần đầu: render bảng ngay khi trang vừa load
     hienThiBang();
 </script>

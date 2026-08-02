@@ -1,3 +1,14 @@
+<?php
+/**
+ * View: Trang chủ khách hàng
+ * Chức năng: Hiển thị banner giới thiệu, các hành động nhanh (tìm thuốc,
+ * gửi đơn thuốc, xem đơn hàng), danh sách thuốc bán chạy nhất, danh sách
+ * thuốc mới nhất và tin tức sức khỏe. Cho phép thêm nhanh thuốc (không
+ * kê đơn) vào giỏ hàng ngay tại trang chủ.
+ * Dữ liệu đầu vào: $dsBanChay (danh sách thuốc bán chạy), $dsMoiNhat
+ * (danh sách thuốc mới nhất), truyền từ Controller xuống View.
+ */
+?>
 <div class="wrap">
     <!-- BANNER KHUYẾN MÃI CHÍNH -->
     <div class="hero">
@@ -38,16 +49,21 @@
 
     <div class="popular-grid">
         <?php if (!empty($dsBanChay)): ?>
+            <?php // Duyệt qua danh sách thuốc bán chạy nhất để hiển thị dạng thẻ sản phẩm ?>
             <?php foreach ($dsBanChay as $t): ?>
                 <?php
+                // $isKeDon: true nếu thuốc thuộc loại kê đơn (RX), cần xem chi tiết thay vì thêm giỏ trực tiếp
                 $isKeDon = ($t['yeuCauKeDon'] === 'Kê đơn');
+                // $hetHang: true nếu thuốc đã hết tồn kho
                 $hetHang = ($t['tongTon'] <= 0);
                 ?>
                 <div class="pcard" onclick="window.location.href='<?php echo URLROOT; ?>/khachHang/thuoc/chiTiet/<?php echo $t['idThuoc']; ?>'">
                     <div class="pcard-img">
                         <?php if ($isKeDon): ?>
+                            <!-- Nhãn đánh dấu thuốc kê đơn -->
                             <span class="pcard-tag tag-rx">RX</span>
                         <?php elseif ($hetHang): ?>
+                            <!-- Nhãn đánh dấu thuốc hết hàng -->
                             <span class="pcard-tag" style="background:#fdecea; color:#c0392b; border:1px solid #f9d6d2;">Hết hàng</span>
                         <?php endif; ?>
                         <img src="<?php echo $t['hinhAnhUrl']; ?>" alt="<?php echo htmlspecialchars($t['tenThuoc']); ?>" style="width:100%; height:100%; object-fit:cover;">
@@ -57,6 +73,7 @@
                         <div class="pcard-foot">
                             <div class="pcard-price"><?php echo number_format($t['giaBan'], 0, ',', '.'); ?>đ</div>
 
+                            <?php // Tùy theo trạng thái thuốc mà hiển thị nút "Xem chi tiết", nút hết hàng, hoặc nút thêm nhanh vào giỏ ?>
                             <?php if ($isKeDon): ?>
                                 <button type="button" class="btn-view-detail" >Xem chi tiết</button>
                             <?php elseif ($hetHang): ?>
@@ -65,6 +82,7 @@
                                     <i class="fa-solid fa-ban"></i>
                                 </button>
                             <?php else: ?>
+                                <!-- Nút thêm nhanh vào giỏ hàng, gọi hàm JS xuLyThemNhanh với idThuoc -->
                                 <button type="button" class="add-btn" onclick="event.stopPropagation(); xuLyThemNhanh(<?php echo $t['idThuoc']; ?>)" title="Thêm vào giỏ">
                                     <i class="fa-solid fa-plus"></i>
                                 </button>
@@ -86,9 +104,12 @@
 
     <div class="all-products-grid">
         <?php if (!empty($dsMoiNhat)): ?>
+            <?php // Duyệt qua danh sách thuốc mới nhất để hiển thị dạng thẻ sản phẩm lớn ?>
             <?php foreach ($dsMoiNhat as $t): ?>
                 <?php
+                // $isKeDon: true nếu thuốc thuộc loại kê đơn (RX)
                 $isKeDon = ($t['yeuCauKeDon'] === 'Kê đơn');
+                // $hetHang: true nếu thuốc đã hết tồn kho
                 $hetHang = ($t['tongTon'] <= 0);
                 ?>
                 <a class="pcard-large" href="<?php echo URLROOT; ?>/khachHang/thuoc/chiTiet/<?php echo $t['idThuoc']; ?>">
@@ -108,6 +129,7 @@
                                     <i class="fa-solid fa-ban"></i>
                                 </button>
                             <?php else: ?>
+                                <!-- Nút thêm nhanh vào giỏ hàng; preventDefault để không điều hướng theo thẻ <a> cha -->
                                 <button type="button" class="add-btn" onclick="event.preventDefault(); event.stopPropagation(); xuLyThemNhanh(<?php echo $t['idThuoc']; ?>)" title="Thêm vào giỏ">
                                     <i class="fa-solid fa-plus"></i>
                                 </button>
@@ -154,6 +176,11 @@
 </div>
 
 <script>
+    /**
+     * Thêm nhanh 1 sản phẩm thuốc (số lượng mặc định = 1) vào giỏ hàng
+     * ngay từ trang chủ, thông qua gọi API.
+     * @param {number} idThuoc - Mã của thuốc cần thêm nhanh vào giỏ hàng
+     */
     function xuLyThemNhanh(idThuoc) {
         fetch(`<?php echo URLROOT; ?>/khachHang/gioHang/themVaoGio`, {
                 method: 'POST',
@@ -166,11 +193,13 @@
             .then(res => {
                 if (res.status) {
                     alert(res.message || "Đã thêm sản phẩm vào giỏ!");
+                    // Cập nhật số lượng hiển thị trên badge giỏ hàng (nếu có) tăng thêm 1
                     const badge = document.getElementById('cartCountBadge');
                     if (badge) {
                         badge.textContent = parseInt(badge.textContent || 0) + 1;
                     }
                 } else if (res.requireLogin) {
+                    // Trường hợp chưa đăng nhập, yêu cầu đăng nhập trước khi thêm giỏ hàng
                     alert(res.message);
                     window.location.href = `<?php echo URLROOT; ?>/khachHang/xacThuc/dangNhap`;
                 } else {

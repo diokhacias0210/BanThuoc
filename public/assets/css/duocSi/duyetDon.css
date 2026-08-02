@@ -43,6 +43,27 @@
 .badge-approved { background: var(--green-50); color: var(--green-700); }
 .badge-rejected { background: var(--red-50); color: var(--red-600); }
 
+/* Phân trang (Pagination) */
+.pagination-bar { display: flex; justify-content: flex-end; padding: 16px 20px; }
+.pagination { display: flex; align-items: center; gap: 6px; }
+.page-btn {
+    min-width: 34px;
+    height: 34px;
+    padding: 0 8px;
+    border: 1px solid var(--gray-200);
+    border-radius: 8px;
+    background: var(--white);
+    color: var(--gray-500);
+    font-size: 13px;
+    font-weight: 600;
+    cursor: pointer;
+    transition: 0.15s;
+}
+.page-btn:hover { background: var(--gray-50); border-color: var(--gray-300); color: var(--gray-700, #1c2430); }
+.page-btn.active { background: var(--green-600); border-color: var(--green-600); color: #fff; }
+.page-btn:disabled { opacity: 0.5; cursor: not-allowed; }
+.page-dots { padding: 0 4px; color: var(--gray-400, #9aa4b2); font-size: 13px; }
+
 /* Icon CSS */
 .icon { display: inline-block; position: relative; flex-shrink: 0; vertical-align: middle; box-sizing: border-box; }
 .icon-check-all { width: 15px; height: 15px; }

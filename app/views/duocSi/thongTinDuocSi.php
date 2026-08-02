@@ -118,29 +118,43 @@
 </div>
 
 <script>
-    const modalEl = document.getElementById('modalEditProfile');
+    const modalEl = document.getElementById('modalEditProfile'); // Modal "Chỉnh sửa hồ sơ dược sĩ"
 
+    /**
+     * Lấy chữ cái đầu (họ + tên) từ họ tên đầy đủ để hiển thị lên avatar tròn.
+     * Tự động bỏ tiền tố "DS." (Dược sĩ) nếu có trước khi tách chữ cái.
+     * @param {string} name Họ tên đầy đủ, có thể kèm tiền tố "DS. " (VD: "DS. Nguyễn Văn An")
+     * @returns {string} Chữ cái đầu viết hoa (1 hoặc 2 ký tự), hoặc "—" nếu không có tên
+     */
     function layChuCaiDau(name) {
         if (!name) return '—';
-        let cleanName = name.replace(/^DS\.\s*/i, '');
+        let cleanName = name.replace(/^DS\.\s*/i, ''); // Bỏ tiền tố "DS." nếu tên đã có sẵn (không phân biệt hoa/thường)
         let parts = cleanName.trim().split(' ');
-        if (parts.length === 1) return parts[0].charAt(0).toUpperCase();
-        return (parts[0].charAt(0) + parts[parts.length - 1].charAt(0)).toUpperCase();
+        if (parts.length === 1) return parts[0].charAt(0).toUpperCase(); // Chỉ có 1 từ -> lấy 1 chữ cái đầu
+        return (parts[0].charAt(0) + parts[parts.length - 1].charAt(0)).toUpperCase(); // Nhiều từ -> ghép chữ đầu (họ) + chữ đầu (tên)
     }
 
+    /**
+     * Hiện modal chỉnh sửa hồ sơ (bỏ class 'hidden').
+     */
     function hienModal() {
         modalEl.classList.remove('hidden');
     }
 
+    /**
+     * Ẩn modal chỉnh sửa hồ sơ (thêm class 'hidden').
+     */
     function anModal() {
         modalEl.classList.add('hidden');
     }
 
+    // Đóng modal khi bấm nút X hoặc nút "Hủy"
     document.getElementById('btnModalClose').addEventListener('click', anModal);
     document.getElementById('btnModalCancel').addEventListener('click', anModal);
 
+    // Sự kiện bấm "Chỉnh sửa hồ sơ": đổ dữ liệu đang hiển thị vào form rồi mở modal
     document.getElementById('btnEditProfile').addEventListener('click', () => {
-        document.getElementById('f_hoTen').value = document.getElementById('view_hoTen').textContent.replace(/^DS\.\s*/i, '');
+        document.getElementById('f_hoTen').value = document.getElementById('view_hoTen').textContent.replace(/^DS\.\s*/i, ''); // Bỏ tiền tố "DS." khi đổ vào ô nhập
         document.getElementById('f_email').value = document.getElementById('db_email').textContent;
         document.getElementById('f_soDienThoai').value = document.getElementById('db_soDienThoai').textContent;
         document.getElementById('f_chungChi').value = document.getElementById('db_chungChiHanhNghe').textContent;
@@ -149,14 +163,19 @@
         hienModal();
     });
 
+    /**
+     * Render toàn bộ thông tin hồ sơ dược sĩ lên giao diện (phần xem, không phải form sửa).
+     * @param {Object|null} pharmacistData Dữ liệu hồ sơ dược sĩ lấy từ CSDL (bảng NguoiDung + DuocSi),
+     *                                     hoặc null nếu chưa có dữ liệu (không làm gì cả)
+     */
     function hienThiHoSoDuocSi(pharmacistData) {
-        if (!pharmacistData) return;
-        document.getElementById('view_hoTen').textContent = "DS. " + pharmacistData.hoTen;
-        document.getElementById('view_vaiTro').textContent = pharmacistData.vaiTroLabel;
+        if (!pharmacistData) return; // Không có dữ liệu (VD: lỗi truy vấn) -> giữ nguyên giao diện mặc định "—"
+        document.getElementById('view_hoTen').textContent = "DS. " + pharmacistData.hoTen; // Thêm tiền tố "DS." khi hiển thị
+        document.getElementById('view_vaiTro').textContent = pharmacistData.vaiTroLabel;   // Nhãn vai trò đã map sẵn ở Controller
         document.getElementById('view_avatar').textContent = layChuCaiDau(pharmacistData.hoTen);
 
-        document.getElementById('db_idNguoiDung').textContent = "USR-" + String(pharmacistData.idNguoiDung).padStart(6, '0');
-        document.getElementById('db_trangThai').textContent = pharmacistData.trangThai == 1 ? 'Đang hoạt động' : 'Đã khóa';
+        document.getElementById('db_idNguoiDung').textContent = "USR-" + String(pharmacistData.idNguoiDung).padStart(6, '0'); // Format mã định danh dạng USR-000123
+        document.getElementById('db_trangThai').textContent = pharmacistData.trangThai == 1 ? 'Đang hoạt động' : 'Đã khóa'; // trangThai = 1 -> tài khoản còn hoạt động
         document.getElementById('db_email').textContent = pharmacistData.email;
         document.getElementById('db_soDienThoai').textContent = pharmacistData.soDienThoai || '—';
         document.getElementById('db_chungChiHanhNghe').textContent = pharmacistData.chungChiHanhNghe || '—';
@@ -164,8 +183,13 @@
         document.getElementById('db_noiCap').textContent = pharmacistData.noiCap || '—';
     }
 
-    // Lưu thông tin thật xuống CSDL (bảng NguoiDung + DuocSi) qua Controller
+    /**
+     * Lưu thông tin thật xuống CSDL (bảng NguoiDung + DuocSi) qua Controller.
+     * Thu thập dữ liệu từ form chỉnh sửa, gửi lên server, và nếu thành công thì
+     * cập nhật lại giao diện xem (không cần reload trang).
+     */
     document.getElementById('btnSaveProfile').addEventListener('click', () => {
+        // Gom toàn bộ giá trị form thành object để gửi lên server
         const updatedData = {
             hoTen: document.getElementById('f_hoTen').value.trim(),
             email: document.getElementById('f_email').value.trim(),
@@ -180,11 +204,12 @@
                 headers: {
                     'Content-Type': 'application/x-www-form-urlencoded'
                 },
-                body: new URLSearchParams(updatedData).toString()
+                body: new URLSearchParams(updatedData).toString() // Encode object thành chuỗi x-www-form-urlencoded
             })
             .then(res => res.json())
             .then(res => {
                 if (res.status) {
+                    // Cập nhật lại phần xem trên giao diện với dữ liệu vừa lưu thành công
                     document.getElementById('view_hoTen').textContent = "DS. " + updatedData.hoTen;
                     document.getElementById('view_avatar').textContent = layChuCaiDau(updatedData.hoTen);
                     document.getElementById('db_email').textContent = updatedData.email;
@@ -194,6 +219,7 @@
                     document.getElementById('db_noiCap').textContent = updatedData.noiCap;
 
                     anModal();
+                    // Ưu tiên dùng showToast nếu có sẵn trên trang, không thì fallback alert mặc định
                     if (typeof showToast === 'function') {
                         showToast('Cập nhật thông tin hồ sơ thành công!');
                     } else {
@@ -207,6 +233,8 @@
     });
 
     // Dữ liệu thật lấy từ CSDL, do Controller PHP truyền xuống (thay cho initialData giả lập)
+    // vaiTroLabel: ánh xạ mã vaiTro sang nhãn hiển thị qua mảng $nhanVaiTro; nếu không map được thì
+    // giữ nguyên mã vaiTro gốc, còn nếu hoàn toàn không có vaiTro thì hiển thị "Không xác định"
      const initialData = <?php echo $thongTin ? json_encode(array(
                             'idNguoiDung' => $thongTin['idNguoiDung'],
                             'hoTen' => $thongTin['hoTen'],
@@ -218,5 +246,5 @@
                             'trinhDo' => $thongTin['trinhDo'],
                             'noiCap' => $thongTin['noiCap']
                         ), JSON_UNESCAPED_UNICODE) : 'null'; ?>;
-    hienThiHoSoDuocSi(initialData);
+    hienThiHoSoDuocSi(initialData); // Render hồ sơ ngay khi trang vừa load
 </script>

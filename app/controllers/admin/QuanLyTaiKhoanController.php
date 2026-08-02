@@ -1,47 +1,74 @@
 <?php
+/**
+ * Class: QuanLyTaiKhoanController
+ * Controller phụ trách chức năng "Quản lý tài khoản hệ thống" trong khu vực quản trị (admin).
+ * Chức năng tổng quan:
+ *  - Hiển thị giao diện quản lý tài khoản người dùng (danh sách, lọc theo vai trò/trạng thái).
+ *  - Cung cấp các API dạng JSON để lấy danh sách, xem chi tiết, phân quyền vai trò
+ *    và khóa/mở khóa tài khoản.
+ *  - Áp dụng các quy tắc an toàn: không cho phép tài khoản đang đăng nhập tự đổi
+ *    quyền hoặc tự khóa chính mình.
+ */
 class QuanLyTaiKhoanController extends Controller
 {
+    // Model xử lý truy vấn/thao tác dữ liệu tài khoản người dùng từ database
     private $taiKhoanModel;
 
+    /**
+     * Khởi tạo controller: nạp TaiKhoanModel để dùng cho các thao tác quản lý tài khoản.
+     */
     public function __construct()
     {
         $this->taiKhoanModel = $this->model("TaiKhoanModel");
     }
 
-    // Hiển thị giao diện quản lý
+    /**
+     * Hiển thị giao diện quản lý tài khoản (view quanLyTaiKhoan) trong adminLayout.
+     * Chuẩn bị các dữ liệu meta của trang (tiêu đề, icon, tab đang active, css riêng)
+     * rồi render nội dung view vào layout chung của khu vực admin.
+     */
     public function index()
     {
-        $data['title'] = "Quản Lý Tài Khoản";
-        $data['page_title'] = "Quản lý tài khoản hệ thống";
-        $data['page_icon'] = "fa-solid fa-users-gear";
-        $data['active_tab'] = "taikhoan";
-        $data['page_css'] = "quanLyTaiKhoan";
+        $data['title'] = "Quản Lý Tài Khoản";               // Tiêu đề trang (thẻ <title>)
+        $data['page_title'] = "Quản lý tài khoản hệ thống";   // Tiêu đề hiển thị trên header trang
+        $data['page_icon'] = "fa-solid fa-users-gear";        // Icon hiển thị kèm tiêu đề trang
+        $data['active_tab'] = "taikhoan";                     // Tab đang active trên sidebar
+        $data['page_css'] = "quanLyTaiKhoan";                  // Tên file CSS riêng cho trang này
 
         ob_start();
+        // Nạp nội dung view quản lý tài khoản, output được bắt lại vào buffer
         require_once APPROOT . '/views/admin/quanLyTaiKhoan.php';
-        $data['content'] = ob_get_clean();
+        $data['content'] = ob_get_clean(); // Nội dung view, gán vào layout chung
 
         $this->view('layouts/adminLayout', $data);
     }
 
-    // API: Lấy danh sách tài khoản kèm bộ lọc
+    /**
+     * API: Trả về danh sách tài khoản dạng JSON, có hỗ trợ tìm kiếm và lọc
+     * theo vai trò, trạng thái. Được gọi từ phía client để đổ dữ liệu vào bảng.
+     */
     public function layDanhSach()
     {
         header('Content-Type: application/json');
-        $search = isset($_GET['search']) ? $_GET['search'] : '';
-        $vaiTro = isset($_GET['vaiTro']) ? $_GET['vaiTro'] : 'all';
-        $trangThai = isset($_GET['trangThai']) ? $_GET['trangThai'] : 'all';
+        $search = isset($_GET['search']) ? $_GET['search'] : '';         // Từ khóa tìm kiếm tài khoản
+        $vaiTro = isset($_GET['vaiTro']) ? $_GET['vaiTro'] : 'all';        // Vai trò đang lọc (mặc định: tất cả)
+        $trangThai = isset($_GET['trangThai']) ? $_GET['trangThai'] : 'all'; // Trạng thái đang lọc (mặc định: tất cả)
 
-        $list = $this->taiKhoanModel->getAll($search, $vaiTro, $trangThai);
+        $list = $this->taiKhoanModel->getAll($search, $vaiTro, $trangThai); // Danh sách tài khoản khớp bộ lọc
         echo json_encode(array('status' => true, 'data' => $list));
         exit;
     }
 
-    // API: Xem chi tiết tài khoản (Đảm bảo mật khẩu đã bị loại bỏ từ tầng Model)
+    /**
+     * API: Trả về chi tiết một tài khoản theo id, dạng JSON.
+     * Lưu ý: mật khẩu đã được loại bỏ khỏi dữ liệu trả về ngay từ tầng Model,
+     * đảm bảo không lộ thông tin nhạy cảm ra phía client.
+     * @param id ID tài khoản cần lấy chi tiết
+     */
     public function chiTiet($id)
     {
         header('Content-Type: application/json');
-        $user = $this->taiKhoanModel->getDetailById($id);
+        $user = $this->taiKhoanModel->getDetailById($id); // Dữ liệu chi tiết tài khoản (đã ẩn mật khẩu)
         if ($user) {
             echo json_encode(array('status' => true, 'data' => $user));
         } else {
@@ -50,19 +77,25 @@ class QuanLyTaiKhoanController extends Controller
         exit;
     }
 
-    // API: Phân quyền vai trò mới (Đã thêm cơ chế chặn tự đổi quyền chính mình)
+    /**
+     * API: Cập nhật vai trò (phân quyền) cho một tài khoản.
+     * Có cơ chế chặn: tài khoản đang đăng nhập không được phép tự đổi
+     * quyền hạn của chính mình, tránh trường hợp tự hạ quyền ngoài ý muốn.
+     */
     public function luuVaiTro()
     {
         header('Content-Type: application/json');
         if ($_SERVER['REQUEST_METHOD'] === 'POST') {
-            $id = isset($_POST['idNguoiDung']) ? $_POST['idNguoiDung'] : '';
-            $newRole = isset($_POST['vaiTro']) ? $_POST['vaiTro'] : '';
+            $id = isset($_POST['idNguoiDung']) ? $_POST['idNguoiDung'] : ''; // ID tài khoản cần đổi vai trò
+            $newRole = isset($_POST['vaiTro']) ? $_POST['vaiTro'] : '';      // Vai trò mới muốn gán
 
+            // Chặn thao tác nếu tài khoản đang đăng nhập cố tự đổi quyền của chính mình
             if (isset($_SESSION['user_id']) && $id == $_SESSION['user_id']) {
                 echo json_encode(array('status' => false, 'message' => 'Quy tắc hệ thống: Bạn không thể tự hạ quyền hạn của chính tài khoản đang đăng nhập!'));
                 exit;
             }
 
+            // Bắt buộc phải có id và vai trò mới hợp lệ
             if (empty($id) || empty($newRole)) {
                 echo json_encode(array('status' => false, 'message' => 'Dữ liệu không hợp lệ.'));
                 exit;
@@ -77,25 +110,31 @@ class QuanLyTaiKhoanController extends Controller
         exit;
     }
 
-    // API: Khóa / Mở khóa tài khoản (Đã thêm cơ chế chặn tự khóa chính mình)
+    /**
+     * API: Đổi trạng thái khóa/mở khóa của một tài khoản theo id.
+     * Có cơ chế chặn: tài khoản đang đăng nhập không được phép tự khóa
+     * chính tài khoản của mình, tránh mất quyền truy cập hệ thống.
+     * @param id ID tài khoản cần đổi trạng thái
+     */
     public function doiTrangThai($id)
     {
         header('Content-Type: application/json');
         if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 
+            // Chặn thao tác nếu tài khoản đang đăng nhập cố tự khóa chính mình
             if (isset($_SESSION['user_id']) && $id == $_SESSION['user_id']) {
                 echo json_encode(array('status' => false, 'message' => 'Quy tắc an toàn: Bạn không thể tự khóa tài khoản quản trị của chính mình!'));
                 exit;
             }
 
-            $user = $this->taiKhoanModel->getDetailById($id);
+            $user = $this->taiKhoanModel->getDetailById($id); // Lấy thông tin tài khoản để biết trạng thái hiện tại
             if (!$user) {
                 echo json_encode(array('status' => false, 'message' => 'Không tìm thấy người dùng.'));
                 exit;
             }
 
-            $newStatus = $user['trangThai'] ? 0 : 1;
-            $msg = $newStatus ? 'Đã mở khóa tài khoản thành công!' : 'Đã khóa tài khoản thành công! Người dùng này không thể tiếp tục đăng nhập.';
+            $newStatus = $user['trangThai'] ? 0 : 1; // Đảo ngược trạng thái hiện tại: đang mở -> khóa, đang khóa -> mở
+            $msg = $newStatus ? 'Đã mở khóa tài khoản thành công!' : 'Đã khóa tài khoản thành công! Người dùng này không thể tiếp tục đăng nhập.'; // Thông báo tương ứng với trạng thái mới
 
             if ($this->taiKhoanModel->updateStatus($id, $newStatus)) {
                 echo json_encode(array('status' => true, 'message' => $msg));

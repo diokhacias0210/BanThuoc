@@ -1,3 +1,14 @@
+<?php
+/**
+ * View: Quản lý đơn hàng
+ * Chức năng: Hiển thị danh sách đơn hàng của khách hàng dưới dạng bảng có thể
+ * lọc theo trạng thái (tab trạng thái), tìm kiếm theo mã đơn hàng, phân trang;
+ * cho phép xem chi tiết đơn hàng qua popup (tải dữ liệu bằng AJAX, không reload
+ * trang) và hủy đơn hàng (kèm chọn lý do hủy) khi đơn còn ở trạng thái chờ xác nhận.
+ * Dữ liệu đầu vào: $donHangList (mảng danh sách đơn hàng của khách hàng, gồm
+ * idDonHang, ngayDat, tongTien, trangThai, lyDoHuy...) truyền từ Controller xuống View.
+ */
+?>
 <!-- 
   VIEW trang Quản lý đơn hàng — chỉ phần main content (không navbar/topbar/drawer/footer,
   bạn đã tự làm phần đó).
@@ -13,6 +24,7 @@
                 <input type="text" id="searchInput" placeholder="Tìm kiếm theo mã đơn hàng...">
             </div>
 
+            <!-- Các tab lọc theo trạng thái đơn hàng (Tất cả, Chờ xác nhận...), được render động bằng hàm hienThiTabTrangThai() -->
             <div class="status-tabs" id="statusTabs"></div>
 
             <table style="table-layout: fixed;">
@@ -25,9 +37,11 @@
                         <th style="width: 15%; text-align: center;">Thao tác</th>
                     </tr>
                 </thead>
+                <!-- Nội dung danh sách đơn hàng, được render động bằng hàm hienThiBang() -->
                 <tbody id="orderTableBody"></tbody>
             </table>
 
+            <!-- Khu vực phân trang, được render động bằng hàm hienThiPhanTrang() -->
             <div class="pagination-container" id="paginationControls"></div>
         </div>
     </div>
@@ -37,6 +51,7 @@
         <div class="modal-box">
             <h3><i class="fa-solid fa-triangle-exclamation"></i> Huỷ đơn hàng</h3>
             <p class="modal-desc">Vui lòng chọn lý do huỷ đơn hàng này để hệ thống ghi nhận.</p>
+            <!-- Danh sách các lý do hủy đơn để chọn, được render động bằng hàm hienThiLyDo() -->
             <div class="reason-options" id="reasonOptions"></div>
             <div class="modal-actions">
                 <button class="btn-close" onclick="dongModalHuy()">Đóng</button>
@@ -60,6 +75,8 @@
     </div>
 
 <script>
+        // statusMeta: bảng tra cứu nhãn hiển thị (label) và class CSS (cls) tương ứng
+        // với từng mã trạng thái đơn hàng trong CSDL (bảng DonHang.trangThai)
         const statusMeta = {
             CHO_XAC_NHAN: { label: "Chờ xác nhận", cls: "st-cho_xac_nhan" },
             DA_XAC_NHAN: { label: "Đã xác nhận", cls: "st-dang_giao" },
@@ -74,17 +91,28 @@
         // Dữ liệu đơn hàng thật lấy từ CSDL (bảng DonHang) qua Controller
         let orders = <?php echo json_encode($donHangList, JSON_UNESCAPED_UNICODE); ?>;
 
+        /**
+         * Định dạng id đơn hàng (số) thành mã đơn hàng hiển thị dạng "DHxxxxx".
+         * @param {number} id - Id đơn hàng (idDonHang) trong CSDL
+         * @returns {string} Mã đơn hàng đã định dạng, ví dụ: DH00012
+         */
         function dinhDangMaDon(id) {
             return 'DH' + String(id).padStart(5, '0');
         }
 
+        // currentFilter: trạng thái đơn hàng đang được lọc trên tab ("all" = tất cả)
         let currentFilter = "all";
+        // currentPage: trang hiện tại đang hiển thị trong bảng đơn hàng
         let currentPage = 1;
+        // itemsPerPage: số đơn hàng hiển thị tối đa trên mỗi trang
         const itemsPerPage = 8;
+        // cancelTargetId: id đơn hàng đang được thao tác hủy trong modal hủy đơn
         let cancelTargetId = null;
+        // selectedReason: lý do hủy đơn đang được chọn trong modal hủy đơn
         let selectedReason = "";
         let currentDetailId = null; // id đơn hàng đang mở trong popup chi tiết (nếu có)
 
+        // cancelReasons: danh sách các lý do hủy đơn hàng để người dùng lựa chọn
         const cancelReasons = [
             "Tôi muốn đổi sản phẩm khác / thêm thuốc",
             "Tìm thấy giá tốt hơn ở nhà thuốc khác",
@@ -92,7 +120,12 @@
             "Không còn nhu cầu mua nữa"
         ];
 
+        /**
+         * Render các tab lọc theo trạng thái đơn hàng, kèm số lượng đơn hàng
+         * tương ứng với mỗi trạng thái.
+         */
         function hienThiTabTrangThai() {
+            // counts: số lượng đơn hàng theo từng trạng thái (bao gồm "all" = tổng tất cả)
             const counts = { all: orders.length };
             Object.keys(statusMeta).forEach(k => counts[k] = orders.filter(o => o.status === k).length);
             const tabs = [
@@ -110,6 +143,11 @@
   `).join('');
         }
 
+        /**
+         * Xử lý khi người dùng chọn 1 tab trạng thái: cập nhật bộ lọc, quay về trang 1
+         * và render lại tab + bảng đơn hàng.
+         * @param {string} status - Mã trạng thái được chọn ("all" hoặc 1 trong statusMeta)
+         */
         function locTheoTrangThai(status) {
             currentFilter = status;
             currentPage = 1;
@@ -117,15 +155,23 @@
             hienThiBang();
         }
 
+        /**
+         * Lọc danh sách đơn hàng theo trạng thái đang chọn và từ khóa tìm kiếm mã đơn,
+         * sau đó phân trang và render lại bảng cùng khu vực phân trang.
+         */
         function hienThiBang() {
+            // search: từ khóa tìm kiếm mã đơn hàng, đã chuẩn hóa chữ thường
             const search = document.getElementById('searchInput').value.trim().toLowerCase();
+            // filtered: danh sách đơn hàng sau khi áp dụng lọc theo trạng thái + tìm kiếm
             let filtered = orders.filter(o => {
                 const matchesStatus = currentFilter === "all" || o.status === currentFilter;
                 const matchesSearch = !search || dinhDangMaDon(o.id).toLowerCase().includes(search);
                 return matchesStatus && matchesSearch;
             });
 
+            // totalPages: tổng số trang dựa trên số đơn hàng sau lọc
             const totalPages = Math.ceil(filtered.length / itemsPerPage);
+            // startIndex: vị trí bắt đầu lấy đơn hàng cho trang hiện tại
             const startIndex = (currentPage - 1) * itemsPerPage;
             const paginated = filtered.slice(startIndex, startIndex + itemsPerPage);
 
@@ -136,6 +182,8 @@
                 return;
             }
 
+            // Render từng dòng đơn hàng: mã đơn, ngày đặt, tổng tiền, trạng thái,
+            // và nút hủy đơn (chỉ bật khi trạng thái là CHO_XAC_NHAN)
             tbody.innerHTML = paginated.map(o => `
     <tr onclick="chuyenDenChiTiet(${o.id})">
       <td class="order-code">#${dinhDangMaDon(o.id)}</td>
@@ -153,6 +201,11 @@
             hienThiPhanTrang(totalPages, filtered.length);
         }
 
+        /**
+         * Render khu vực phân trang cho bảng đơn hàng dựa trên tổng số trang và tổng số đơn hàng.
+         * @param {number} totalPages - Tổng số trang sau khi đã lọc dữ liệu
+         * @param {number} totalItems - Tổng số đơn hàng sau khi đã lọc dữ liệu
+         */
         function hienThiPhanTrang(totalPages, totalItems) {
             const controls = document.getElementById('paginationControls');
             if (totalItems <= 8) {
@@ -167,13 +220,26 @@
             controls.innerHTML = html;
         }
 
+        /**
+         * Chuyển sang trang đơn hàng được chỉ định trong bảng.
+         * @param {number} page - Số trang cần chuyển đến
+         */
         function chuyenTrang(page) { currentPage = page; hienThiBang(); }
 
         // ĐÃ SỬA THEO YÊU CẦU: không chuyển trang / không reload nữa.
         // Bấm vào 1 dòng đơn hàng -> mở POPUP chi tiết, lấy dữ liệu qua AJAX
         // từ QuanLyDonHangController::chiTietAjax($id) (trả JSON).
+        /**
+         * Xử lý khi người dùng bấm vào 1 dòng đơn hàng: mở popup chi tiết đơn hàng đó.
+         * @param {number} id - Id đơn hàng cần xem chi tiết
+         */
         function chuyenDenChiTiet(id) { moModalChiTiet(id); }
 
+        /**
+         * Mở popup chi tiết đơn hàng và tải dữ liệu chi tiết bằng AJAX
+         * từ QuanLyDonHangController::chiTietAjax($id).
+         * @param {number} id - Id đơn hàng cần xem chi tiết
+         */
         function moModalChiTiet(id) {
             currentDetailId = id;
             document.getElementById('dhdBody').innerHTML = `<div class="dhd-loading"><i class="fa-solid fa-spinner fa-spin"></i> Đang tải chi tiết đơn hàng...</div>`;
@@ -183,8 +249,10 @@
                 .then(res => res.json())
                 .then(res => {
                     if (res.status) {
+                        // Lấy dữ liệu chi tiết thành công -> render nội dung popup
                         hienThiModalChiTiet(res.donHangInfo, res.sanPhamList);
                     } else {
+                        // Server trả về lỗi nghiệp vụ (VD: đơn hàng không tồn tại)
                         document.getElementById('dhdBody').innerHTML =
                             `<div class="dhd-loading">${res.message || 'Không tải được chi tiết đơn hàng.'}</div>`;
                     }
@@ -195,6 +263,9 @@
                 });
         }
 
+        /**
+         * Đóng popup chi tiết đơn hàng và reset id đơn hàng đang mở.
+         */
         function dongModalChiTiet() {
             document.getElementById('detailModal').classList.remove('show');
             currentDetailId = null;
@@ -202,15 +273,28 @@
 
         // Render nội dung popup chi tiết đơn hàng (tương đương views/khachHang/chiTietDonHang.php,
         // nhưng render bằng JS để không phải load lại trang)
+        /**
+         * Render toàn bộ nội dung popup chi tiết đơn hàng: tiến trình đơn hàng (timeline),
+         * danh sách thuốc đã đặt, thông tin thanh toán và thông tin giao nhận hàng.
+         * @param {Object} donHangInfo - Thông tin tổng quan của đơn hàng (idDonHang, trangThai, tongTien...)
+         * @param {Array} sanPhamList - Danh sách các thuốc trong đơn hàng (name, qty, price, lineTotal)
+         */
         function hienThiModalChiTiet(donHangInfo, sanPhamList) {
+            // trangThai: trạng thái hiện tại của đơn hàng
             const trangThai = donHangInfo.trangThai;
+            // meta: thông tin nhãn hiển thị + class CSS tương ứng với trạng thái đơn hàng
             const meta = statusMeta[trangThai] || { label: trangThai, cls: '' };
+            // phiVanChuyen: phí vận chuyển của đơn hàng, mặc định 15.000đ nếu server không trả về
             const phiVanChuyen = donHangInfo.phiVanChuyen != null ? Number(donHangInfo.phiVanChuyen) : 15000;
+            // tamTinh: tổng tiền thuốc (chưa gồm phí vận chuyển), cộng dồn từ thành tiền từng sản phẩm
             const tamTinh = sanPhamList.reduce((sum, sp) => sum + Number(sp.lineTotal), 0);
+            // tongTien: tổng tiền thanh toán cuối cùng của đơn hàng
             const tongTien = donHangInfo.tongTien != null ? Number(donHangInfo.tongTien) : (tamTinh + phiVanChuyen);
+            // money: hàm rút gọn để định dạng số tiền theo chuẩn VNĐ
             const money = n => Number(n).toLocaleString('vi-VN') + 'đ';
 
             // Timeline
+            // timelineHtml: chuỗi HTML thể hiện tiến trình đơn hàng dạng các bước (mốc thời gian)
             let timelineHtml = '';
             if (trangThai === 'DA_HUY') {
                 timelineHtml = `
@@ -225,14 +309,17 @@
                         <div class="tl-label">Đã huỷ đơn</div>
                     </div>`;
             } else {
+                // steps: danh sách các mốc tiến trình chuẩn của 1 đơn hàng chưa bị hủy
                 const steps = [
                     { key: 'CHO_XAC_NHAN', label: 'Chờ xác nhận', icon: 'fa-clipboard-check' },
                     { key: 'DA_XAC_NHAN', label: 'Đã xác nhận', icon: 'fa-square-check' },
                     { key: 'DANG_GIAO', label: 'Đang giao', icon: 'fa-truck-fast' },
                     { key: 'DA_GIAO', label: 'Đã giao thuốc', icon: 'fa-circle-check' }
                 ];
+                // currentIndex: vị trí của trạng thái hiện tại trong danh sách steps
                 const currentIndex = steps.findIndex(s => s.key === trangThai);
                 timelineHtml = steps.map((s, i) => {
+                    // cls: trạng thái hiển thị của từng mốc - đã qua (done), đang ở (current), hoặc sắp tới (upcoming)
                     let cls = 'upcoming';
                     if (currentIndex !== -1) {
                         if (i < currentIndex) cls = 'done';
@@ -247,18 +334,21 @@
                 }).join('');
             }
 
+            // cancelledBanner: băng rôn cảnh báo hiển thị khi đơn hàng đã bị hủy, kèm lý do hủy (nếu có)
             const cancelledBanner = trangThai === 'DA_HUY'
                 ? `<div class="cancelled-banner"><i class="fa-solid fa-circle-exclamation"></i>
                      <div><strong>Đơn hàng này đã bị huỷ${donHangInfo.lyDoHuy ? ' — Lý do: ' + donHangInfo.lyDoHuy : ''}</strong></div>
                    </div>`
                 : '';
 
+            // cancelBtn: nút hủy đơn hàng, chỉ hiển thị khi đơn còn ở trạng thái chờ xác nhận
             const cancelBtn = trangThai === 'CHO_XAC_NHAN'
                 ? `<button class="btn-cancel-order" onclick="moModalHuy(${donHangInfo.idDonHang}, event)">
                        <i class="fa-solid fa-rectangle-xmark"></i> Huỷ đơn hàng
                    </button>`
                 : '';
 
+            // rowsHtml: chuỗi HTML các dòng thuốc trong bảng chi tiết đơn hàng
             const rowsHtml = sanPhamList.map(sp => `
                 <tr>
                     <td><strong>${sp.name}</strong></td>
@@ -351,6 +441,11 @@
             `;
         }
 
+        /**
+         * Mở modal hủy đơn hàng cho 1 đơn hàng cụ thể, mặc định chọn sẵn lý do đầu tiên.
+         * @param {number} id - Id đơn hàng cần hủy
+         * @param {Event} event - Sự kiện click, dùng để chặn nổi bọt (tránh kích hoạt onclick của dòng bảng)
+         */
         function moModalHuy(id, event) {
             event.stopPropagation();
             cancelTargetId = id;
@@ -358,8 +453,14 @@
             hienThiLyDo();
             document.getElementById('cancelModal').classList.add('show');
         }
+        /**
+         * Đóng modal hủy đơn hàng.
+         */
         function dongModalHuy() { document.getElementById('cancelModal').classList.remove('show'); }
 
+        /**
+         * Render danh sách các lựa chọn lý do hủy đơn trong modal, đánh dấu lý do đang được chọn.
+         */
         function hienThiLyDo() {
             document.getElementById('reasonOptions').innerHTML = cancelReasons.map(r => `
     <div class="reason-option ${selectedReason === r ? 'selected' : ''}" onclick="chonLyDo('${r}')">
@@ -368,10 +469,18 @@
     </div>
   `).join('');
         }
+        /**
+         * Chọn 1 lý do hủy đơn hàng và render lại danh sách lựa chọn.
+         * @param {string} r - Nội dung lý do hủy đơn được chọn
+         */
         function chonLyDo(r) { selectedReason = r; hienThiLyDo(); }
 
         // Gọi API huỷ đơn thật xuống CSDL (bảng DonHang: trangThai + lyDoHuy)
         // ĐÃ SỬA: route đúng là Controller "QuanLyDonHang", action "huyDonHang"
+        /**
+         * Xác nhận hủy đơn hàng: gửi lý do hủy lên server để cập nhật trạng thái đơn hàng
+         * (bảng DonHang: trangThai + lyDoHuy), sau đó đồng bộ lại giao diện.
+         */
         function xacNhanHuyDon() {
             fetch(`<?php echo URLROOT; ?>/QuanLyDonHang/huyDonHang/${cancelTargetId}`, {
                 method: 'POST',
@@ -381,6 +490,7 @@
                 .then(res => res.json())
                 .then(res => {
                     if (res.status) {
+                        // Hủy thành công -> cập nhật trạng thái đơn hàng trong danh sách orders ở phía client
                         const o = orders.find(x => x.id === cancelTargetId);
                         if (o) o.status = "DA_HUY";
                         alert(`Đã hủy thành công đơn hàng #${dinhDangMaDon(cancelTargetId)}`);
@@ -398,8 +508,10 @@
                 .catch(() => alert('Lỗi kết nối máy chủ.'));
         }
 
+        // Lắng nghe sự kiện nhập từ khóa vào ô tìm kiếm mã đơn hàng: quay về trang 1 và lọc lại
         document.getElementById('searchInput').addEventListener('input', () => { currentPage = 1; hienThiBang(); });
 
+        // Khởi tạo hiển thị ban đầu khi tải trang: render tab trạng thái và bảng đơn hàng
         hienThiTabTrangThai();
         hienThiBang();
 </script>

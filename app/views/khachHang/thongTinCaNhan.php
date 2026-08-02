@@ -1,14 +1,21 @@
 <?php
-// Hàm phụ lấy chữ cái đầu tên hiển thị avatar (không liên quan CSDL, chỉ xử lý chuỗi)
+/**
+ * Hàm phụ: lấy 2 chữ cái đầu (họ + tên) từ họ tên đầy đủ để hiển thị lên avatar.
+ * Chỉ xử lý chuỗi thuần, không truy vấn CSDL.
+ * @param string $name Họ tên đầy đủ của người dùng (VD: "Nguyễn Văn An")
+ * @return string Chuỗi 2 ký tự viết hoa (VD: "NA"), trả về "" nếu $name rỗng
+ */
 if (!function_exists("layChuCaiDau")) {
     function layChuCaiDau($name)
     {
+        // Tách chuỗi theo khoảng trắng, loại bỏ phần tử rỗng (trường hợp nhiều dấu cách liền nhau)
         $parts = array_filter(explode(" ", trim($name)));
-        if (empty($parts)) return "";
-        $parts = array_values($parts);
-        $first = mb_substr($parts[0], 0, 1);
-        $last = mb_substr(end($parts), 0, 1);
-        return mb_strtoupper($first . $last);
+        if (empty($parts)) return ""; // Không có từ nào -> trả về chuỗi rỗng
+
+        $parts = array_values($parts); // Đánh lại chỉ số mảng liên tục từ 0
+        $first = mb_substr($parts[0], 0, 1);   // Chữ cái đầu của từ đầu tiên (họ)
+        $last = mb_substr(end($parts), 0, 1);  // Chữ cái đầu của từ cuối cùng (tên)
+        return mb_strtoupper($first . $last);  // Ghép và viết hoa 2 chữ cái
     }
 }
 ?>
@@ -181,45 +188,64 @@ if (!function_exists("layChuCaiDau")) {
 </div>
 
 <script>
+    // Danh sách id của các input được phép bật/tắt chỉnh sửa (chế độ Sửa thông tin)
     const editableIds = ['hoVaTen', 'emailChinh', 'diaChi'];
     // Lưu ý: "diaChi" (Địa chỉ thường trú) vẫn cho sửa trên giao diện như bản gốc,
     // nhưng KHÔNG được gửi lên server / lưu CSDL vì chưa có cột tương ứng.
 
+    /**
+     * Chuyển đổi giao diện giữa 2 chế độ: xem (readonly) và sửa (editable).
+     * Bật/tắt thuộc tính disabled của các input trong editableIds và các nút hành động.
+     * @param {boolean} editing true = đang ở chế độ sửa, false = chế độ xem
+     */
     function chuyenCheDoSua(editing) {
+        // Duyệt qua từng input được phép sửa, bật/tắt disabled theo trạng thái editing
         editableIds.forEach(id => {
             document.getElementById(id).disabled = !editing;
         });
-        document.getElementById('btnEdit').disabled = editing;
-        document.getElementById('btnSave').disabled = !editing;
-        document.getElementById('btnCancel').disabled = !editing;
+        document.getElementById('btnEdit').disabled = editing;    // Khi đang sửa thì khoá nút "Sửa thông tin"
+        document.getElementById('btnSave').disabled = !editing;   // Chỉ cho bấm "Lưu" khi đang sửa
+        document.getElementById('btnCancel').disabled = !editing; // Chỉ cho bấm "Hủy" khi đang sửa
     }
 
+    /**
+     * Lấy 2 chữ cái đầu (họ + tên) từ họ tên đầy đủ để cập nhật avatar phía client.
+     * Bản JS song song với hàm PHP layChuCaiDau ở đầu file (dùng khi render lại DOM
+     * mà không cần load lại trang).
+     * @param {string} name Họ tên đầy đủ
+     * @returns {string} Chuỗi 2 ký tự viết hoa, hoặc '' nếu không có từ nào
+     */
     function layChuCaiDau(name) {
-        const parts = name.split(' ').filter(Boolean);
+        const parts = name.split(' ').filter(Boolean); // Tách theo khoảng trắng, bỏ phần tử rỗng
         if (parts.length === 0) return '';
-        const last = parts[parts.length - 1][0] || '';
-        const first = parts[0][0] || '';
+        const last = parts[parts.length - 1][0] || ''; // Chữ cái đầu của từ cuối (tên)
+        const first = parts[0][0] || '';                // Chữ cái đầu của từ đầu (họ)
         return (first + last).toUpperCase();
     }
 
-    // Lưu Họ tên + Email thật xuống CSDL (bảng NguoiDung)
+    /**
+     * Gửi yêu cầu cập nhật Họ tên + Email lên server để lưu xuống CSDL (bảng NguoiDung).
+     * Nếu thành công thì cập nhật lại giao diện (tên hiển thị, avatar) và thoát chế độ sửa.
+     */
     function luuThongTin() {
-        const fullName = document.getElementById('hoVaTen').value.trim();
-        const email = document.getElementById('emailChinh').value.trim();
+        const fullName = document.getElementById('hoVaTen').value.trim();   // Họ tên mới nhập
+        const email = document.getElementById('emailChinh').value.trim();  // Email mới nhập
 
         fetch(`<?php echo URLROOT; ?>/khachHang/thongTinCaNhan/capNhatThongTin`, {
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/x-www-form-urlencoded'
                 },
+                // Encode dữ liệu dạng x-www-form-urlencoded để gửi lên server
                 body: `hoTen=${encodeURIComponent(fullName)}&email=${encodeURIComponent(email)}`
             })
             .then(res => res.json())
             .then(res => {
                 if (res.status) {
+                    // Cập nhật lại tên hiển thị và chữ cái avatar ngay trên giao diện, không cần reload
                     document.getElementById('displayName').textContent = fullName;
                     document.getElementById('avatarInitials').textContent = layChuCaiDau(fullName);
-                    chuyenCheDoSua(false);
+                    chuyenCheDoSua(false); // Thoát chế độ sửa sau khi lưu thành công
                 } else {
                     alert(res.message || 'Cập nhật thất bại, vui lòng thử lại.');
                 }
@@ -228,34 +254,47 @@ if (!function_exists("layChuCaiDau")) {
     }
 
     // ══ MODAL ĐỊA CHỈ ══
-    const addrModalOverlay = document.getElementById('addrModalOverlay');
+    const addrModalOverlay = document.getElementById('addrModalOverlay'); // Lớp phủ (overlay) chứa modal thêm địa chỉ
 
+    /**
+     * Mở modal "Thêm địa chỉ giao hàng".
+     * Reset form về rỗng, rồi tự điền sẵn tên người nhận + số điện thoại
+     * theo thông tin cá nhân hiện tại để tiện cho người dùng.
+     */
     function moModalDiaChi() {
-        document.getElementById('addrForm').reset();
-        document.getElementById('mRecipient').value = document.getElementById('hoVaTen').value;
-        document.getElementById('mPhone').value = document.getElementById('soDienThoai').value;
-        addrModalOverlay.classList.add('open');
-        document.body.style.overflow = 'hidden';
+        document.getElementById('addrForm').reset(); // Xoá dữ liệu form cũ (nếu có) trước khi mở
+        document.getElementById('mRecipient').value = document.getElementById('hoVaTen').value;   // Gợi ý tên người nhận = họ tên tài khoản
+        document.getElementById('mPhone').value = document.getElementById('soDienThoai').value;   // Gợi ý SĐT = SĐT tài khoản
+        addrModalOverlay.classList.add('open'); // Hiển thị modal
+        document.body.style.overflow = 'hidden'; // Khoá cuộn trang nền khi modal đang mở
     }
 
+    /**
+     * Đóng modal "Thêm địa chỉ giao hàng" và trả lại trạng thái cuộn trang bình thường.
+     */
     function dongModalDiaChi() {
         addrModalOverlay.classList.remove('open');
         document.body.style.overflow = '';
     }
+    // Cho phép đóng modal khi bấm ra vùng nền tối bên ngoài modal-box
     addrModalOverlay.addEventListener('click', (e) => {
         if (e.target === addrModalOverlay) dongModalDiaChi();
     });
 
-    // Thêm địa chỉ giao hàng thật xuống CSDL (bảng DiaChiGiaoHang)
-    // "Nhãn tên địa chỉ" và "Ghi chú giao hàng" vẫn bắt buộc nhập trên form như cũ,
-    // nhưng KHÔNG gửi lên server vì bảng chưa có cột lưu 2 trường này.
+    /**
+     * Thu thập dữ liệu từ form modal, validate rồi gửi lên server để thêm
+     * địa chỉ giao hàng mới xuống CSDL (bảng DiaChiGiaoHang).
+     * "Nhãn tên địa chỉ" và "Ghi chú giao hàng" vẫn bắt buộc nhập trên form như cũ,
+     * nhưng KHÔNG gửi lên server vì bảng chưa có cột lưu 2 trường này.
+     */
     function guiDiaChi() {
-        const addrLabel = document.getElementById('mLabel').value.trim();
-        const recipient = document.getElementById('mRecipient').value.trim();
-        const phone = document.getElementById('mPhone').value.trim();
-        const detail = document.getElementById('mDetail').value.trim();
-        const isDefault = document.getElementById('mDefault').checked;
+        const addrLabel = document.getElementById('mLabel').value.trim();   // Nhãn địa chỉ (chỉ hiển thị UI, không lưu CSDL)
+        const recipient = document.getElementById('mRecipient').value.trim(); // Tên người nhận hàng
+        const phone = document.getElementById('mPhone').value.trim();       // SĐT người nhận hàng
+        const detail = document.getElementById('mDetail').value.trim();     // Địa chỉ chi tiết đầy đủ
+        const isDefault = document.getElementById('mDefault').checked;      // Có đặt làm địa chỉ mặc định hay không
 
+        // Kiểm tra các trường bắt buộc trước khi gửi request
         if (!addrLabel || !recipient || !phone || !detail) {
             alert('Vui lòng điền đầy đủ các trường bắt buộc (*)');
             return;
@@ -266,13 +305,14 @@ if (!function_exists("layChuCaiDau")) {
                 headers: {
                     'Content-Type': 'application/x-www-form-urlencoded'
                 },
+                // Chỉ gửi các trường có cột tương ứng trong bảng DiaChiGiaoHang
                 body: `tenNguoiNhan=${encodeURIComponent(recipient)}&soDienThoaiNhan=${encodeURIComponent(phone)}&diaChiChiTiet=${encodeURIComponent(detail)}&laMacDinh=${isDefault ? 1 : 0}`
             })
             .then(res => res.json())
             .then(res => {
                 if (res.status) {
                     dongModalDiaChi();
-                    window.location.reload();
+                    window.location.reload(); // Tải lại trang để hiển thị địa chỉ vừa thêm
                 } else {
                     alert(res.message || 'Thêm địa chỉ thất bại, vui lòng thử lại.');
                 }
@@ -280,12 +320,16 @@ if (!function_exists("layChuCaiDau")) {
             .catch(() => alert('Lỗi kết nối máy chủ.'));
     }
 
-    // Xoá địa chỉ (bảng DiaChiGiaoHang)
+    /**
+     * Sự kiện xoá địa chỉ giao hàng (uỷ quyền sự kiện - event delegation trên #addressList).
+     * Khi bấm nút "Xoá" trong 1 addr-item, gửi request xoá xuống server (bảng DiaChiGiaoHang)
+     * và xoá luôn phần tử đó khỏi DOM nếu thành công.
+     */
     document.getElementById('addressList').addEventListener('click', function(e) {
-        const deleteBtn = e.target.closest('.delete-link');
-        if (!deleteBtn) return;
-        const item = deleteBtn.closest('.addr-item');
-        const idDiaChi = item.dataset.id;
+        const deleteBtn = e.target.closest('.delete-link'); // Tìm nút xoá gần nhất từ vị trí click
+        if (!deleteBtn) return; // Click không nhằm vào nút xoá thì bỏ qua
+        const item = deleteBtn.closest('.addr-item'); // Khối địa chỉ chứa nút vừa bấm
+        const idDiaChi = item.dataset.id; // id địa chỉ lấy từ thuộc tính data-id
 
         fetch(`<?php echo URLROOT; ?>/khachHang/thongTinCaNhan/xoaDiaChi/${idDiaChi}`, {
                 method: 'POST'
@@ -293,7 +337,7 @@ if (!function_exists("layChuCaiDau")) {
             .then(res => res.json())
             .then(res => {
                 if (res.status) {
-                    item.remove();
+                    item.remove(); // Xoá phần tử khỏi giao diện, không cần reload
                 } else {
                     alert(res.message || 'Xoá địa chỉ thất bại, vui lòng thử lại.');
                 }
@@ -301,11 +345,15 @@ if (!function_exists("layChuCaiDau")) {
             .catch(() => alert('Lỗi kết nối máy chủ.'));
     });
 
-    // Đặt địa chỉ mặc định (bảng DiaChiGiaoHang)
+    /**
+     * Sự kiện đặt địa chỉ giao hàng làm mặc định (uỷ quyền sự kiện trên #addressList).
+     * Gửi id địa chỉ được chọn lên server để cập nhật cột laMacDinh trong bảng DiaChiGiaoHang,
+     * sau đó tải lại trang để đồng bộ badge "Mặc định" trên toàn bộ danh sách.
+     */
     document.getElementById('addressList').addEventListener('click', function(e) {
-        const defaultBtn = e.target.closest('.setdefault-link');
-        if (!defaultBtn) return;
-        const idDiaChi = defaultBtn.closest('.addr-item').dataset.id;
+        const defaultBtn = e.target.closest('.setdefault-link'); // Tìm nút "Đặt mặc định" gần nhất từ vị trí click
+        if (!defaultBtn) return; // Click không nhằm vào nút này thì bỏ qua
+        const idDiaChi = defaultBtn.closest('.addr-item').dataset.id; // id địa chỉ tương ứng
 
         fetch(`<?php echo URLROOT; ?>/khachHang/thongTinCaNhan/datMacDinh/${idDiaChi}`, {
                 method: 'POST'
@@ -313,7 +361,7 @@ if (!function_exists("layChuCaiDau")) {
             .then(res => res.json())
             .then(res => {
                 if (res.status) {
-                    window.location.reload();
+                    window.location.reload(); // Reload để cập nhật lại badge mặc định cho toàn danh sách
                 } else {
                     alert(res.message || 'Đặt mặc định thất bại, vui lòng thử lại.');
                 }
