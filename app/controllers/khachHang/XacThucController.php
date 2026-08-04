@@ -46,7 +46,7 @@ class XacThucController extends Controller
                 $trangThai = $user['trangThai'] == 1 || $user['trangThai'] === true;
                 if (!$trangThai) {
                     $this->view('khachHang/xacThuc/dangNhap', [
-                        'error'    => 'Tài khoản của bạn đã bị khóa. Vui lòng liên hệ quản trị viên để được hỗ trợ.',
+                        'error'    => 'Tài khoản của bạn đã bị khóa.',
                         'page_css' => 'xacThuc',
                         'is_auth'  => true
                     ]);
