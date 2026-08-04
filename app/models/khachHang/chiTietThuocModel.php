@@ -6,7 +6,7 @@ class chiTietThuocModel extends Model
     {
         $sql = "SELECT t.*, d.tenDanhMuc, 
                        COALESCE(SUM(l.soLuongTon), 0) AS tongTon,
-                       COALESCE((SELECT giaBan FROM LoThuoc WHERE idThuoc = t.idThuoc AND hanSuDung >= CURDATE() AND soLuongTon > 0 ORDER BY hanSuDung ASC LIMIT 1), t.giaBan) AS giaBan,
+                       t.giaBan AS giaBan,
                        COALESCE((SELECT soLuongTon FROM LoThuoc WHERE idThuoc = t.idThuoc AND hanSuDung >= CURDATE() AND soLuongTon > 0 ORDER BY hanSuDung ASC LIMIT 1), 0) AS loASoLuongTon
                 FROM Thuoc t
                 LEFT JOIN DanhMucThuoc d ON t.idDanhMuc = d.idDanhMuc

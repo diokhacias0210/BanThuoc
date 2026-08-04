@@ -11,7 +11,7 @@ class trangChuModel extends Model
                        COALESCE(SUM(l.soLuongTon), 0) AS tongTon,
                        COALESCE(SUM(ctdh.soLuong), 0) AS tongDaBan,
                        (SELECT duongDan FROM HinhAnhThuoc h WHERE h.idThuoc = t.idThuoc ORDER BY idHinhAnh ASC LIMIT 1) AS hinhAnh,
-                       COALESCE((SELECT giaBan FROM LoThuoc WHERE idThuoc = t.idThuoc AND hanSuDung >= CURDATE() AND soLuongTon > 0 ORDER BY hanSuDung ASC LIMIT 1), t.giaBan) AS giaBan
+                       t.giaBan AS giaBan
                 FROM Thuoc t
                 LEFT JOIN DanhMucThuoc d ON t.idDanhMuc = d.idDanhMuc
                 LEFT JOIN LoThuoc l ON t.idThuoc = l.idThuoc AND l.hanSuDung >= CURDATE()
@@ -36,7 +36,7 @@ class trangChuModel extends Model
                        d.tenDanhMuc,
                        COALESCE(SUM(l.soLuongTon), 0) AS tongTon,
                        (SELECT duongDan FROM HinhAnhThuoc h WHERE h.idThuoc = t.idThuoc ORDER BY idHinhAnh ASC LIMIT 1) AS hinhAnh,
-                       COALESCE((SELECT giaBan FROM LoThuoc WHERE idThuoc = t.idThuoc AND hanSuDung >= CURDATE() AND soLuongTon > 0 ORDER BY hanSuDung ASC LIMIT 1), t.giaBan) AS giaBan
+                       t.giaBan AS giaBan
                 FROM Thuoc t
                 LEFT JOIN DanhMucThuoc d ON t.idDanhMuc = d.idDanhMuc
                 LEFT JOIN LoThuoc l ON t.idThuoc = l.idThuoc AND l.hanSuDung >= CURDATE()

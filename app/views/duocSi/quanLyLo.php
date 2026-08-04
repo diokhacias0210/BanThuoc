@@ -57,7 +57,6 @@
             <th>Hạn sử dụng</th>
             <th>SL tồn</th>
             <th>Giá nhập</th>
-            <th>Giá bán</th>
             <th>Trạng thái</th>
             <th style="text-align:right;">Thao tác</th>
           </tr>
@@ -126,11 +125,6 @@
             <label>Giá nhập (đ/đơn vị) <span class="req">*</span></label>
             <input type="number" id="f_giaNhap" name="giaNhap" min="0" step="1000" placeholder="0" required>
             <div class="error-msg">Vui lòng nhập giá nhập hợp lệ.</div>
-          </div>
-          <div class="form-field">
-            <label>Giá bán (đ/đơn vị) <span class="req">*</span></label>
-            <input type="number" id="f_giaBan" name="giaBan" min="0" step="1000" placeholder="0" required>
-            <div class="error-msg">Vui lòng nhập giá bán hợp lệ.</div>
           </div>
           <div class="form-field">
             <label>Thành tiền nhập lô</label>
@@ -421,7 +415,6 @@ function hienThiBang(list, total) {
             '<td><div class="hsd-cell"><span class="hsd-pill">' + dinhDangNgayVN(item.hanSuDung) + '</span><div class="cell-sub">' + (Number(item.soNgayConLai || 0) >= 0 ? 'còn ' + (item.soNgayConLai || 0) + ' ngày' : 'quá hạn ' + Math.abs(item.soNgayConLai || 0) + ' ngày') + '</div></div></td>' +
             '<td class="cell-strong">' + Number(item.soLuongTon || 0).toLocaleString('vi-VN') + '</td>' +
             '<td class="cell-strong" style="color:var(--green-700);">' + dinhDangTien(item.giaNhap) + '</td>' +
-            '<td class="cell-strong" style="color:var(--primary-color);">' + dinhDangTien(item.giaBan) + '</td>' +
             '<td><span class="badge ' + tt.class + '">' + tt.label + '</span></td>' +
             '<td><div class="actions-cell" style="justify-content:flex-end;">' +
                 '<button class="action-btn view" data-view="' + item.idLo + '" title="Xem chi tiết"><i class="fa-solid fa-eye"></i></button>' +
@@ -551,7 +544,6 @@ function moFormSua(idLo) {
                     document.getElementById('f_hanSuDung').value = d.hanSuDung;
                     document.getElementById('f_soLuongTon').value = d.soLuongTon;
                     document.getElementById('f_giaNhap').value = d.giaNhap;
-                    document.getElementById('f_giaBan').value = d.giaBan || 0;
                     updateThanhTien(); // Tính lại thành tiền dựa trên dữ liệu vừa đổ vào
                     moModal(modalForm);
                 });
@@ -586,7 +578,6 @@ function moModalChiTiet(idLo) {
                     '<div class="detail-row"><span class="detail-label">Hạn sử dụng</span><span class="detail-value">' + dinhDangNgayVN(d.hanSuDung) + '</span></div>' +
                     '<div class="detail-row"><span class="detail-label">Số lượng tồn</span><span class="detail-value">' + Number(d.soLuongTon || 0).toLocaleString('vi-VN') + '</span></div>' +
                     '<div class="detail-row"><span class="detail-label">Giá nhập</span><span class="detail-value" style="color:var(--green-700);">' + dinhDangTien(d.giaNhap) + '</span></div>' +
-                    '<div class="detail-row"><span class="detail-label">Giá bán</span><span class="detail-value" style="color:var(--primary-color);">' + dinhDangTien(d.giaBan) + '</span></div>' +
                     '<div class="detail-row"><span class="detail-label">Trạng thái</span><span class="detail-value"><span class="badge ' + tt.class + '">' + tt.label + '</span></span></div>' +
                     '<div class="detail-row"><span class="detail-label">Số ngày còn lại</span><span class="detail-value">' + (Number(d.soNgayConLai || 0) >= 0 ? (d.soNgayConLai || 0) + ' ngày' : 'Đã quá hạn ' + Math.abs(d.soNgayConLai || 0) + ' ngày') + '</span></div>' +
                 '</div>';
@@ -617,7 +608,6 @@ document.getElementById('btnSaveLo').addEventListener('click', function() {
     var hsd = document.getElementById('f_hanSuDung').value;
     var sl = document.getElementById('f_soLuongTon').value;
     var gia = document.getElementById('f_giaNhap').value;
-    var giaBan = document.getElementById('f_giaBan').value;
 
     // Validate: phải chọn thuốc
     datLoiTruong('f_idThuoc', !idThuoc);
@@ -634,9 +624,6 @@ document.getElementById('btnSaveLo').addEventListener('click', function() {
     // Validate: giá nhập phải nhập và > 0
     datLoiTruong('f_giaNhap', gia === '' || Number(gia) <= 0);
     if (gia === '' || Number(gia) <= 0) ok = false;
-    // Validate: giá bán phải nhập và > 0
-    datLoiTruong('f_giaBan', giaBan === '' || Number(giaBan) <= 0);
-    if (giaBan === '' || Number(giaBan) <= 0) ok = false;
 
     if (!ok) return; // Có lỗi -> dừng lại, không gửi dữ liệu
 

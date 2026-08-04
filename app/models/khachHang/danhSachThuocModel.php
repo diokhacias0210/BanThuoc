@@ -14,10 +14,10 @@ class danhSachThuocModel extends Model
                        d.tenDanhMuc,
                        COALESCE(SUM(l.soLuongTon), 0) AS tongTon,
                        (SELECT duongDan FROM HinhAnhThuoc h WHERE h.idThuoc = t.idThuoc ORDER BY idHinhAnh ASC LIMIT 1) AS hinhAnh,
-                       COALESCE((SELECT giaBan FROM LoThuoc WHERE idThuoc = t.idThuoc AND hanSuDung >= CURDATE() AND soLuongTon > 0 ORDER BY hanSuDung ASC LIMIT 1), t.giaBan) AS giaBan
+                       t.giaBan AS giaBan
                 FROM Thuoc t
                 LEFT JOIN DanhMucThuoc d ON t.idDanhMuc = d.idDanhMuc
-                LEFT JOIN LoThuoc l ON t.idThuoc = l.idThuoc AND l.hanSuDung >= CURDATE()
+                LEFT JOIN LoThuoc l ON t.idThuoc = l.idThuoc AND l.hanSuDung >= CURDATE() AND soLuongTon > 0
                 WHERE (t.trangThai = 1 OR t.trangThai = '1' OR t.trangThai = 'true')
                 GROUP BY t.idThuoc
                 ORDER BY t.idThuoc DESC";
@@ -29,7 +29,7 @@ class danhSachThuocModel extends Model
     public function timKiemThuocAjax($keyword)
     {
         $sql = "SELECT t.idThuoc, t.tenThuoc, 
-                       COALESCE((SELECT giaBan FROM LoThuoc WHERE idThuoc = t.idThuoc AND hanSuDung >= CURDATE() AND soLuongTon > 0 ORDER BY hanSuDung ASC LIMIT 1), t.giaBan) AS giaBan,
+                       t.giaBan AS giaBan,
                        (SELECT duongDan FROM HinhAnhThuoc h WHERE h.idThuoc = t.idThuoc ORDER BY idHinhAnh ASC LIMIT 1) AS hinhAnh
                 FROM Thuoc t
                 WHERE (t.trangThai = 1 OR t.trangThai = '1' OR t.trangThai = 'true')

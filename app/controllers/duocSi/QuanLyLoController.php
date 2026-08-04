@@ -116,8 +116,7 @@ class QuanLyLoController extends Controller
                 'ngaySanXuat' => !empty($_POST['ngaySanXuat']) ? $_POST['ngaySanXuat'] : null, // Không nhập -> null
                 'hanSuDung' => $_POST['hanSuDung'],         // Hạn sử dụng của lô (dùng cho gợi ý FEFO ở nơi khác)
                 'soLuongTon' => intval($_POST['soLuongTon']), // Số lượng tồn kho của lô
-                'giaNhap' => floatval($_POST['giaNhap']),    // Giá nhập của lô hàng này
-                'giaBan' => floatval($_POST['giaBan'])      // Giá bán của lô hàng này
+                'giaNhap' => floatval($_POST['giaNhap'])    // Giá nhập của lô hàng này
             );
 
             if (!empty($id)) {

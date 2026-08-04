@@ -147,8 +147,8 @@ class LoThuocModel extends Model
      */
     public function create($data)
     {
-        $sql = "INSERT INTO {$this->table} (idThuoc, maLo, ngaySanXuat, hanSuDung, soLuongTon, giaNhap, giaBan)
-                VALUES (:idThuoc, :maLo, :ngaySanXuat, :hanSuDung, :soLuongTon, :giaNhap, :giaBan)";
+        $sql = "INSERT INTO {$this->table} (idThuoc, maLo, ngaySanXuat, hanSuDung, soLuongTon, giaNhap)
+                VALUES (:idThuoc, :maLo, :ngaySanXuat, :hanSuDung, :soLuongTon, :giaNhap)";
         $this->db->query($sql);
         $this->db->bind(':idThuoc', $data['idThuoc']);
         $this->db->bind(':maLo', $data['maLo']);
@@ -156,7 +156,6 @@ class LoThuocModel extends Model
         $this->db->bind(':hanSuDung', $data['hanSuDung']);
         $this->db->bind(':soLuongTon', $data['soLuongTon']);
         $this->db->bind(':giaNhap', $data['giaNhap']);
-        $this->db->bind(':giaBan', $data['giaBan']);
 
         if ($this->db->execute()) {
             return $this->db->lastInsertId();
@@ -175,8 +174,7 @@ class LoThuocModel extends Model
                     ngaySanXuat = :ngaySanXuat,
                     hanSuDung = :hanSuDung,
                     soLuongTon = :soLuongTon,
-                    giaNhap = :giaNhap,
-                    giaBan = :giaBan
+                    giaNhap = :giaNhap
                 WHERE idLo = :id";
         $this->db->query($sql);
         $this->db->bind(':idThuoc', $data['idThuoc']);
@@ -185,7 +183,6 @@ class LoThuocModel extends Model
         $this->db->bind(':hanSuDung', $data['hanSuDung']);
         $this->db->bind(':soLuongTon', $data['soLuongTon']);
         $this->db->bind(':giaNhap', $data['giaNhap']);
-        $this->db->bind(':giaBan', $data['giaBan']);
         $this->db->bind(':id', $id);
 
         return $this->db->execute();
