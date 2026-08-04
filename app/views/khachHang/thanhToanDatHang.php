@@ -14,7 +14,7 @@
   VIEW trang Thanh toán & Đặt hàng
   Hỗ trợ: Chọn địa chỉ có sẵn, Thêm địa chỉ mới qua Modal, Chọn phương thức thanh toán.
 -->
-<link rel="stylesheet" href="<?= ASSETROOT ?>/css/khachHang/thanhToanDatHang.css">
+<link rel="stylesheet" href="<?php echo URLROOT; ?>/assets/css/khachHang/thanhToanDatHang.css">
 
 <div class="page">
 
