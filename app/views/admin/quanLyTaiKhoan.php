@@ -204,9 +204,14 @@
             const isSelf = user.idNguoiDung == LOGGED_IN_ADMIN_ID;
             // Kiểm tra dòng hiện tại có phải là một tài khoản quản trị viên khác không
             const isAdminRow = user.vaiTro === 'QUAN_TRI_VIEN';
+            // Phân cấp admin theo id (khớp với logic phía Controller/PHP): admin có id NHỎ hơn được coi
+            // là "cấp trên" (admin gốc/được tạo trước). Chỉ admin cấp trên mới được sửa admin cấp dưới,
+            // chiều ngược lại thì KHÔNG được phép -> khóa nút nếu dòng này là admin và id của họ nhỏ hơn
+            // id admin đang đăng nhập (tức họ là cấp trên của mình).
+            const isSeniorAdminRow = isAdminRow && user.idNguoiDung < LOGGED_IN_ADMIN_ID;
 
-            // Vô hiệu hóa nút phân quyền/khóa nếu là chính mình hoặc là admin khác (an toàn hệ thống)
-            const disabledAttr = (isSelf || isAdminRow) ? 'disabled title="Bạn không được phép tự xử lý chính mình hoặc thao tác lên tài khoản quản trị viên khác!"' : '';
+            // Vô hiệu hóa nút phân quyền/khóa nếu là chính mình hoặc là admin "cấp trên" (an toàn hệ thống)
+            const disabledAttr = (isSelf || isSeniorAdminRow) ? 'disabled title="Bạn không được phép tự xử lý chính mình hoặc thao tác lên tài khoản quản trị viên có cấp bậc cao hơn!"' : '';
 
             return `
                 <tr class="${isActive ? '' : 'row-inactive'}">
