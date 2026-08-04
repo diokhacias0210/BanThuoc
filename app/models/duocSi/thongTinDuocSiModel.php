@@ -60,3 +60,5 @@ class thongTinDuocSiModel extends Model
         return $this->db->single() ? true : false;
     }
 }
+
+

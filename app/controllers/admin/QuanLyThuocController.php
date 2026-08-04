@@ -225,3 +225,5 @@ class QuanLyThuocController extends Controller
         exit;
     }
 }
+
+

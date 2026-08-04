@@ -96,3 +96,6 @@ class quanLyDonHangModel extends Model
         return $this->db->single();
     }
 }
+
+
+

@@ -36,3 +36,5 @@ class chiTietThuocModel extends Model
         return $this->db->single();
     }
 }
+
+

@@ -48,3 +48,6 @@ class trangChuModel extends Model
         return $this->db->resultSet();
     }
 }
+
+
+

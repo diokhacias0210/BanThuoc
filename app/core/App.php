@@ -153,23 +153,7 @@ class App
         }
     }
 
-    /*
-    |--------------------------------------------------------------------------
-    | Chuyển camelCase -> PascalCase
-    |--------------------------------------------------------------------------
-    */
 
-    // "quanLyThuoc" -> "QuanLyThuoc"
-    // "dangNhap" -> "DangNhap"
-    private function camelToPascal($str)
-    {
-        // Viết hoa chữ cái đầu
-        $result = ucfirst($str);
-
-        // Nếu chữ cái đầu đã viết hoa và có chữ hoa ở giữa -> giữ nguyên
-        // (chỉ cần ucfirst là đủ cho trường hợp "quanLyThuoc" -> "QuanLyThuoc")
-        return $result;
-    }
 
 
     /*

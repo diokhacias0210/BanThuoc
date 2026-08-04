@@ -186,3 +186,6 @@ class DuyetDonModel extends Model
         return $result ? intval($result['total']) : 0;
     }
 }
+
+
+

@@ -92,3 +92,5 @@ class chiTietThuocController extends Controller
         $this->view('layouts/khachHangLayout', array_merge($data, ['content' => $content]));
     }
 }
+
+

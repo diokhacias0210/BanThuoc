@@ -66,3 +66,4 @@ class ThongKeModel extends Model
         return $this->db->resultSet();
     }
 }
+

@@ -204,3 +204,4 @@ class thanhToanDatHangController extends Controller
         exit();
     }
 }
+

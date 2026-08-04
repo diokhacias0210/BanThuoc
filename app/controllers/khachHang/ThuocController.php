@@ -102,3 +102,5 @@ class thuocController extends Controller
         exit;
     }
 }
+
+

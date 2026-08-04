@@ -87,5 +87,7 @@ class thongTinCaNhanModel extends Model
         $this->db->bind(':idNguoiDung', $idNguoiDung);
         $this->db->execute();
     }
-    
+
 }
+
+

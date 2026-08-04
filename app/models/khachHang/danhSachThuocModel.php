@@ -39,3 +39,6 @@ class danhSachThuocModel extends Model
         return $this->db->resultSet();
     }
 }
+
+
+

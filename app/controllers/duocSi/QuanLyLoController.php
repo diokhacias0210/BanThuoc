@@ -156,3 +156,5 @@ class QuanLyLoController extends Controller
         exit;
     }
 }
+
+

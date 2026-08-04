@@ -67,3 +67,5 @@ class BaoCaoThongKeController extends Controller
         exit;
     }
 }
+
+

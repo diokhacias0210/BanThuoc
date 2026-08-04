@@ -124,3 +124,5 @@ class ThongTinCaNhanController extends Controller
         exit;
     }
 }
+
+

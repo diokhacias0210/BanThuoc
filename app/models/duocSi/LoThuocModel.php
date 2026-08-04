@@ -199,3 +199,4 @@ class LoThuocModel extends Model
         return $this->db->execute();
     }
 }
+

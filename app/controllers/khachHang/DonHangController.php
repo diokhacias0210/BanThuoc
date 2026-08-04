@@ -77,3 +77,6 @@ class DonHangController extends Controller
         $this->view("layouts/khachHangLayout", $data);
     }
 }
+
+
+
