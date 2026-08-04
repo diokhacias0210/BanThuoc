@@ -31,7 +31,7 @@ class chiTietThuocModel extends Model
     // 3. Lấy thông tin lô thuốc gần nhất còn hạn dùng
     public function getThongTinLoMoiNhatTheoID($idThuoc)
     {
-        $sql = "SELECT idLo, maLo, ngaySanXuat, hanSuDung, giaBan, soLuongTon FROM LoThuoc 
+        $sql = "SELECT idLo, maLo, ngaySanXuat, hanSuDung, soLuongTon FROM LoThuoc 
                 WHERE idThuoc = :idThuoc AND hanSuDung >= CURDATE() AND soLuongTon > 0
                 ORDER BY hanSuDung ASC LIMIT 1";
         $this->db->query($sql);
