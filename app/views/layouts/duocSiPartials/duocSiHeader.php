@@ -7,6 +7,8 @@
     <title>PharmaCare — <?php echo isset($title) ? $title : 'Cổng dược sĩ'; ?></title>
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+    <!-- Thư viện icon Font Awesome, dùng cho các icon dạng "fa-solid fa-..." trong khu vực Dược sĩ -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
     <link rel="stylesheet" href="<?php echo ASSETROOT; ?>/css/Layout/duocSiLayout.css">
     <?php if (!empty($page_css)): ?>
         <link rel="stylesheet" href="<?php echo ASSETROOT; ?>/css/duocSi/<?php echo $page_css; ?>.css">

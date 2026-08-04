@@ -1,7 +1,8 @@
 <aside class="sidebar" id="sidebar">
     <div class="brand">
         <div class="brand-logo">
-            <div class="icon icon-brand"></div>
+            <!-- Icon Logo đồng bộ với logo bên khách hàng/admin (fa-notes-medical) -->
+            <i class="fa-solid fa-notes-medical" style="color:#fff;"></i>
         </div>
         <div>
             <div class="brand-name">PharmaCare</div>

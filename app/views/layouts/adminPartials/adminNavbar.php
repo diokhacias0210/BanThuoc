@@ -1,8 +1,8 @@
 <aside class="sidebar">
     <div class="brand">
         <div class="brand-logo">
-            <!-- Icon Logo thuốc Font Awesome -->
-            <i class="fa-solid fa-capsules"></i>
+            <!-- Icon Logo đồng bộ với logo bên khách hàng (fa-notes-medical) -->
+            <i class="fa-solid fa-notes-medical"></i>
         </div>
         <div>
             <div class="brand-name">Admin Panel</div>
