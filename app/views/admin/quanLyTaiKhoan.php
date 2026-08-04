@@ -184,16 +184,22 @@
 
         emptyState.style.display = 'none';
         tbody.innerHTML = list.map(user => {
+            // Chuẩn hóa trangThai về boolean thực sự: dữ liệu trả về từ server qua JSON có thể là
+            // number (0/1), string ("0"/"1") hoặc boolean tùy driver CSDL. Nếu dùng thẳng "user.trangThai"
+            // làm điều kiện, chuỗi "0" sẽ bị JS coi là TRUTHY (vì "0" là chuỗi không rỗng) -> badge/trạng thái
+            // luôn hiển thị "Hoạt động" dù tài khoản đã bị khóa thật sự trong CSDL. Phải so sánh tường minh.
+            const isActive = user.trangThai == 1 || user.trangThai === true;
+
             // Xác định class/nhãn badge vai trò dựa trên giá trị vaiTro
             const roleClass = user.vaiTro === 'QUAN_TRI_VIEN' ? 'badge-role-admin' : (user.vaiTro === 'DUOC_SI' ? 'badge-role-pharmacist' : 'badge-role-customer');
             const roleLabel = user.vaiTro === 'QUAN_TRI_VIEN' ? 'Quản trị viên' : (user.vaiTro === 'DUOC_SI' ? 'Dược sĩ' : 'Khách hàng');
             // Xác định class/nhãn badge trạng thái hoạt động (true = đang hoạt động, false = đã khóa)
-            const statusClass = user.trangThai ? 'badge-status-active' : 'badge-status-locked';
-            const statusLabel = user.trangThai ? 'Hoạt động' : 'Đã khóa';
+            const statusClass = isActive ? 'badge-status-active' : 'badge-status-locked';
+            const statusLabel = isActive ? 'Hoạt động' : 'Đã khóa';
 
 
             // Icon khóa/mở khóa hiển thị trên nút thao tác, đổi theo trạng thái hiện tại
-            const lockIcon = user.trangThai ? `<i class="fa-solid fa-lock"></i>` : `<i class="fa-solid fa-lock-open"></i>`;
+            const lockIcon = isActive ? `<i class="fa-solid fa-lock"></i>` : `<i class="fa-solid fa-lock-open"></i>`;
             // Kiểm tra dòng hiện tại có phải là chính admin đang đăng nhập không
             const isSelf = user.idNguoiDung == LOGGED_IN_ADMIN_ID;
             // Kiểm tra dòng hiện tại có phải là một tài khoản quản trị viên khác không
@@ -203,7 +209,7 @@
             const disabledAttr = (isSelf || isAdminRow) ? 'disabled title="Bạn không được phép tự xử lý chính mình hoặc thao tác lên tài khoản quản trị viên khác!"' : '';
 
             return `
-                <tr class="${user.trangThai ? '' : 'row-inactive'}">
+                <tr class="${isActive ? '' : 'row-inactive'}">
                     <td class="cell-mono cell-strong">USR-${String(user.idNguoiDung).padStart(6, '0')}</td>
                     <td>
                         <div class="user-cell">
@@ -269,7 +275,7 @@
                         <div class="detail-item"><div class="k">Địa chỉ Email</div><div class="v">${u.email}</div></div>
                         <div class="detail-item"><div class="k">Số điện thoại</div><div class="v cell-mono">${u.soDienThoai || '—'}</div></div>
                         <div class="detail-item"><div class="k">Phân quyền hệ thống</div><div class="v"><b style="color:var(--blue-600);">${u.vaiTro}</b></div></div>
-                        <div class="detail-item"><div class="k">Trạng thái đăng nhập</div><div class="v">${u.trangThai ? 'Đang hoạt động' : 'Đang bị khóa'}</div></div>
+                        <div class="detail-item"><div class="k">Trạng thái đăng nhập</div><div class="v">${(u.trangThai == 1 || u.trangThai === true) ? 'Đang hoạt động' : 'Đang bị khóa'}</div></div>
                         ${extHTML}
                     `;
                     moModal('modalDetail');

@@ -40,6 +40,19 @@ class XacThucController extends Controller
 
             // So khớp mật khẩu người dùng nhập với mật khẩu lưu trong CSDL
             if ($user && $matKhau === $user['matKhau']) {
+
+                // Đúng số điện thoại + mật khẩu, nhưng tài khoản đang bị khóa -> chặn đăng nhập,
+                // hiển thị thông báo riêng để người dùng biết chính xác lý do (không nhầm với sai mật khẩu)
+                $trangThai = $user['trangThai'] == 1 || $user['trangThai'] === true;
+                if (!$trangThai) {
+                    $this->view('khachHang/xacThuc/dangNhap', [
+                        'error'    => 'Tài khoản của bạn đã bị khóa. Vui lòng liên hệ quản trị viên để được hỗ trợ.',
+                        'page_css' => 'xacThuc',
+                        'is_auth'  => true
+                    ]);
+                    return;
+                }
+
                 $_SESSION['user_id'] = $user['idNguoiDung'];
                 $_SESSION['user_name'] = $user['hoTen'];
                 $_SESSION['user_role'] = $user['vaiTro'];

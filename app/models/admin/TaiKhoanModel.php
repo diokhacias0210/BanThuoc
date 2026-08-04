@@ -107,9 +107,12 @@ class TaiKhoanModel extends Model
     }
 
     
-    // Kiểm tra thông tin đăng nhập bằng số điện thoại
+    // Kiểm tra thông tin đăng nhập bằng số điện thoại.
+    // Lưu ý: KHÔNG lọc theo trangThai ở đây, vì cần trả về tài khoản dù đang bị khóa,
+    // để tầng Controller tự phân biệt được 2 trường hợp: "sai mật khẩu" và "tài khoản bị khóa"
+    // rồi hiển thị đúng thông báo tương ứng cho người dùng.
     public function kiemTraDangNhap($soDienThoai) {
-        $this->db->query("SELECT * FROM NguoiDung WHERE soDienThoai = :sdt AND trangThai = 1");
+        $this->db->query("SELECT * FROM NguoiDung WHERE soDienThoai = :sdt");
         $this->db->bind(':sdt', $soDienThoai);
         return $this->db->single();
     }

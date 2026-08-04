@@ -17,6 +17,34 @@
 .result-count { font-size: 12.5px; color: var(--gray-500); }
 .result-count b { color: var(--gray-900); }
 
+/* CÁC Ô LỌC (DANH MỤC / PHÂN LOẠI / TRẠNG THÁI) TRÊN THANH CÔNG CỤ */
+.filter-select {
+  padding: 10px 32px 10px 14px;
+  border: 1px solid var(--gray-200);
+  border-radius: 10px;
+  font-size: 13.5px;
+  font-weight: 600;
+  color: var(--gray-700);
+  background-color: var(--white);
+  outline: none;
+  cursor: pointer;
+  appearance: none;
+  -webkit-appearance: none;
+  -moz-appearance: none;
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%23667085' stroke-width='2.4' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpolyline points='6 9 12 15 18 9'%3E%3C/polyline%3E%3C/svg%3E");
+  background-repeat: no-repeat;
+  background-position: right 10px center;
+  background-size: 14px;
+  transition: 0.15s;
+}
+.filter-select:hover {
+  border-color: var(--gray-300);
+}
+.filter-select:focus {
+  border-color: var(--green-600);
+  box-shadow: 0 0 0 3px var(--green-50);
+}
+
 /* ĐỊNH DẠNG BẢNG SẢN PHẨM THUỐC */
 .thumb { width: 46px; height: 46px; border-radius: 10px; object-fit: cover; background: var(--gray-100); border: 1px solid var(--gray-200); display: block; }
 .badge-rx { background: var(--orange-50); color: var(--orange-600); }
