@@ -58,15 +58,28 @@ class chiTietThuocController extends Controller
         $loInfo = $this->chiTietModel->getThongTinLoMoiNhatTheoID($idThuoc); // Thông tin lô mới nhất của thuốc (có thể null)
 
         $gioiHanMua = intval($thuoc['gioiHanMua']); // Giới hạn số lượng được phép mua mỗi lần (0 = không giới hạn)
-        $tongTon = intval($thuoc['tongTon']);        // Tổng số lượng tồn kho hiện có của thuốc
+        $loATon = intval($thuoc['loASoLuongTon']);   // Số lượng tồn của lô FEFO
 
-        // TÍNH HẠN MỨC MUA TỐI ĐA PHÙ HỢP (TỒN KHO & GIỚI HẠN MUA)
+        // TÍNH HẠN MỨC MUA TỐI ĐA PHÙ HỢP (TỒN KHO LÔ A & GIỚI HẠN MUA)
         if ($gioiHanMua > 0) {
-            $maxAllowed = min($gioiHanMua, $tongTon); // Lấy giá trị nhỏ hơn giữa giới hạn mua và tồn kho thực tế
+            $maxAllowed = min($gioiHanMua, $loATon); // Lấy giá trị nhỏ hơn giữa giới hạn mua và tồn kho lô FEFO
             $gioiHanTxt = $gioiHanMua . ' ' . $thuoc['donViTinh']; // Chuỗi hiển thị giới hạn mua kèm đơn vị tính
         } else {
-            $maxAllowed = $tongTon; // Không giới hạn mua -> hạn mức tối đa chính là tồn kho hiện có
+            $maxAllowed = $loATon; // Không giới hạn mua -> hạn mức tối đa chính là tồn kho lô FEFO
             $gioiHanTxt = 'Không giới hạn'; // Chuỗi hiển thị khi thuốc không có giới hạn mua
+        }
+
+        $hsdTxt = '—';
+        if ($loInfo && $loInfo['hanSuDung']) {
+            $hsdDate = new DateTime($loInfo['hanSuDung']);
+            $today = new DateTime('today');
+            $diff = $today->diff($hsdDate);
+            $days = $diff->days;
+            if ($diff->invert) {
+                $hsdTxt = 'Đã quá hạn (' . $hsdDate->format('d/m/Y') . ')';
+            } else {
+                $hsdTxt = $days . ' ngày nữa (' . $hsdDate->format('d/m/Y') . ')';
+            }
         }
 
         $data = [
@@ -80,7 +93,7 @@ class chiTietThuocController extends Controller
             'danhSachAnh' => $danhSachAnh,                                                                 // Toàn bộ danh sách ảnh để hiển thị gallery
             'maLoTxt' => $loInfo ? $loInfo['maLo'] : 'Chưa cập nhật',                                       // Mã lô hiển thị, hoặc thông báo nếu chưa có lô
             'nsxTxt' => ($loInfo && $loInfo['ngaySanXuat']) ? date('d/m/Y', strtotime($loInfo['ngaySanXuat'])) : '—', // Ngày sản xuất đã định dạng, hoặc '—' nếu không có
-            'hsdTxt' => ($loInfo && $loInfo['hanSuDung']) ? date('d/m/Y', strtotime($loInfo['hanSuDung'])) : '—',     // Hạn sử dụng đã định dạng, hoặc '—' nếu không có
+            'hsdTxt' => $hsdTxt,                                                                           // Hạn sử dụng FEFO
             'gioiHanTxt' => $gioiHanTxt,                                                                    // Chuỗi hiển thị giới hạn mua đã tính ở trên
             'maxAllowed' => $maxAllowed                                                                     // Số lượng tối đa khách hàng được phép mua
         ];

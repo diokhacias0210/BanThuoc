@@ -4,7 +4,10 @@ class chiTietThuocModel extends Model
     // 1. Lấy thông tin chi tiết của thuốc theo Mã định danh (idThuoc)
     public function getChiTietThuocTheoID($idThuoc)
     {
-        $sql = "SELECT t.*, d.tenDanhMuc, COALESCE(SUM(l.soLuongTon), 0) AS tongTon
+        $sql = "SELECT t.*, d.tenDanhMuc, 
+                       COALESCE(SUM(l.soLuongTon), 0) AS tongTon,
+                       COALESCE((SELECT giaBan FROM LoThuoc WHERE idThuoc = t.idThuoc AND hanSuDung >= CURDATE() AND soLuongTon > 0 ORDER BY hanSuDung ASC LIMIT 1), t.giaBan) AS giaBan,
+                       COALESCE((SELECT soLuongTon FROM LoThuoc WHERE idThuoc = t.idThuoc AND hanSuDung >= CURDATE() AND soLuongTon > 0 ORDER BY hanSuDung ASC LIMIT 1), 0) AS loASoLuongTon
                 FROM Thuoc t
                 LEFT JOIN DanhMucThuoc d ON t.idDanhMuc = d.idDanhMuc
                 LEFT JOIN LoThuoc l ON t.idThuoc = l.idThuoc AND l.hanSuDung >= CURDATE()
@@ -28,8 +31,8 @@ class chiTietThuocModel extends Model
     // 3. Lấy thông tin lô thuốc gần nhất còn hạn dùng
     public function getThongTinLoMoiNhatTheoID($idThuoc)
     {
-        $sql = "SELECT maLo, ngaySanXuat, hanSuDung FROM LoThuoc 
-                WHERE idThuoc = :idThuoc AND hanSuDung >= CURDATE() 
+        $sql = "SELECT idLo, maLo, ngaySanXuat, hanSuDung, giaBan, soLuongTon FROM LoThuoc 
+                WHERE idThuoc = :idThuoc AND hanSuDung >= CURDATE() AND soLuongTon > 0
                 ORDER BY hanSuDung ASC LIMIT 1";
         $this->db->query($sql);
         $this->db->bind(':idThuoc', $idThuoc);

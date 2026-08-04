@@ -31,6 +31,7 @@ class gioHangModel extends Model
         $sql = "SELECT c.id, c.idGioHang, c.idThuoc, c.idDonThuoc, c.soLuong, c.donGia, c.trangThaiThaoTac,
                        t.tenThuoc, t.donViTinh, t.gioiHanMua, d.tenDanhMuc,
                        COALESCE(SUM(l.soLuongTon), 0) AS tongTon,
+                       COALESCE((SELECT soLuongTon FROM LoThuoc WHERE idThuoc = t.idThuoc AND hanSuDung >= CURDATE() AND soLuongTon > 0 ORDER BY hanSuDung ASC LIMIT 1), 0) AS loASoLuongTon,
                        (SELECT duongDan FROM HinhAnhThuoc h WHERE h.idThuoc = t.idThuoc ORDER BY h.idHinhAnh ASC LIMIT 1) AS hinhAnh,
                        dt.trangThai AS trangThaiDonThuoc,
                        dt.ghiChu AS ghiChuDonThuoc
@@ -62,7 +63,8 @@ class gioHangModel extends Model
 
     public function getChiTietItemTheoID($idChiTiet, $idGioHang)
     {
-        $sql = "SELECT c.*, t.gioiHanMua, COALESCE(SUM(l.soLuongTon), 0) AS tongTon
+        $sql = "SELECT c.*, t.gioiHanMua, COALESCE(SUM(l.soLuongTon), 0) AS tongTon,
+                       COALESCE((SELECT soLuongTon FROM LoThuoc WHERE idThuoc = t.idThuoc AND hanSuDung >= CURDATE() AND soLuongTon > 0 ORDER BY hanSuDung ASC LIMIT 1), 0) AS loASoLuongTon
                 FROM ChiTietGioHang c
                 INNER JOIN Thuoc t ON c.idThuoc = t.idThuoc
                 LEFT JOIN LoThuoc l ON t.idThuoc = l.idThuoc AND l.hanSuDung >= CURDATE()

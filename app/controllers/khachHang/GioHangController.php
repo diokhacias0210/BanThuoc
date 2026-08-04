@@ -52,9 +52,9 @@ class gioHangController extends Controller
             foreach ($rawItems as $item) {
                 $item['hinhAnhUrl'] = $this->xuLyDuongDanAnh(isset($item['hinhAnh']) ? $item['hinhAnh'] : ''); // Chuẩn hoá đường dẫn ảnh hiển thị
                 $gioiHanMua = intval($item['gioiHanMua']); // Giới hạn mua tối đa theo cấu hình sản phẩm (-1 = không giới hạn)
-                $tongTon = intval($item['tongTon']);       // Tổng số lượng tồn kho thực tế của sản phẩm
-                // Số lượng tối đa cho phép mua = min(giới hạn mua, tồn kho); nếu không giới hạn thì lấy luôn tồn kho
-                $item['maxAllowed'] = ($gioiHanMua > 0) ? min($gioiHanMua, $tongTon) : $tongTon;
+                $loATon = intval($item['loASoLuongTon']);       // Số lượng tồn kho của Lô A (FEFO)
+                // Số lượng tối đa cho phép mua = min(giới hạn mua, tồn kho lô A); nếu không giới hạn thì lấy luôn tồn kho lô A
+                $item['maxAllowed'] = ($gioiHanMua > 0) ? min($gioiHanMua, $loATon) : $loATon;
                 $items[] = $item;
             }
         }
@@ -123,8 +123,8 @@ class gioHangController extends Controller
         }
 
         $gioiHanMua = intval($thuoc['gioiHanMua']); // Giới hạn mua tối đa theo cấu hình sản phẩm (-1 = không giới hạn)
-        $tongTon = intval($thuoc['tongTon']);       // Tổng số lượng tồn kho thực tế
-        $maxAllowed = ($gioiHanMua > 0) ? min($gioiHanMua, $tongTon) : $tongTon; // Số lượng tối đa cho phép mua
+        $loATon = intval($thuoc['loASoLuongTon']);       // Số lượng tồn kho của Lô A
+        $maxAllowed = ($gioiHanMua > 0) ? min($gioiHanMua, $loATon) : $loATon; // Số lượng tối đa cho phép mua
 
         $idGioHang = $this->gioHangModel->layHoacTaoGioHang($idKhachHang);
         $currentInCart = $this->gioHangModel->getSoLuongHienCoTrongGio($idGioHang, $idThuoc); // Số lượng sản phẩm này đang có sẵn trong giỏ
@@ -176,8 +176,8 @@ class gioHangController extends Controller
         }
 
         $gioiHanMua = intval($itemInfo['gioiHanMua']); // Giới hạn mua tối đa theo cấu hình sản phẩm (-1 = không giới hạn)
-        $tongTon = intval($itemInfo['tongTon']);       // Tổng số lượng tồn kho thực tế
-        $maxAllowed = ($gioiHanMua > 0) ? min($gioiHanMua, $tongTon) : $tongTon; // Số lượng tối đa cho phép mua
+        $loATon = intval($itemInfo['loASoLuongTon']);       // Tổng số lượng tồn kho thực tế
+        $maxAllowed = ($gioiHanMua > 0) ? min($gioiHanMua, $loATon) : $loATon; // Số lượng tối đa cho phép mua
 
         if ($soLuong > $maxAllowed) {
             echo json_encode(array(
