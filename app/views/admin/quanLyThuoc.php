@@ -758,6 +758,16 @@
     // Tải danh sách thuốc ngay khi trang load lần đầu
     taiDanhSachThuoc();
 
+    // Nếu có idThuoc được lưu tạm trong sessionStorage (được điều hướng từ trang chi tiết thuốc sang)
+    // thì tự động mở modal chỉnh sửa đúng thuốc đó, sau đó xóa key này đi để không mở lại lần sau
+    (function moFormSuaTuSessionNeuCo() {
+        const idSua = sessionStorage.getItem('suaThuocId');
+        if (idSua) {
+            sessionStorage.removeItem('suaThuocId');
+            moFormSua(idSua);
+        }
+    })();
+
     /**
      * Điều hướng sang trang chi tiết của một thuốc.
      * @param {number} id - idThuoc cần xem chi tiết

@@ -163,19 +163,17 @@
 
                 /* ===== Khối nút hành động: sửa / đổi trạng thái / xóa ===== */
                 infoHtml += '<div class="actions-row">';
-                infoHtml += '<a href="<?php echo URLROOT; ?>/admin/quanLyThuoc" class="btn btn-primary">';
+                // Nút sửa: lưu tạm idThuoc vào sessionStorage rồi điều hướng về trang danh sách.
+                // Dùng sessionStorage thay vì query string (?sua=id) vì query string có thể bị
+                // .htaccess rewrite "nuốt" mất nếu thiếu cờ QSA, khiến id không tới được trang danh sách.
+                infoHtml += '<button type="button" class="btn btn-primary" onclick="moSuaTuTrangChiTiet(' + thuoc.idThuoc + ')">';
                 infoHtml += '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 20h9"/><path d="M16.5 3.5a2.1 2.1 0 0 1 3 3L7 19l-4 1 1-4Z"/></svg>';
                 infoHtml += 'Chỉnh sửa thuốc';
-                infoHtml += '</a>';
+                infoHtml += '</button>';
                 // Nút đổi trạng thái (mở bán / tạm ngưng), gọi hàm doiTrangThai() truyền idThuoc
                 infoHtml += '<button class="btn btn-ghost" onclick="doiTrangThai(' + thuoc.idThuoc + ')">';
                 infoHtml += '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="m4.9 4.9 14.2 14.2"/><path d="M9.9 4.24A10 10 0 0 1 21 12c-.6 1.1-1.3 2.1-2.1 3"/><path d="M6.1 6.1C4.3 7.4 2.9 9.5 2 12c1.6 4 5.5 7 10 7 1.2 0 2.4-.2 3.5-.6"/></svg>';
                 infoHtml += (trangThai ? 'Tạm ngưng bán' : 'Mở bán lại');
-                infoHtml += '</button>';
-                // Nút xóa thuốc, có xác nhận confirm() trước khi gọi xoaThuoc()
-                infoHtml += '<button class="btn btn-danger" onclick="if(confirm(\'Bạn có chắc muốn xóa thuốc này?\')) xoaThuoc(' + thuoc.idThuoc + ')">';
-                infoHtml += '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 6h18"/><path d="M8 6V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"/><path d="M19 6l-1 14a2 2 0 0 1-2 2H8a2 2 0 0 1-2-2L5 6"/></svg>';
-                infoHtml += 'Xóa thuốc';
                 infoHtml += '</button>';
                 infoHtml += '</div>';
                 infoHtml += '</div>';
@@ -264,35 +262,16 @@
      * sau khi người dùng xác nhận, rồi tải lại dữ liệu để cập nhật giao diện.
      * @param {number} id - idThuoc cần đổi trạng thái
      */
-    function doiTrangThai(id) {
-        if (confirm('Xác nhận thay đổi trạng thái mở bán / tạm ngưng của mặt hàng thuốc này?')) {
-            fetch('<?php echo URLROOT; ?>/admin/quanLyThuoc/doiTrangThai/' + id, {
-                method: 'POST',
-                headers: { 'Cache-Control': 'no-cache' } // Đảm bảo không lấy kết quả cũ từ cache trình duyệt
-            })
-                .then(function (res) { return res.json(); })
-                .then(function (res) {
-                    if (res.status) {
-                        alert(res.message);
-                        // Cập nhật lại giao diện ngay mà không cần reload trang
-                        taiChiTiet();
-                    } else {
-                        alert(res.message || 'Thay đổi trạng thái thất bại!');
-                    }
-                })
-                .catch(function (err) {
-                    console.error('Lỗi khi đổi trạng thái:', err);
-                    alert('Có lỗi kết nối khi đổi trạng thái!');
-                });
-        }
-    }
 
     /**
-     * Xóa một thuốc khỏi hệ thống.
-     * @param {number} id - idThuoc cần xóa
-     * @todo Chức năng đang được phát triển, hiện chỉ hiển thị thông báo tạm.
+     * Chuyển sang trang danh sách để chỉnh sửa thuốc hiện tại.
+     * Lưu idThuoc vào sessionStorage (thay vì query string trên URL) để chắc chắn
+     * mang được id sang trang danh sách bất kể cấu hình rewrite URL của server.
+     * @param {number} id - idThuoc cần chỉnh sửa
      */
-    function xoaThuoc(id) {
-        alert('Chức năng xóa thuốc đang phát triển.');
+    function moSuaTuTrangChiTiet(id) {
+        sessionStorage.setItem('suaThuocId', id);
+        window.location.href = '<?php echo URLROOT; ?>/admin/quanLyThuoc';
     }
+
 </script>
