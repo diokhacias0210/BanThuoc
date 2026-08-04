@@ -104,6 +104,11 @@
 
     // idNguoiDung của admin đang đăng nhập, lấy từ session PHP (dùng để chặn tự thao tác lên chính mình)
     const LOGGED_IN_ADMIN_ID = <?php echo isset($_SESSION['user_id']) ? $_SESSION['user_id'] : 0; ?>;
+    // id của admin GỐC (tài khoản QUAN_TRI_VIEN có idNguoiDung nhỏ nhất hệ thống), lấy từ Controller.
+    // Chỉ tài khoản này mới được phép phân quyền/khóa các admin khác.
+    const ROOT_ADMIN_ID = <?php echo isset($data['root_admin_id']) ? (int) $data['root_admin_id'] : 0; ?>;
+    // Có phải mình đang đăng nhập bằng chính tài khoản admin gốc hay không
+    const IS_ROOT_ADMIN = LOGGED_IN_ADMIN_ID === ROOT_ADMIN_ID;
 
     /**
      * Mở một modal theo id bằng cách gỡ class "hidden".
@@ -204,14 +209,13 @@
             const isSelf = user.idNguoiDung == LOGGED_IN_ADMIN_ID;
             // Kiểm tra dòng hiện tại có phải là một tài khoản quản trị viên khác không
             const isAdminRow = user.vaiTro === 'QUAN_TRI_VIEN';
-            // Phân cấp admin theo id (khớp với logic phía Controller/PHP): admin có id NHỎ hơn được coi
-            // là "cấp trên" (admin gốc/được tạo trước). Chỉ admin cấp trên mới được sửa admin cấp dưới,
-            // chiều ngược lại thì KHÔNG được phép -> khóa nút nếu dòng này là admin và id của họ nhỏ hơn
-            // id admin đang đăng nhập (tức họ là cấp trên của mình).
-            const isSeniorAdminRow = isAdminRow && user.idNguoiDung < LOGGED_IN_ADMIN_ID;
+            // Chỉ admin GỐC (IS_ROOT_ADMIN) mới được phép sửa vai trò/khóa một admin khác.
+            // Các admin được cấp quyền đều bình đẳng -> không ai trong số họ được đụng vào admin khác,
+            // kể cả bản thân admin gốc cũng không tự sửa được chính mình (đã chặn riêng ở isSelf).
+            const blockedAdminRow = isAdminRow && !isSelf && !IS_ROOT_ADMIN;
 
-            // Vô hiệu hóa nút phân quyền/khóa nếu là chính mình hoặc là admin "cấp trên" (an toàn hệ thống)
-            const disabledAttr = (isSelf || isSeniorAdminRow) ? 'disabled title="Bạn không được phép tự xử lý chính mình hoặc thao tác lên tài khoản quản trị viên có cấp bậc cao hơn!"' : '';
+            // Vô hiệu hóa nút phân quyền/khóa nếu là chính mình, hoặc là admin khác mà mình không phải gốc
+            const disabledAttr = (isSelf || blockedAdminRow) ? 'disabled title="Chỉ tài khoản quản trị viên gốc mới có quyền thao tác lên tài khoản quản trị viên khác!"' : '';
 
             return `
                 <tr class="${isActive ? '' : 'row-inactive'}">
@@ -307,6 +311,15 @@
         document.getElementById('f_role_id').value = id;
         document.getElementById('f_role_name').value = name;
         document.getElementById('f_role_select').value = currentRole;
+
+        // Nếu người đang thao tác không phải admin gốc: khóa lựa chọn "Quản trị viên (ADMIN)"
+        // để không ai ngoài admin gốc có thể tự cấp quyền admin cho tài khoản khác.
+        const adminOption = document.querySelector('#f_role_select option[value="QUAN_TRI_VIEN"]');
+        if (adminOption) {
+            adminOption.disabled = !IS_ROOT_ADMIN;
+            adminOption.title = IS_ROOT_ADMIN ? '' : 'Chỉ admin gốc mới được cấp quyền quản trị viên';
+        }
+
         moModal('modalRole');
     }
 

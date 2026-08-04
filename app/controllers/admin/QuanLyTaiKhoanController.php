@@ -34,6 +34,7 @@ class QuanLyTaiKhoanController extends Controller
         $data['page_icon'] = "fa-solid fa-users-gear";        // Icon hiển thị kèm tiêu đề trang
         $data['active_tab'] = "taikhoan";                     // Tab đang active trên sidebar
         $data['page_css'] = "quanLyTaiKhoan";                  // Tên file CSS riêng cho trang này
+        $data['root_admin_id'] = $this->taiKhoanModel->getRootAdminId(); // id admin gốc, dùng ở JS để ẩn/hiện nút thao tác
 
         ob_start();
         // Nạp nội dung view quản lý tài khoản, output được bắt lại vào buffer
@@ -101,6 +102,28 @@ class QuanLyTaiKhoanController extends Controller
                 exit;
             }
 
+            // Lấy thông tin tài khoản mục tiêu để biết vai trò hiện tại
+            $targetUser = $this->taiKhoanModel->getDetailById($id);
+            if (!$targetUser) {
+                echo json_encode(array('status' => false, 'message' => 'Không tìm thấy người dùng.'));
+                exit;
+            }
+
+            // Quy tắc phân cấp admin: chỉ admin GỐC (tài khoản QUAN_TRI_VIEN có idNguoiDung nhỏ nhất
+            // toàn hệ thống) mới được phép:
+            //   (a) đổi vai trò của một admin đang tồn tại, HOẶC
+            //   (b) nâng một tài khoản khác (khách hàng/dược sĩ) lên thành admin mới.
+            // Các admin được cấp quyền sau đều bình đẳng với nhau -> KHÔNG ai trong số họ được
+            // tự tạo thêm admin mới hoặc đụng vào vai trò của admin khác.
+            $lienQuanAdmin = ($targetUser['vaiTro'] === 'QUAN_TRI_VIEN') || ($newRole === 'QUAN_TRI_VIEN');
+            if ($lienQuanAdmin) {
+                $rootAdminId = $this->taiKhoanModel->getRootAdminId();
+                if (!isset($_SESSION['user_id']) || $_SESSION['user_id'] != $rootAdminId) {
+                    echo json_encode(array('status' => false, 'message' => 'Chỉ tài khoản quản trị viên gốc mới có quyền cấp/thay đổi vai trò quản trị viên.'));
+                    exit;
+                }
+            }
+
             if ($this->taiKhoanModel->updateRole($id, $newRole)) {
                 echo json_encode(array('status' => true, 'message' => 'Đã cập nhật quyền hạn tài khoản thành công!'));
             } else {
@@ -131,6 +154,15 @@ class QuanLyTaiKhoanController extends Controller
             if (!$user) {
                 echo json_encode(array('status' => false, 'message' => 'Không tìm thấy người dùng.'));
                 exit;
+            }
+
+            // Quy tắc phân cấp admin (giống luuVaiTro): chỉ admin GỐC mới được khóa/mở khóa admin khác.
+            if ($user['vaiTro'] === 'QUAN_TRI_VIEN') {
+                $rootAdminId = $this->taiKhoanModel->getRootAdminId();
+                if (!isset($_SESSION['user_id']) || $_SESSION['user_id'] != $rootAdminId) {
+                    echo json_encode(array('status' => false, 'message' => 'Chỉ tài khoản quản trị viên gốc mới có quyền khóa/mở khóa admin khác.'));
+                    exit;
+                }
             }
 
             $newStatus = $user['trangThai'] ? 0 : 1; // Đảo ngược trạng thái hiện tại: đang mở -> khóa, đang khóa -> mở

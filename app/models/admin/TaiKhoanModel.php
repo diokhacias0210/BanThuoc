@@ -28,6 +28,17 @@ class TaiKhoanModel extends Model
         return $this->db->resultSet();
     }
 
+    // 1b. Lấy id của admin gốc: là tài khoản QUAN_TRI_VIEN có idNguoiDung nhỏ nhất hệ thống.
+    // Dùng để xác định "cấp bậc" admin mà không cần thêm cột riêng trong CSDL:
+    // chỉ có admin gốc mới có toàn quyền phân quyền/khóa các admin khác;
+    // các admin được cấp sau (dù id nhỏ/lớn hơn nhau) đều KHÔNG được đụng vào nhau.
+    public function getRootAdminId()
+    {
+        $this->db->query("SELECT MIN(idNguoiDung) AS rootId FROM {$this->table} WHERE vaiTro = 'QUAN_TRI_VIEN'");
+        $row = $this->db->single();
+        return $row ? (int) $row['rootId'] : null;
+    }
+
     // 2. Lấy chi tiết tài khoản kèm thông tin mở rộng của vai trò tương ứng (Không lấy mật khẩu)
     public function getDetailById($id)
     {
